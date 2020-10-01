@@ -1,5 +1,6 @@
 import regex
 import re
+from collections import deque
 from compiler_models import *
 
 
@@ -11,14 +12,14 @@ class Parser:
         self.math_expression = r"(({operator})?({name})+)+".format(operator=self.operators, name=self.name)
         self.math_re = re.compile(self.math_expression)
         self.arguments_re = r"\s*((\s*{math}\s*,\s*)|{math}\s*)\s*".format(math=self.math_expression)
-        self.function_re = re.compile(
+        self.function_call_re = re.compile(
             r"\s*((\w[\w]*)\s*\((.*)\))\s*")
         self.names_re = re.compile(self.name)
         self.operators_re = re.compile(self.operators)
         self.constants_re = re.compile(self.constants)
 
     def try_parse(self, line):
-        match = self.function_re.match(line)
+        match = self.function_call_re.match(line)
         if match is not None:
             function_name, arguments, end_index = self.parse_function(match, line)
             return FunctionMatch(function_name, arguments), line[end_index:]
@@ -32,6 +33,18 @@ class Parser:
         if match is not None:
             return ConstantMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
         return None, ""
+
+    def delimit_scopes(self, file):
+        scope_stack = [Scope('global', None, 0, len(file))]
+
+        for index, char in enumerate(file):
+            if char == "{":
+                scope_stack.append(Scope('', scope_stack[-1], index))
+            if char == "}":
+                scope = scope_stack.pop()
+                scope.end_pos = index
+                yield scope
+        yield scope_stack.pop()
 
     def extract_tokens(self, line):
         while len(line) is not 0:
@@ -50,7 +63,7 @@ class Parser:
         if not self.parenthesis_balance(arguments_ptr):
             raise Exception("Parenthesis are not balanced")
         arg_candidate = self.math_re.search(arguments_ptr)
-        func_arg_candidate = self.function_re.search(arguments_ptr)
+        func_arg_candidate = self.function_call_re.search(arguments_ptr)
         count = 0
         while arg_candidate is not None or func_arg_candidate is not None:
             if arg_candidate is not None:
@@ -67,7 +80,7 @@ class Parser:
                 print("correctly parsed", func_arg_candidate)
             count += 1
             arg_candidate = self.math_re.search(arguments_ptr)
-            func_arg_candidate = self.function_re.search(arguments_ptr)
+            func_arg_candidate = self.function_call_re.search(arguments_ptr)
         return func_name, func_args, end_index
 
     def parenthesis_balance(self, string):
@@ -81,7 +94,17 @@ class Parser:
                 count -= 1
         return True if count == 0 else False
 
-    def parse(self, file):
+    def get_file_tokens(self, file):
         with open(file, 'r') as fs:
             for line in fs:
                 tokens = self.extract_tokens(line)
+
+    def resolve_scope_name(self, scope, file):
+
+        pass
+
+    def parse(self, file):
+        with open(file, 'r') as fs:
+            file = fs.read()
+            scopes = self.delimit_scopes(file)
+            self.resolve_scope_name([scope for scope in scopes if scope.parent_scope.name == "global"], file)

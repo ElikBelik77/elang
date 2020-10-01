@@ -1,0 +1,10 @@
+int func() {
+    return 5;
+}
+
+
+int two_scopes() {
+    if {
+
+    }
+}

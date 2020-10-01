@@ -1,3 +1,4 @@
 from compiler.parsing import Parser
 p = Parser()
-p.parse('tests/HelloWorld.el')
+p.get_file_tokens('tests/basics.el')
+p.parse("tests/functions.elang")
