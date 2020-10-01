@@ -1,55 +1,74 @@
 import regex
 import re
+from compiler_models import *
 
 
 class Parser:
     def __init__(self):
-        self.operators = r"([\+\-\/\:\*\&\!\=\^]|\*\*)+"
-        self.name = r"([a-zA-Z][\w]*)+"
-        self.constants = r"[\d]+"
+        self.operators = r"\s*([\+\-\/\:\*\&\!\=\^]|\*\*)+"
+        self.name = r"\s*([a-zA-Z][\w]*)+"
+        self.constants = r"\s*[\d]+"
         self.math_expression = r"(({operator})?({name})+)+".format(operator=self.operators, name=self.name)
         self.math_re = re.compile(self.math_expression)
         self.arguments_re = r"\s*((\s*{math}\s*,\s*)|{math}\s*)\s*".format(math=self.math_expression)
         self.function_re = re.compile(
-            r"(\w[\w]*\s*\((.*)\))\s*")
+            r"\s*((\w[\w]*)\s*\((.*)\))\s*")
         self.names_re = re.compile(self.name)
         self.operators_re = re.compile(self.operators)
         self.constants_re = re.compile(self.constants)
 
+    def try_parse(self, line):
+        match = self.function_re.match(line)
+        if match is not None:
+            function_name, arguments, end_index = self.parse_function(match, line)
+            return FunctionMatch(function_name, arguments), line[end_index:]
+        match = self.names_re.match(line)
+        if match is not None:
+            return NameMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
+        match = self.operators_re.match(line)
+        if match is not None:
+            return OperatorMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
+        match = self.constants_re.match(line)
+        if match is not None:
+            return ConstantMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
+        return None, ""
+
     def extract_tokens(self, line):
-        print("\n")
-        print(line)
-        print("functions", self.function_re.findall(line))
-        for func in self.function_re.findall(line):
-            print("check is :", self.check_function(func))
-        print("names:", self.names_re.findall(line))
-        print("operators:", self.operators_re.findall(line))
-        print("constants:", self.constants_re.findall(line))
-        pass
+        while len(line) is not 0:
+            try:
+                token, line = self.try_parse(line)
+                print(token)
+            except:
+                break
 
-    def check_function(self, func):
+    def parse_function(self, func, line):
         print("> checking", func)
-        arguments = func[1]
-        if not self.parenthesis_balance(arguments):
+        arguments_ptr = func[3]
+        end_index = func.span()[1]
+        func_name = func[2]
+        func_args = []
+        if not self.parenthesis_balance(arguments_ptr):
             raise Exception("Parenthesis are not balanced")
-        arg = self.math_re.search(arguments)
-        func_arg = self.function_re.search(arguments)
+        arg_candidate = self.math_re.search(arguments_ptr)
+        func_arg_candidate = self.function_re.search(arguments_ptr)
         count = 0
-        while arg is not None or func_arg is not None:
-            if arg is not None:
-                if self.math_re.search(arg.group(0)) is None:
+        while arg_candidate is not None or func_arg_candidate is not None:
+            if arg_candidate is not None:
+                if self.math_re.search(arg_candidate.group(0)) is None:
                     raise Exception("Invalid function parameter at position #{0}".format(count))
-                arguments = arguments[arg.span(0)[1]+1:]
-            if func_arg is not None:
-                if not self.check_function(func_arg.group(0)):
-                    raise Exception("Invalid function parameter at position #{0}".format(count))
-                arguments = arguments[func_arg.span(0)[1]+1:]
+                arguments_ptr = arguments_ptr[arg_candidate.span(0)[1] + 1:]
+                func_args.append(ArgumentMatch(arguments_ptr[arg_candidate.span(0)[0]:arg_candidate.span(0)[1]]))
+                print("correctly parsed", arg_candidate)
+            if func_arg_candidate is not None:
+                inner_func_name, inner_func_args, _ = self.parse_function(func_arg_candidate, line)
+                func_args.append(FunctionMatch(inner_func_name, inner_func_args))
+                arguments_ptr = arguments_ptr[func_arg_candidate.span(0)[1] + 1:]
+
+                print("correctly parsed", func_arg_candidate)
             count += 1
-            arg = self.math_re.search(arguments)
-            func_arg = self.function_re.search(arguments)
-        return True
-
-
+            arg_candidate = self.math_re.search(arguments_ptr)
+            func_arg_candidate = self.function_re.search(arguments_ptr)
+        return func_name, func_args, end_index
 
     def parenthesis_balance(self, string):
         count = 0
