@@ -30,10 +30,12 @@ class FunctionMatch:
 
 
 class Function:
-    def __init__(self):
+    def __init__(self, name, arguments, return_type):
         self.body = None
-        self.arguments = None
+        self.arguments = arguments
         self.return_statements = None
+        self.return_type = return_type
+        self.name = name
 
 
 class Scope:

@@ -14,6 +14,7 @@ class Parser:
         self.arguments_re = r"\s*((\s*{math}\s*,\s*)|{math}\s*)\s*".format(math=self.math_expression)
         self.function_call_re = re.compile(
             r"\s*((\w[\w]*)\s*\((.*)\))\s*")
+        self.function_declaration_re = re.compile(r"\s*(\w[\w]*)\s*((\w[\w]*)\s*\((.*)\))\s*")
         self.names_re = re.compile(self.name)
         self.operators_re = re.compile(self.operators)
         self.constants_re = re.compile(self.constants)
@@ -42,7 +43,7 @@ class Parser:
                 scope_stack.append(Scope('', scope_stack[-1], index))
             if char == "}":
                 scope = scope_stack.pop()
-                scope.end_pos = index
+                scope.end_pos = index + 1
                 yield scope
         yield scope_stack.pop()
 
@@ -99,12 +100,28 @@ class Parser:
             for line in fs:
                 tokens = self.extract_tokens(line)
 
-    def resolve_scope_name(self, scope, file):
+    def resolve_functions(self, scopes, file):
+        yield self.extract_single_function(file[0:scopes[0].start_pos])
+        for index, scope in enumerate(scopes[1:]):
+            print(scopes[index].end_pos, scope.start_pos)
+            print(file[scopes[index].end_pos: scope.start_pos].strip())
+            yield self.extract_single_function(file[scopes[index].end_pos:scope.start_pos])
 
-        pass
+    def extract_single_function(self, text):
+        match = self.function_declaration_re.match(text)
+        if match is None:
+            raise Exception("Invalid function declaration")
+        return_type = match.group(1)
+        name = match.group(3)
+        arguments = match.group(4).split(',')
+        return Function(name, arguments, return_type)
 
     def parse(self, file):
         with open(file, 'r') as fs:
             file = fs.read()
-            scopes = self.delimit_scopes(file)
-            self.resolve_scope_name([scope for scope in scopes if scope.parent_scope.name == "global"], file)
+            scopes = [scope for scope in self.delimit_scopes(file)]
+            print([(scope.start_pos, scope.end_pos) for scope in scopes if
+                   scope.parent_scope and scope.parent_scope.name == "global"])
+            functions = self.resolve_functions(
+                [scope for scope in scopes if scope.parent_scope and scope.parent_scope.name == "global"], file)
+            print([f.name for f in functions])
