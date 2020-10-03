@@ -4,7 +4,7 @@ int func() {
 
 
 int two_scopes() {
-    if {
-
-    }
+    int i = 5;
+    int j = 6;
+    return j;
 }

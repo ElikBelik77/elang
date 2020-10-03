@@ -51,9 +51,9 @@ class Parser:
         while len(line) is not 0:
             try:
                 token, line = self.try_parse(line)
-                print(token)
+                yield token
             except:
-                break
+                raise Exception("Invalid syntax")
 
     def parse_function(self, func, line):
         print("> checking", func)
@@ -72,13 +72,10 @@ class Parser:
                     raise Exception("Invalid function parameter at position #{0}".format(count))
                 arguments_ptr = arguments_ptr[arg_candidate.span(0)[1] + 1:]
                 func_args.append(ArgumentMatch(arguments_ptr[arg_candidate.span(0)[0]:arg_candidate.span(0)[1]]))
-                print("correctly parsed", arg_candidate)
             if func_arg_candidate is not None:
                 inner_func_name, inner_func_args, _ = self.parse_function(func_arg_candidate, line)
                 func_args.append(FunctionMatch(inner_func_name, inner_func_args))
                 arguments_ptr = arguments_ptr[func_arg_candidate.span(0)[1] + 1:]
-
-                print("correctly parsed", func_arg_candidate)
             count += 1
             arg_candidate = self.math_re.search(arguments_ptr)
             func_arg_candidate = self.function_call_re.search(arguments_ptr)
@@ -93,7 +90,7 @@ class Parser:
                 return False
             if char is ")":
                 count -= 1
-        return True if count == 0 else False
+        return count == 0
 
     def get_file_tokens(self, file):
         with open(file, 'r') as fs:
@@ -101,27 +98,33 @@ class Parser:
                 tokens = self.extract_tokens(line)
 
     def resolve_functions(self, scopes, file):
-        yield self.extract_single_function(file[0:scopes[0].start_pos])
+        yield self.extract_single_function(file[0:scopes[0].start_pos], file, scopes[0])
         for index, scope in enumerate(scopes[1:]):
-            print(scopes[index].end_pos, scope.start_pos)
-            print(file[scopes[index].end_pos: scope.start_pos].strip())
-            yield self.extract_single_function(file[scopes[index].end_pos:scope.start_pos])
+            yield self.extract_single_function(file[scopes[index].end_pos:scope.start_pos], file, scope)
 
-    def extract_single_function(self, text):
-        match = self.function_declaration_re.match(text)
+    def extract_single_function(self, declaration_line, source_file, scope):
+        match = self.function_declaration_re.match(declaration_line)
         if match is None:
             raise Exception("Invalid function declaration")
         return_type = match.group(1)
         name = match.group(3)
         arguments = match.group(4).split(',')
-        return Function(name, arguments, return_type)
+        return Function(name, arguments, return_type, scope, source_file[scope.start_pos+1: scope.end_pos-1])
+
+    def parse_function_body(self, function):
+        print(function.plain_text)
+        for line in function.plain_text.split(';'):
+            print(line)
+            function.body.append([token for token in self.extract_tokens(line)])
+        print(function.body)
 
     def parse(self, file):
         with open(file, 'r') as fs:
             file = fs.read()
             scopes = [scope for scope in self.delimit_scopes(file)]
-            print([(scope.start_pos, scope.end_pos) for scope in scopes if
-                   scope.parent_scope and scope.parent_scope.name == "global"])
-            functions = self.resolve_functions(
+            functions_generator = self.resolve_functions(
                 [scope for scope in scopes if scope.parent_scope and scope.parent_scope.name == "global"], file)
-            print([f.name for f in functions])
+            functions = []
+            for function in functions_generator:
+                self.parse_function_body(function)
+                functions.append(function)
