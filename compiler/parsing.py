@@ -1,7 +1,7 @@
 import regex
 import re
 from collections import deque
-from compiler_models import *
+from parsing_models import *
 
 
 class Parser:
@@ -109,7 +109,7 @@ class Parser:
         return_type = match.group(1)
         name = match.group(3)
         arguments = match.group(4).split(',')
-        return Function(name, arguments, return_type, scope, source_file[scope.start_pos+1: scope.end_pos-1])
+        return Function(name, arguments, return_type, scope, source_file[scope.start_pos + 1: scope.end_pos - 1])
 
     def parse_function_body(self, function):
         print(function.plain_text)
