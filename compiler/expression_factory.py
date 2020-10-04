@@ -16,6 +16,8 @@ def shunting_yard(statements: [], ):
         current = statements.pop(0)
         if isinstance(current, ConstantMatch):
             output_queue.put(ConstantValue(current.value))
+        if isinstance(current, NameMatch):
+            output_queue.put(Variable(current.value))
         elif isinstance(current, FunctionCallMatch):
             operator_stack.append(FunctionCall(current.name, current.arguments))
         elif isinstance(current, OperatorMatch):
@@ -36,8 +38,18 @@ def shunting_yard(statements: [], ):
                 operator_stack.pop()
     while len(operator_stack) is not 0:
         output_queue.put(operator_stack.pop())
-    while output_queue.qsize() is not 0:
-        print(output_queue.get())
+    return build_expression(output_queue)
+
+
+def build_expression(output_queue):
+    expression = output_queue.get()
+    if isinstance(expression, Mult) or isinstance(expression, Plus) or isinstance(expression, Div) or isinstance(
+            expression, Minus):
+        expression.right = build_expression(output_queue)
+        expression.left = build_expression(output_queue)
+    if isinstance(expression, ConstantValue) or isinstance(expression, Variable):
+        return expression
+    return expression
 
 
 def create_operator(value):
@@ -49,8 +61,17 @@ def create_operator(value):
         return Minus()
     elif value == '+':
         return Plus()
+    elif value == "=":
+        return Assignment()
 
 
 class ReturnFactory:
+    def produce(self, function, statement):
+        expression = shunting_yard(statement[1:])
+        function.return_statements.append(Return(expression))
+        return function.return_statements[-1]
+
+
+class IntFactory:
     def produce(self, function, statement):
         shunting_yard(statement[1:])

@@ -1,3 +1,4 @@
 int func() {
-    return (5+5)*8;
+    int i = 0;
+    return (5+i)*8+func();
 }

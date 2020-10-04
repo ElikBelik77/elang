@@ -4,7 +4,7 @@ from expression_factory import *
 
 class SyntaxConverter:
     def __init__(self):
-        self.keywords = {'int': None, 'return': ReturnFactory()}
+        self.keywords = {'int': IntFactory(), 'return': ReturnFactory()}
 
     def convert_statements(self, function, statement):
         if isinstance(statement[0], NameMatch) and statement[0].value in self.keywords:

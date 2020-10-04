@@ -87,14 +87,14 @@ class Parser:
             count += 1
             arg_candidate = self.math_re.search(arguments_ptr)
             func_arg_candidate = self.function_call_re.search(arguments_ptr)
-        return func_name, func_args, function_end
+        return func_name, func_args, function_end + 1
 
     def search_parenthesis_balance(self, string):
         count = 0
         for index, char in enumerate(string):
             if char is "(":
                 count += 1
-            if char is ")" and count is 0:
+            if char is ")" and count is 1:
                 return index
             if char is ")":
                 count -= 1

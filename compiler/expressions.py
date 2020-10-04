@@ -9,8 +9,8 @@ class HasValue:
 
 
 class Return(Statement):
-    def __init__(self, var):
-        self.return_var = var
+    def __init__(self, expression):
+        self.expression = expression
 
 
 class FunctionCall(Statement):
@@ -53,6 +53,7 @@ class LeftParenthesis:
     def get_precedence(self):
         return -1
 
+
 class RightParenthesis:
     def get_precedence(self):
         return -1
@@ -67,7 +68,16 @@ class Minus(Statement):
         return 1
 
 
-class Int(Statement, HasValue):
+class Assignment(Statement):
+    def __init__(self, left=None, right=None):
+        self.left = left
+        self.right = right
+
+    def get_precedence(self):
+        return 3
+
+
+class Variable(Statement, HasValue):
     def __init__(self, name):
         self.name = name
 
