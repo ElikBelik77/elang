@@ -18,7 +18,6 @@ class ConstantMatch:
         self.value = value
 
 
-
 class StringMatch:
     def __init__(self, value):
         self.value = value
@@ -34,7 +33,7 @@ class Function:
     def __init__(self, name, arguments, return_type, scope, plaintext):
         self.body = []
         self.arguments = arguments
-        self.return_statements = None
+        self.return_statements = []
         self.return_type = return_type
         self.name = name
         self.scope = scope
@@ -51,3 +50,10 @@ class Scope:
         self.name = name
         self.start_pos = start_pos
         self.end_pos = end_pos
+
+    def search_variable(self, name):
+        if name in self.defined_variables:
+            return True
+        if self.parent_scope is None:
+            return False
+        return self.parent_scope.search_variable(name)

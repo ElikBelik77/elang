@@ -9,7 +9,17 @@ def precedence(statement, precedence={'*': 1, '/': '1', '+': 0, '-': 0}):
     return precedence[statement.value]
 
 
-def shunting_yard(statements: [], ):
+def reversequeue(queue):
+    Stack = []
+    while (not queue.empty()):
+        Stack.append(queue.queue[0])
+        queue.get()
+    while (len(Stack) != 0):
+        queue.put(Stack[-1])
+        Stack.pop()
+
+
+def shunting_yard(statements: []):
     output_queue = queue.Queue()
     operator_stack = []
     while len(statements) is not 0:
@@ -17,7 +27,7 @@ def shunting_yard(statements: [], ):
         if isinstance(current, ConstantMatch):
             output_queue.put(ConstantValue(current.value))
         if isinstance(current, NameMatch):
-            output_queue.put(Variable(current.value))
+            output_queue.put(VariableGet(current.value))
         elif isinstance(current, FunctionCallMatch):
             operator_stack.append(FunctionCall(current.name, current.arguments))
         elif isinstance(current, OperatorMatch):
@@ -38,16 +48,18 @@ def shunting_yard(statements: [], ):
                 operator_stack.pop()
     while len(operator_stack) is not 0:
         output_queue.put(operator_stack.pop())
+    reversequeue(output_queue)
     return build_expression(output_queue)
 
 
 def build_expression(output_queue):
     expression = output_queue.get()
     if isinstance(expression, Mult) or isinstance(expression, Plus) or isinstance(expression, Div) or isinstance(
-            expression, Minus):
+            expression, Minus) or isinstance(expression, Assignment):
         expression.right = build_expression(output_queue)
         expression.left = build_expression(output_queue)
-    if isinstance(expression, ConstantValue) or isinstance(expression, Variable):
+    if isinstance(expression, ConstantValue) or isinstance(expression, VariableGet) or isinstance(expression,
+                                                                                                  FunctionCall):
         return expression
     return expression
 
@@ -66,12 +78,13 @@ def create_operator(value):
 
 
 class ReturnFactory:
-    def produce(self, function, statement):
-        expression = shunting_yard(statement[1:])
+    def produce(self, function, statements):
+        expression = shunting_yard(statements[1:])
         function.return_statements.append(Return(expression))
-        return function.return_statements[-1]
+        return [function.return_statements[-1]]
 
 
 class IntFactory:
-    def produce(self, function, statement):
-        shunting_yard(statement[1:])
+    def produce(self, function, statements):
+        expression = shunting_yard(statements[1:])
+        return [VariableDeclaration(statements[1].value, statements[0].value), expression]

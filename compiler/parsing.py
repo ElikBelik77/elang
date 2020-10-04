@@ -74,7 +74,7 @@ class Parser:
         arg_candidate = self.math_re.search(arguments_ptr)
         func_arg_candidate = self.function_call_re.search(arguments_ptr)
         count = 0
-        while arg_candidate is not None or func_arg_candidate is not None:
+        while (arg_candidate is not None or func_arg_candidate is not None) and len(arguments_ptr) is not 0:
             if arg_candidate is not None:
                 if self.math_re.search(arg_candidate.group(0)) is None:
                     raise Exception("Invalid function parameter at position #{0}".format(count))
@@ -117,6 +117,8 @@ class Parser:
         return_type = match.group(1)
         name = match.group(3)
         arguments = match.group(4).split(',')
+        if arguments[0] == '':
+            arguments = []
         return Function(name, arguments, return_type, scope, source_file[scope.start_pos + 1: scope.end_pos - 1])
 
     def parse_function_body(self, function):

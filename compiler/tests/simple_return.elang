@@ -2,3 +2,7 @@ int func() {
     int i = 0;
     return (5+i)*8+func();
 }
+
+int undefined_func_test() {
+    return i;
+}
