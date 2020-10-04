@@ -6,7 +6,7 @@ from parsing_models import *
 
 class Parser:
     def __init__(self):
-        self.operators = r"\s*([\+\-\/\:\*\&\!\=\^]|\*\*)+"
+        self.operators = r"\s*([\+\-\/\:\*\&\!\=\^\(\)]|\*\*)+"
         self.name = r"\s*([a-zA-Z][\w]*)+"
         self.constants = r"\s*[\d]+"
         self.math_expression = r"(({operator})?({name})+)+".format(operator=self.operators, name=self.name)
@@ -20,10 +20,17 @@ class Parser:
         self.constants_re = re.compile(self.constants)
 
     def try_parse(self, line):
+        line = line.strip()
+        if len(line) == 0:
+            return None, ""
+        if line[0] == '(':
+            return LeftParenthesis(), line[1:]
+        if line[0] == ")":
+            return RightParenthesis(), line[1:]
         match = self.function_call_re.match(line)
         if match is not None:
             function_name, arguments, end_index = self.parse_function(match, line)
-            return FunctionMatch(function_name, arguments), line[end_index:]
+            return FunctionCallMatch(function_name, arguments), line[end_index:]
         match = self.names_re.match(line)
         if match is not None:
             return NameMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
@@ -33,7 +40,6 @@ class Parser:
         match = self.constants_re.match(line)
         if match is not None:
             return ConstantMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
-        return None, ""
 
     def delimit_scopes(self, file):
         scope_stack = [Scope('global', None, 0, len(file))]
@@ -61,8 +67,7 @@ class Parser:
         end_index = func.span()[1]
         func_name = func[2]
         func_args = []
-        if not self.parenthesis_balance(arguments_ptr):
-            raise Exception("Parenthesis are not balanced")
+        function_end = self.search_parenthesis_balance(line)
         arg_candidate = self.math_re.search(arguments_ptr)
         func_arg_candidate = self.function_call_re.search(arguments_ptr)
         count = 0
@@ -74,23 +79,23 @@ class Parser:
                 func_args.append(ArgumentMatch(arguments_ptr[arg_candidate.span(0)[0]:arg_candidate.span(0)[1]]))
             if func_arg_candidate is not None:
                 inner_func_name, inner_func_args, _ = self.parse_function(func_arg_candidate, line)
-                func_args.append(FunctionMatch(inner_func_name, inner_func_args))
+                func_args.append(FunctionCallMatch(inner_func_name, inner_func_args))
                 arguments_ptr = arguments_ptr[func_arg_candidate.span(0)[1] + 1:]
             count += 1
             arg_candidate = self.math_re.search(arguments_ptr)
             func_arg_candidate = self.function_call_re.search(arguments_ptr)
-        return func_name, func_args, end_index
+        return func_name, func_args, function_end
 
-    def parenthesis_balance(self, string):
+    def search_parenthesis_balance(self, string):
         count = 0
-        for char in string:
+        for index, char in enumerate(string):
             if char is "(":
                 count += 1
             if char is ")" and count is 0:
-                return False
+                return index
             if char is ")":
                 count -= 1
-        return count == 0
+        raise Exception('Not enough closing brackets')
 
     def get_file_tokens(self, file):
         with open(file, 'r') as fs:
