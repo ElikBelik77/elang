@@ -2,6 +2,7 @@ import regex
 import re
 from collections import deque
 from parsing_models import *
+from expressions import LeftParenthesis, RightParenthesis
 
 
 class Parser:
@@ -18,6 +19,7 @@ class Parser:
         self.names_re = re.compile(self.name)
         self.operators_re = re.compile(self.operators)
         self.constants_re = re.compile(self.constants)
+        self.keywords_re = re.compile(r"\s*(return\s)|(int\s)")
 
     def try_parse(self, line):
         line = line.strip()
@@ -27,6 +29,9 @@ class Parser:
             return LeftParenthesis(), line[1:]
         if line[0] == ")":
             return RightParenthesis(), line[1:]
+        match = self.keywords_re.match(line)
+        if match is not None:
+            return NameMatch(line[match.span()[0]:match.span()[1]]), line[match.span()[1]:]
         match = self.function_call_re.match(line)
         if match is not None:
             function_name, arguments, end_index = self.parse_function(match, line)
@@ -62,9 +67,7 @@ class Parser:
                 raise Exception("Invalid syntax")
 
     def parse_function(self, func, line):
-        print("> checking", func)
         arguments_ptr = func[3]
-        end_index = func.span()[1]
         func_name = func[2]
         func_args = []
         function_end = self.search_parenthesis_balance(line)
@@ -117,11 +120,8 @@ class Parser:
         return Function(name, arguments, return_type, scope, source_file[scope.start_pos + 1: scope.end_pos - 1])
 
     def parse_function_body(self, function):
-        print(function.plain_text)
-        for line in function.plain_text.split(';'):
-            print(line)
+        for line in function.plain_text.split(';')[:-1]:
             function.body.append([token for token in self.extract_tokens(line)])
-        print(function.body)
 
     def parse(self, file):
         with open(file, 'r') as fs:
@@ -133,3 +133,4 @@ class Parser:
             for function in functions_generator:
                 self.parse_function_body(function)
                 functions.append(function)
+        return functions

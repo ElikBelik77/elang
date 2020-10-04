@@ -1,6 +1,6 @@
 class NameMatch:
     def __init__(self, value):
-        self.value = value
+        self.value = value.strip()
 
 
 class OperatorMatch:
@@ -18,12 +18,6 @@ class ConstantMatch:
         self.value = value
 
 
-class LeftParenthesis:
-    pass
-
-class RightParenthesis:
-    pass
-
 
 class StringMatch:
     def __init__(self, value):
@@ -33,7 +27,7 @@ class StringMatch:
 class FunctionCallMatch:
     def __init__(self, name, arguments):
         self.arguments = arguments
-        self.name = name
+        self.name = name.strip()
 
 
 class Function:

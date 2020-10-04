@@ -25,8 +25,19 @@ def shunting_yard(statements: [], ):
                            operator_stack[-1].get_precedence() is not -1)):
                 output_queue.put(operator_stack.pop())
             operator_stack.append(token)
-        elif
-
+        elif isinstance(current, LeftParenthesis):
+            operator_stack.append(current)
+        elif isinstance(current, RightParenthesis):
+            while not isinstance(operator_stack[-1], LeftParenthesis):
+                if len(operator_stack) == 1:
+                    raise Exception("Unbalanced parenthesis")
+                output_queue.put(operator_stack.pop())
+            if isinstance(operator_stack[-1], LeftParenthesis):
+                operator_stack.pop()
+    while len(operator_stack) is not 0:
+        output_queue.put(operator_stack.pop())
+    while output_queue.qsize() is not 0:
+        print(output_queue.get())
 
 
 def create_operator(value):
@@ -39,7 +50,7 @@ def create_operator(value):
     elif value == '+':
         return Plus()
 
-    class ReturnFactory:
-        def produce(self, function, statement):
-            if isinstance(statement, ConstantMatch):
-                return Return(ConstantValue(statement))
+
+class ReturnFactory:
+    def produce(self, function, statement):
+        shunting_yard(statement[1:])

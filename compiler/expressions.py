@@ -50,7 +50,11 @@ class Plus(Statement):
 
 
 class LeftParenthesis:
-    def get_precendence(self):
+    def get_precedence(self):
+        return -1
+
+class RightParenthesis:
+    def get_precedence(self):
         return -1
 
 
