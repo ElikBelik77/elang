@@ -72,6 +72,7 @@ class LeftParenthesis:
         return -1
 
 
+
 class RightParenthesis:
     def get_precedence(self):
         return -1

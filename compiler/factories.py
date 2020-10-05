@@ -19,30 +19,48 @@ class MinusFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
 
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return Minus(), source_code[1:]
+
 
 class MultFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
+
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return Mult(), source_code[1:]
 
 
 class DivFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
 
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return Div(), source_code[1:]
+
 
 class PlusFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
+
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return Plus(), source_code[1:]
 
 
 class LeftParenthesisFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
 
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return LeftParenthesis(), source_code[1:]
+
 
 class RightParenthesisFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         pass
+
+    def produce_shallow(self, parser, source_code, parent_scope, match):
+        return RightParenthesis(), source_code[1:]
 
 
 class DefaultFactory(Factory):
@@ -60,14 +78,17 @@ class FunctionCallFactory(Factory):
 
     def find_closing_brackets(self, source_code):
         count, idx = 1, 0
+        first = True
         while count is not 0:
-            idx += 1
-            if source_code[idx] == "(":
+            if source_code[idx] == "(" and first:
+                first = False
+            elif source_code[idx] == "(" and not first:
                 count += 1
             elif source_code[idx] == ")":
                 count -= 1
             if count == 0:
-                return idx
+                return idx+1
+            idx += 1
 
 
 class DecimalConstantFactory():
@@ -112,7 +133,7 @@ class FunctionDeclarationFactory():
         function_source = source_code[1:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
         f = Function(scope, match, match.group(1), function_body)
-        return f, source_code[scope_end + 1:]
+        return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code):
         count, idx = 1, 0
