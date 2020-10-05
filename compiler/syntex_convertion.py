@@ -1,5 +1,5 @@
 from parsing_models import *
-from expression_factory import *
+from factories import *
 
 
 class SyntaxConverter:

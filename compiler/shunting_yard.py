@@ -1,12 +1,5 @@
-from expressions import *
-from parsing_models import *
+from models import *
 import queue
-
-
-def precedence(statement, precedence={'*': 1, '/': '1', '+': 0, '-': 0}):
-    if isinstance(statement, FunctionCall):
-        return 3
-    return precedence[statement.value]
 
 
 def reversequeue(queue):
@@ -24,19 +17,17 @@ def shunting_yard(statements: []):
     operator_stack = []
     while len(statements) is not 0:
         current = statements.pop(0)
-        if isinstance(current, ConstantMatch):
-            output_queue.put(ConstantValue(current.value))
-        if isinstance(current, NameMatch):
-            output_queue.put(VariableGet(current.value))
-        elif isinstance(current, FunctionCallMatch):
+        if isinstance(current, DecimalConstantValue) or isinstance(current, Variable):
+            output_queue.put(current)
+        elif isinstance(current, FunctionCall):
             operator_stack.append(FunctionCall(current.name, current.arguments))
-        elif isinstance(current, OperatorMatch):
-            token = create_operator(current.value)
+        elif isinstance(current, Assignment) or isinstance(current, Mult) or isinstance(current, Div) or isinstance(
+                current, Plus) or isinstance(current, Minus):
             while ((len(operator_stack) is not 0) and (
-                    operator_stack[-1].get_precedence() >= token.get_precedence()) and (
+                    operator_stack[-1].get_precedence() >= current.get_precedence()) and (
                            operator_stack[-1].get_precedence() is not -1)):
                 output_queue.put(operator_stack.pop())
-            operator_stack.append(token)
+            operator_stack.append(current)
         elif isinstance(current, LeftParenthesis):
             operator_stack.append(current)
         elif isinstance(current, RightParenthesis):
@@ -58,7 +49,7 @@ def build_expression(output_queue):
             expression, Minus) or isinstance(expression, Assignment):
         expression.right = build_expression(output_queue)
         expression.left = build_expression(output_queue)
-    if isinstance(expression, ConstantValue) or isinstance(expression, VariableGet) or isinstance(expression,
+    if isinstance(expression, DecimalConstantValue) or isinstance(expression, Variable) or isinstance(expression,
                                                                                                   FunctionCall):
         return expression
     return expression
@@ -75,16 +66,3 @@ def create_operator(value):
         return Plus()
     elif value == "=":
         return Assignment()
-
-
-class ReturnFactory:
-    def produce(self, function, statements):
-        expression = shunting_yard(statements[1:])
-        function.return_statements.append(Return(expression))
-        return [function.return_statements[-1]]
-
-
-class IntFactory:
-    def produce(self, function, statements):
-        expression = shunting_yard(statements[1:])
-        return [VariableDeclaration(statements[1].value, statements[0].value), expression]

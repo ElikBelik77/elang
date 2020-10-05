@@ -1,4 +1,4 @@
-from expressions import VariableDeclaration, VariableGet
+from models import VariableDeclaration, Variable
 
 
 class VariableDeclarationCheck:

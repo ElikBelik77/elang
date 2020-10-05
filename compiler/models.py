@@ -1,4 +1,4 @@
-class Statement:
+class Compilable:
     def compile(self, context):
         pass
 
@@ -8,7 +8,7 @@ class HasValue:
         pass
 
 
-class Return(Statement):
+class Return(Compilable):
     def __init__(self, expression):
         self.expression = expression
 
@@ -16,7 +16,7 @@ class Return(Statement):
         return self.expression.get_mentions()
 
 
-class FunctionCall(Statement):
+class FunctionCall(Compilable):
     def __init__(self, name, arguments):
         self.arguments = arguments
         self.name = name
@@ -31,7 +31,7 @@ class FunctionCall(Statement):
         return 3
 
 
-class Mult(Statement):
+class Mult(Compilable):
     def __init__(self, left=None, right=None):
         self.left = left
         self.right = right
@@ -43,7 +43,7 @@ class Mult(Statement):
         return 2
 
 
-class Div(Statement):
+class Div(Compilable):
     def __init__(self, left=None, right=None):
         self.left = left
         self.right = right
@@ -55,7 +55,7 @@ class Div(Statement):
         return 2
 
 
-class Plus(Statement):
+class Plus(Compilable):
     def __init__(self, left=None, right=None):
         self.left = left
         self.right = right
@@ -77,7 +77,7 @@ class RightParenthesis:
         return -1
 
 
-class Minus(Statement):
+class Minus(Compilable):
     def __init__(self, left=None, right=None):
         self.left = left
         self.right = right
@@ -89,7 +89,7 @@ class Minus(Statement):
         return 1
 
 
-class Assignment(Statement):
+class Assignment(Compilable):
     def __init__(self, left=None, right=None):
         self.left = left
         self.right = right
@@ -101,7 +101,7 @@ class Assignment(Statement):
         return 3
 
 
-class VariableGet(Statement, HasValue):
+class Variable(Compilable, HasValue):
     def __init__(self, name):
         self.name = name
 
@@ -112,13 +112,13 @@ class VariableGet(Statement, HasValue):
         pass
 
 
-class VariableDeclaration(Statement):
+class VariableDeclaration(Compilable):
     def __init__(self, name, type):
         self.name = name
         self.type = type
 
 
-class ConstantValue(HasValue):
+class DecimalConstantValue(HasValue):
     def __init__(self, value):
         self.value = value
 
@@ -127,3 +127,25 @@ class ConstantValue(HasValue):
 
     def get_value(self, context):
         pass
+
+
+class Scope:
+    def __init__(self, name, parent_scope):
+        self.parent_scope = parent_scope
+        self.defined_variables = {}
+        self.name = name
+
+    def search_variable(self, name):
+        if name in self.defined_variables:
+            return True
+        if self.parent_scope is None:
+            return False
+        return self.parent_scope.search_variable(name)
+
+
+class Function:
+    def __init__(self, scope, signature, return_type, body):
+        self.scope = scope
+        self.signature = signature
+        self.return_type = return_type
+        self.body = body
