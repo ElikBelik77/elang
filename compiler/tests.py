@@ -21,4 +21,5 @@ valid_tokens = [{"re": re.compile(r"\s*((\w[\w]*)\s*\((.*)\))\s*"), "factory": F
 p = Parser(keywords=keywords, operators=operators, valid_tokens=valid_tokens)
 sc = SemanticChecker([FunctionArgumentShadowing(), VariableDeclarationCheck()])
 parsed = p.parse_file("tests/simple_return.elang")
-print(parsed)
+for function in parsed:
+    sc.check_function(function)

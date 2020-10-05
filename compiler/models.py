@@ -95,7 +95,8 @@ class Assignment(Compilable):
         self.right = right
 
     def get_mentions(self):
-        return self.left.get_mentions() + self.right.get_mentions()
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
 
     def get_precedence(self):
         return 3
@@ -117,6 +118,9 @@ class VariableDeclaration(Compilable):
         self.name = name
         self.type = type
 
+    def get_mentions(self):
+        return [self.name]
+
 
 class DecimalConstantValue(HasValue):
     def __init__(self, value):
@@ -130,7 +134,7 @@ class DecimalConstantValue(HasValue):
 
 
 class Scope:
-    def __init__(self, name, parent_scope):
+    def __init__(self, name, parent_scope: "Scope"):
         self.parent_scope = parent_scope
         self.defined_variables = {}
         self.name = name
@@ -155,3 +159,4 @@ class Function:
         mentions = []
         for expression in self.body:
             mentions += expression.get_mentions()
+        return mentions

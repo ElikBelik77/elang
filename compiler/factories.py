@@ -69,8 +69,10 @@ class FunctionCallFactory(Factory):
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         end = self.find_closing_brackets(source_code)
-        arguments = match.group(3).split(',')
-        arguments = [parser.parse_source_code(arg, parent_scope) for arg in arguments]
+        arguments_list = match.group(3).split(',')
+        arguments = []
+        for arg in arguments_list:
+            arguments += parser.parse_source_code(arg, parent_scope)
         return FunctionCall(match.group(2), arguments), source_code[end:]
 
     def find_closing_brackets(self, source_code):
@@ -107,8 +109,8 @@ class VariableFactory(Factory):
 class IntFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
         if len(match) == 2:
-            return [VariableDeclaration(match[1], "int")]
-        return [VariableDeclaration(match[1], "int"), shunting_yard(match[1:])]
+            return [VariableDeclaration(match[1].name, "int")]
+        return [VariableDeclaration(match[1].name, "int"), shunting_yard(match[1:])]
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return VariableDeclaration(None, "int"), source_code[len(match.group(0)):].strip()
@@ -129,7 +131,7 @@ class FunctionDeclarationFactory():
         scope = Scope(match, parent_scope)
         function_source = source_code[1:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
-        function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for arg in match.group(4).split(',')]
+        function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for arg in match.group(4).split(',') if arg is not '']
         f = Function(scope, match, match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 

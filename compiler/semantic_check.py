@@ -1,9 +1,12 @@
 from models import VariableDeclaration, Variable
 
+
 class FunctionArgumentShadowing:
-    def check (self, function):
+    def check(self, function):
         for variable in function.get_mentions():
-            pass
+            if variable in [v.name for v in function.arguments]:
+                raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
+
 
 class VariableDeclarationCheck:
     def check(self, function):
