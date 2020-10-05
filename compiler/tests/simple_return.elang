@@ -1,6 +1,6 @@
 int func() {
     int i = 0;
-    return (5+i)*8+func();
+    return (5+i)*8+func(5,5);
 }
 
 int undefined_func_test() {

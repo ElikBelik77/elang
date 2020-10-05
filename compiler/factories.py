@@ -41,7 +41,7 @@ class DivFactory(Factory):
 
 class PlusFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        return [shunting_yard(match)]
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return Plus(), source_code[1:]
@@ -74,7 +74,9 @@ class FunctionCallFactory(Factory):
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         end = self.find_closing_brackets(source_code)
-        return FunctionCall(match.group(1), None), source_code[end:]
+        arguments = match.group(3).split(',')
+        arguments = [parser.parse_source_code(arg, parent_scope) for arg in arguments]
+        return [FunctionCall(match.group(2), arguments), source_code[end:]]
 
     def find_closing_brackets(self, source_code):
         count, idx = 1, 0
@@ -87,13 +89,13 @@ class FunctionCallFactory(Factory):
             elif source_code[idx] == ")":
                 count -= 1
             if count == 0:
-                return idx+1
+                return idx + 1
             idx += 1
 
 
 class DecimalConstantFactory():
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        return [shunting_yard(match)]
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return DecimalConstantValue(int(match.group(0))), source_code[len(match.group(0)):].strip()

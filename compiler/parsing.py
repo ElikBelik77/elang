@@ -34,7 +34,7 @@ class Parser:
                 model, source_code = next_token["factory"].produce_shallow(parser=self, source_code=source_code,
                                                                            parent_scope=parent_scope, match=match)
                 match_models = [model]
-                while source_code[0] is not ';':
+                while len(source_code) is not 0 and source_code[0] is not ';':
                     next_token, match = self.get_maximal_match(source_code)
                     model, source_code = next_token["factory"].produce_shallow(parser=self, source_code=source_code,
                                                                                parent_scope=parent_scope, match=match)
