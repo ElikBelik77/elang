@@ -2,6 +2,9 @@ class Compilable:
     def compile(self, context):
         pass
 
+    def get_mentions(self):
+        pass
+
 
 class HasValue:
     def get_value(self, context):
@@ -9,7 +12,7 @@ class HasValue:
 
 
 class Return(Compilable):
-    def __init__(self, expression):
+    def __init__(self, expression: Compilable):
         self.expression = expression
 
     def get_mentions(self):
@@ -17,7 +20,7 @@ class Return(Compilable):
 
 
 class FunctionCall(Compilable):
-    def __init__(self, name, arguments):
+    def __init__(self, name: str, arguments: ["Variable"]):
         self.arguments = arguments
         self.name = name
 
@@ -32,7 +35,7 @@ class FunctionCall(Compilable):
 
 
 class Mult(Compilable):
-    def __init__(self, left=None, right=None):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
 
@@ -44,7 +47,7 @@ class Mult(Compilable):
 
 
 class Div(Compilable):
-    def __init__(self, left=None, right=None):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
 
@@ -56,7 +59,7 @@ class Div(Compilable):
 
 
 class Plus(Compilable):
-    def __init__(self, left=None, right=None):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
 
@@ -78,7 +81,7 @@ class RightParenthesis:
 
 
 class Minus(Compilable):
-    def __init__(self, left=None, right=None):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
 
@@ -90,7 +93,7 @@ class Minus(Compilable):
 
 
 class Assignment(Compilable):
-    def __init__(self, left=None, right=None):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
 
@@ -103,7 +106,7 @@ class Assignment(Compilable):
 
 
 class Variable(Compilable, HasValue):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
 
     def get_mentions(self):
@@ -114,7 +117,7 @@ class Variable(Compilable, HasValue):
 
 
 class VariableDeclaration(Compilable):
-    def __init__(self, name, type):
+    def __init__(self, name: str, type: str):
         self.name = name
         self.type = type
 
@@ -123,7 +126,7 @@ class VariableDeclaration(Compilable):
 
 
 class DecimalConstantValue(HasValue):
-    def __init__(self, value):
+    def __init__(self, value: int):
         self.value = value
 
     def get_mentions(self):
@@ -134,12 +137,12 @@ class DecimalConstantValue(HasValue):
 
 
 class Scope:
-    def __init__(self, name, parent_scope: "Scope"):
+    def __init__(self, name: str, parent_scope: "Scope"):
         self.parent_scope = parent_scope
         self.defined_variables = {}
         self.name = name
 
-    def search_variable(self, name):
+    def search_variable(self, name: str):
         if name in self.defined_variables:
             return True
         if self.parent_scope is None:
@@ -148,7 +151,7 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, signature, return_type, body, arguments):
+    def __init__(self, scope: Scope, signature: str, return_type: str, body: [Compilable], arguments: [Variable]):
         self.scope = scope
         self.signature = signature
         self.return_type = return_type

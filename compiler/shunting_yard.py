@@ -2,7 +2,7 @@ from models import *
 import queue
 
 
-def reversequeue(queue):
+def reversequeue(queue: queue.Queue):
     Stack = []
     while (not queue.empty()):
         Stack.append(queue.queue[0])
@@ -12,7 +12,7 @@ def reversequeue(queue):
         Stack.pop()
 
 
-def shunting_yard(statements: []):
+def shunting_yard(statements: [Compilable]):
     output_queue = queue.Queue()
     operator_stack = []
     while len(statements) is not 0:
@@ -43,19 +43,19 @@ def shunting_yard(statements: []):
     return build_expression(output_queue)
 
 
-def build_expression(output_queue):
+def build_expression(output_queue: queue.Queue):
     expression = output_queue.get()
     if isinstance(expression, Mult) or isinstance(expression, Plus) or isinstance(expression, Div) or isinstance(
             expression, Minus) or isinstance(expression, Assignment):
         expression.right = build_expression(output_queue)
         expression.left = build_expression(output_queue)
     if isinstance(expression, DecimalConstantValue) or isinstance(expression, Variable) or isinstance(expression,
-                                                                                                  FunctionCall):
+                                                                                                      FunctionCall):
         return expression
     return expression
 
 
-def create_operator(value):
+def create_operator(value: str):
     if value == "*":
         return Mult()
     elif value == "/":

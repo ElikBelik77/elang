@@ -3,22 +3,22 @@ import re
 from collections import deque
 from models import LeftParenthesis, RightParenthesis
 from factories import *
+from typing import *
 
 
 class Parser:
-    def __init__(self, keywords, operators, valid_tokens):
+    def __init__(self, keywords: [Dict], operators: [Dict], valid_tokens: [Dict]):
         self.keywords = keywords
         self.operators = operators
         self.valid_tokens = valid_tokens
 
-    def parse_file(self, file):
+    def parse_file(self, file: str):
         global_scope = Scope('global', None)
-
         with open(file, "r") as f:
             source_code = f.read().strip()
         return self.parse_source_code(source_code, parent_scope=global_scope)
 
-    def parse_source_code(self, source_code, parent_scope):
+    def parse_source_code(self, source_code: str, parent_scope: Scope):
         parsed = []
         while len(source_code) is not 0:
             source_code = source_code.strip()
@@ -44,7 +44,7 @@ class Parser:
                                           match=match_models)
         return parsed
 
-    def get_maximal_match(self, text):
+    def get_maximal_match(self, text: str):
         maximal_match, token_entry = None, None
         for token in self.keywords + self.operators:
             match = token["re"].match(text)
