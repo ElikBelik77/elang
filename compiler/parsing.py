@@ -6,11 +6,10 @@ from factories import *
 
 
 class Parser:
-    def __init__(self, keywords, operators, valid_tokens, default=DefaultFactory()):
+    def __init__(self, keywords, operators, valid_tokens):
         self.keywords = keywords
         self.operators = operators
         self.valid_tokens = valid_tokens
-        self.default = default
 
     def parse_file(self, file):
         global_scope = Scope('global', None)

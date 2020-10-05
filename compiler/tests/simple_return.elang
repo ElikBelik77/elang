@@ -1,4 +1,4 @@
-int func() {
+int func(int a, int b) {
     int i = 0;
     return (5+i)*8+func(5,5);
 }

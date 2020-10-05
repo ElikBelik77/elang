@@ -1,5 +1,9 @@
 from models import VariableDeclaration, Variable
 
+class FunctionArgumentShadowing:
+    def check (self, function):
+        for variable in function.get_mentions():
+            pass
 
 class VariableDeclarationCheck:
     def check(self, function):

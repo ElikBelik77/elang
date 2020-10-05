@@ -17,7 +17,7 @@ class ReturnFactory(Factory):
 
 class MinusFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return Minus(), source_code[1:]
@@ -25,7 +25,7 @@ class MinusFactory(Factory):
 
 class MultFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return Mult(), source_code[1:]
@@ -33,7 +33,7 @@ class MultFactory(Factory):
 
 class DivFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        raise Exception("Invalid placemenet of the / operator")
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return Div(), source_code[1:]
@@ -49,7 +49,7 @@ class PlusFactory(Factory):
 
 class LeftParenthesisFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        return LeftParenthesis(), source_code[1:]
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return LeftParenthesis(), source_code[1:]
@@ -57,15 +57,10 @@ class LeftParenthesisFactory(Factory):
 
 class RightParenthesisFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        raise Exception("Invalid parenthesis placement")
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return RightParenthesis(), source_code[1:]
-
-
-class DefaultFactory(Factory):
-    def produce(self, parser, source_code, parent_scope, match):
-        pass
 
 
 class FunctionCallFactory(Factory):
@@ -76,7 +71,7 @@ class FunctionCallFactory(Factory):
         end = self.find_closing_brackets(source_code)
         arguments = match.group(3).split(',')
         arguments = [parser.parse_source_code(arg, parent_scope) for arg in arguments]
-        return [FunctionCall(match.group(2), arguments), source_code[end:]]
+        return FunctionCall(match.group(2), arguments), source_code[end:]
 
     def find_closing_brackets(self, source_code):
         count, idx = 1, 0
@@ -121,7 +116,7 @@ class IntFactory(Factory):
 
 class AssignmentFactory(Factory):
     def produce(self, parser, source_code, parent_scope, match):
-        pass
+        raise Exception("Invalid placement of the = operator")
 
     def produce_shallow(self, parser, source_code, parent_scope, match):
         return Assignment(), source_code[len(match.group(0)):].strip()
@@ -134,7 +129,8 @@ class FunctionDeclarationFactory():
         scope = Scope(match, parent_scope)
         function_source = source_code[1:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
-        f = Function(scope, match, match.group(1), function_body)
+        function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for arg in match.group(4).split(',')]
+        f = Function(scope, match, match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code):
@@ -147,3 +143,6 @@ class FunctionDeclarationFactory():
                 count -= 1
             if count == 0:
                 return idx
+
+    def produce_shallow(self, parser, source_code, scope, match):
+        raise Exception("Invalid location to declare a function.")

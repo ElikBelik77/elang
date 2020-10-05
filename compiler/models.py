@@ -72,7 +72,6 @@ class LeftParenthesis:
         return -1
 
 
-
 class RightParenthesis:
     def get_precedence(self):
         return -1
@@ -145,8 +144,14 @@ class Scope:
 
 
 class Function:
-    def __init__(self, scope, signature, return_type, body):
+    def __init__(self, scope, signature, return_type, body, arguments):
         self.scope = scope
         self.signature = signature
         self.return_type = return_type
         self.body = body
+        self.arguments = arguments
+
+    def get_mentions(self):
+        mentions = []
+        for expression in self.body:
+            mentions += expression.get_mentions()
