@@ -1,3 +1,6 @@
+from typing import List
+
+
 class Compilable:
     def compile(self, context):
         pass
@@ -139,14 +142,29 @@ class DecimalConstantValue(HasValue):
 class Scope:
     def __init__(self, name: str, parent_scope: "Scope"):
         self.parent_scope = parent_scope
+        self.children = List[Scope]
+        self.parent_scope.children.append(self)
         self.defined_variables = {}
         self.name = name
 
+    def get_childrens(self):
+        children = []
+        for child in self.children:
+            children += child.get
+        return children + self.children
+
+    def is_child_of(self, parent):
+        p = self.parent_scope
+        while p is not None:
+            if p == parent:
+                return True
+        return False
+
     def search_variable(self, name: str):
         if name in self.defined_variables:
-            return True
+            return self.defined_variables[name]
         if self.parent_scope is None:
-            return False
+            return None
         return self.parent_scope.search_variable(name)
 
 

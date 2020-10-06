@@ -135,6 +135,9 @@ class FunctionDeclarationFactory():
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
                               arg in match.group(4).split(',') if arg is not '']
+        for idx, statement in enumerate(function_body):
+            if isinstance(statement, VariableDeclaration):
+                scope.defined_variables[statement.name] = {"type": statement.type, "idx": idx, "scope": scope}
         f = Function(scope, match, match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 
