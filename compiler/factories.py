@@ -136,9 +136,11 @@ class FunctionDeclarationFactory():
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
                               arg in match.group(4).split(',') if arg is not '']
         for idx, statement in enumerate(function_body):
-            if isinstance(statement, VariableDeclaration):
+            if isinstance(statement, VariableDeclaration) and not statement.name in scope.defined_variables:
                 scope.defined_variables[statement.name] = {"type": statement.type, "idx": idx, "scope": scope}
-        f = Function(scope, match, match.group(1), function_body, function_arguments)
+            elif isinstance(statement, VariableDeclaration):
+                raise Exception("Variable {0} is declared more than once in function {1}".format(statement.name,match.group(0)))
+        f = Function(scope, match.group(0), match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code: str):

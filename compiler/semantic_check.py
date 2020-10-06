@@ -6,14 +6,14 @@ class Checker:
         pass
 
 
-class FunctionArgumentShadowing:
+class FunctionArgumentShadowing(Checker):
     def check(self, function: Function):
         for variable in function.get_mentions():
             if variable in [v.name for v in function.arguments]:
                 raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
 
 
-class RepeatingVariableDeclaration:
+class RepeatingVariableDeclaration(Checker):
     def check(self, function: Function):
         all_scopes = [function.scope] + function.scope.get_childrens()
         vars_declared = []
@@ -26,7 +26,7 @@ class RepeatingVariableDeclaration:
                     vars_declared.append(key["name"])
 
 
-class VariableDeclarationCheck:
+class VariableDeclarationCheck(Checker):
     def check(self, function: Function):
         for idx, statement in enumerate(function.body):
             if isinstance(statement, VariableDeclaration):
@@ -41,10 +41,10 @@ class VariableDeclarationCheck:
                         "Undefined variable {0}, in function {1}".format(variable_mention, function.signature))
 
 
-class SemanticChecker:
+class SemanticChecker(Checker):
     def __init__(self, checklist: [Checker]):
         self.checklist = checklist
 
-    def check_function(self, function: Function):
+    def check(self, function: Function):
         for checker in self.checklist:
             checker.check(function)

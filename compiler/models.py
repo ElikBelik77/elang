@@ -142,15 +142,16 @@ class DecimalConstantValue(HasValue):
 class Scope:
     def __init__(self, name: str, parent_scope: "Scope"):
         self.parent_scope = parent_scope
-        self.children = List[Scope]
-        self.parent_scope.children.append(self)
+        self.children: [Scope] = []
+        if parent_scope is not None:
+            self.parent_scope.children.append(self)
         self.defined_variables = {}
         self.name = name
 
     def get_childrens(self):
         children = []
         for child in self.children:
-            children += child.get
+            children += child.get_childrens()
         return children + self.children
 
     def is_child_of(self, parent):
