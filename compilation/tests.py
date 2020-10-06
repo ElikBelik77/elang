@@ -1,7 +1,8 @@
 import re
 from factories import *
-from compiler.parsing import Parser
-from compiler.semantic_check import *
+from compilation.parsing import Parser
+from compilation.semantic_check import *
+from compilation.compiler import Compiler
 
 keywords = [{"re": re.compile(r"\s*return\s"), "factory": ReturnFactory()},
             {"re": re.compile(r"\s*int\s"), "factory": IntFactory()},
@@ -19,7 +20,8 @@ valid_tokens = [{"re": re.compile(r"\s*((\w[\w]*)\s*\((.*)\))\s*"), "factory": F
                 {"re": re.compile(r"\s*\)\s*"), "factory": RightParenthesisFactory()}]
 
 p = Parser(keywords=keywords, operators=operators, valid_tokens=valid_tokens)
-sc = SemanticChecker([FunctionArgumentShadowing(), VariableDeclarationCheck()])
-parsed = p.parse_file("tests/simple_return.elang")
-for function in parsed:
-    sc.check(function)
+sc = SemanticChecker([]).add_all()
+compiler = Compiler()
+program = Program(p.parse_file("tests/functions.elang"))
+sc.check(program)
+compiler.compile(program)

@@ -70,25 +70,28 @@ class FunctionCallFactory(Factory):
         pass
 
     def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
-        end = self.find_closing_brackets(source_code)
-        arguments_list = match.group(3).split(',')
+        start, end = self.find_closing_brackets(source_code)
+        arguments_list = source_code[start + 1:end - 1].split(',')
         arguments = []
         for arg in arguments_list:
-            arguments += parser.parse_source_code(arg, parent_scope)
+            if len(arg) is not 0:
+                arguments += parser.parse_source_code(arg, parent_scope)
         return FunctionCall(match.group(2), arguments), source_code[end:]
 
     def find_closing_brackets(self, source_code: str):
         count, idx = 1, 0
+        start = 0
         first = True
         while count is not 0:
             if source_code[idx] == "(" and first:
                 first = False
+                start = idx
             elif source_code[idx] == "(" and not first:
                 count += 1
             elif source_code[idx] == ")":
                 count -= 1
             if count == 0:
-                return idx + 1
+                return start, idx + 1
             idx += 1
 
 
@@ -136,11 +139,12 @@ class FunctionDeclarationFactory():
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
                               arg in match.group(4).split(',') if arg is not '']
         for idx, statement in enumerate(function_body):
-            if isinstance(statement, VariableDeclaration) and not statement.name in scope.defined_variables:
-                scope.defined_variables[statement.name] = {"type": statement.type, "idx": idx, "scope": scope}
+            if isinstance(statement, VariableDeclaration) and statement.name not in scope.defined_variables:
+                scope.defined_variables[statement.name] = {"type": statement.type, "define_line": idx, "scope": scope}
             elif isinstance(statement, VariableDeclaration):
-                raise Exception("Variable {0} is declared more than once in function {1}".format(statement.name,match.group(0)))
-        f = Function(scope, match.group(0), match.group(1), function_body, function_arguments)
+                raise Exception(
+                    "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
+        f = Function(scope, match.group(0).strip(), match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code: str):

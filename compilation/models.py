@@ -9,6 +9,12 @@ class Compilable:
         pass
 
 
+class Scopeable(Compilable):
+    def __init__(self, scope: "Scope", body: List[Compilable]):
+        self.scope = scope
+        self.body = body
+
+
 class HasValue:
     def get_value(self, context):
         pass
@@ -169,12 +175,12 @@ class Scope:
         return self.parent_scope.search_variable(name)
 
 
-class Function:
-    def __init__(self, scope: Scope, signature: str, return_type: str, body: [Compilable], arguments: [Variable]):
-        self.scope = scope
+class Function(Scopeable):
+    def __init__(self, scope: Scope, signature: str, return_type: str, body: List[Compilable],
+                 arguments: List[VariableDeclaration]):
+        super(Function, self).__init__(scope, body)
         self.signature = signature
         self.return_type = return_type
-        self.body = body
         self.arguments = arguments
 
     def get_mentions(self):
@@ -182,3 +188,8 @@ class Function:
         for expression in self.body:
             mentions += expression.get_mentions()
         return mentions
+
+
+class Program(Compilable):
+    def __init__(self, functions: List[Function]):
+        self.functions = functions
