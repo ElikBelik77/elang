@@ -2,7 +2,7 @@ import re
 from factories import *
 from compilation.parsing import Parser
 from compilation.semantic_check import *
-from compilation.compiler import Compiler
+from compilation.IA32.compiler import ProgramCompiler
 
 keywords = [{"re": re.compile(r"\s*return\s"), "factory": ReturnFactory()},
             {"re": re.compile(r"\s*int\s"), "factory": IntFactory()},
@@ -21,7 +21,7 @@ valid_tokens = [{"re": re.compile(r"\s*((\w[\w]*)\s*\((.*)\))\s*"), "factory": F
 
 p = Parser(keywords=keywords, operators=operators, valid_tokens=valid_tokens)
 sc = SemanticChecker([]).add_all()
-compiler = Compiler()
+compiler = ProgramCompiler.create_default()
 program = Program(p.parse_file("tests/src/functions.elang"))
 sc.check(program)
 compiler.compile(program, "tests/out/out.asm")

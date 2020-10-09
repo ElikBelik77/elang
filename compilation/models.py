@@ -2,9 +2,6 @@ from typing import List
 
 
 class Compilable:
-    def compile(self, context):
-        pass
-
     def get_mentions(self):
         pass
 
@@ -13,12 +10,6 @@ class Scopeable(Compilable):
     def __init__(self, scope: "Scope", body: List[Compilable]):
         self.scope = scope
         self.body = body
-
-
-class HasValue:
-    def get_value(self, context):
-        pass
-
 
 class Return(Compilable):
     def __init__(self, expression: Compilable):
@@ -114,15 +105,12 @@ class Assignment(Compilable):
         return 3
 
 
-class Variable(Compilable, HasValue):
+class Variable(Compilable):
     def __init__(self, name: str):
         self.name = name
 
     def get_mentions(self):
         return [self.name]
-
-    def get_value(self, context):
-        pass
 
 
 class VariableDeclaration(Compilable):
@@ -134,15 +122,12 @@ class VariableDeclaration(Compilable):
         return [self.name]
 
 
-class DecimalConstantValue(HasValue):
+class DecimalConstantValue:
     def __init__(self, value: int):
         self.value = value
 
     def get_mentions(self):
         return []
-
-    def get_value(self, context):
-        pass
 
 
 class Scope:
