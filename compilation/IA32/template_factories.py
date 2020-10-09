@@ -37,21 +37,23 @@ class ReturnTemplateFactory(TemplateFactory):
 class FunctionTemplateFactory(TemplateFactory):
     def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict):
         body_assembly = ""
+        has_ret = False
         for expression in function.body:
             if isinstance(expression, Return):
-                pass
+                has_ret = True
             else:
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
         function_assembly = ("{name}:"
                              "push ebp\n"
                              "mov ebp, esp\n"
                              "sub esp, {stack_size}\n"
-                             "{function_body}\n"
-                             "add esp, {stack_size}\n"
-                             "mov esp, ebp\n"
-                             "pop ebp\n"
-                             "ret\n").format(name=function.name, stack_size=bundle["stack_size"],
-                                             function_body=body_assembly)
+                             "{function_body}\n").format(name=function.name, stack_size=bundle["stack_size"],
+                                                         function_body=body_assembly)
+        if not has_ret:
+            function_assembly += (
+                "leave\n"
+                "ret\n"
+            )
         return function_assembly
 
 
