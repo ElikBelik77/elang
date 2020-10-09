@@ -7,6 +7,8 @@ Currently, I implemented only IA32 instructions set, the compiler uses a naive s
 - [x] Recursive functions
 - [x] Shunting yard expression parsing
 - [x] Basic semantic checks
+- [x] Arithmetic operators (*still no support for 64 bit multiplication  on IA32)
+- [ ] Logical operators
 - [ ] if/else
 - [ ] Loops
 - [ ] Assembling with NASM
