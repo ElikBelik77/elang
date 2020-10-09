@@ -1,7 +1,7 @@
 # ELANG
 ## Description
 This hobby project is just a programming language I'm implementing. It's a C-like, imperative, statically typed langauge.
-Currently, I implemented only IA32 instructions set, and the compiler uses a naive stack based approach.
+Currently, I implemented only IA32 instructions set, the compiler uses a naive stack based approach.
 
 ## Examples of syntax and it's assembly compiled version
 ```
