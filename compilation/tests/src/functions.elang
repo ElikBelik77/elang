@@ -1,17 +1,14 @@
-int func() {
-    func(func(5));
-}
-
-
-int two_scopes() {
-    int i = (5+func());
-    int j = 6;
-    return j;
-}
-
-int alot_of_arguments(int a, int b, int c, int d, int e, int f, int g, int h, int j) {
-    int z;
-    int w;
-    int zx;
+int return_five() {
     return 5;
+}
+
+
+int return_i_plus_j() {
+    int i = 5;
+    int j = 6;
+    return i+j;
+}
+
+int this_function_calls_i_plus_j() {
+    return return_i_plus_j();
 }

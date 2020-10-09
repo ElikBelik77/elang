@@ -135,7 +135,7 @@ class FunctionDeclarationFactory():
         scope_end = self.find_scope_end(source_code)
         scope = Scope(match, parent_scope)
         function_name = match.group(3)
-        function_source = source_code[1:scope_end].strip()
+        function_source = source_code[0:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
                               arg in match.group(4).split(',') if arg is not '']
@@ -151,13 +151,13 @@ class FunctionDeclarationFactory():
     def find_scope_end(self, source_code: str):
         count, idx = 1, 0
         while count is not 0:
-            idx += 1
             if source_code[idx] == "{":
                 count += 1
             elif source_code[idx] == "}":
                 count -= 1
             if count == 0:
                 return idx
+            idx += 1
 
     def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a function.")

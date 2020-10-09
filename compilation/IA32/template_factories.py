@@ -13,20 +13,25 @@ class FunctionCallTemplateFactory(TemplateFactory):
         for arg in function_call.arguments[::-1]:
             arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
             argument_preparation += (
-                "{arg_assembly}\n"
-            ).format(arg_assembly)
+                "{arg_assembly}"
+            ).format(arg_assembly=arg_assembly)
 
-        assembly = ("{argument_preparation}\n"
+        assembly = ("{argument_preparation}"
                     "call {function_name}\n"
-                    "add esp, {arguments_size}\n").format(argument_preparation=argument_preparation,
-                                                          function_name=function_call.name,
-                                                          arguments_size=len(function_call.arguments) * 4)
+                    "add esp, {arguments_size}\n"
+                    "push eax\n").format(argument_preparation=argument_preparation,
+                                         function_name=function_call.name,
+                                         arguments_size=len(function_call.arguments) * 4)
         return assembly
 
 
 class ReturnTemplateFactory(TemplateFactory):
     def produce(self, return_expression: Return, factories: Dict[type, TemplateFactory], bundle: Dict):
-        assembly = (
+        assembly = ("{return_expression}".format(
+            return_expression=factories[type(return_expression.expression)].produce(return_expression.expression,
+                                                                                    factories,
+                                                                                    bundle)))
+        assembly += (
             "pop eax\n"
             "leave\n"
             "ret\n"
@@ -41,14 +46,15 @@ class FunctionTemplateFactory(TemplateFactory):
         for expression in function.body:
             if isinstance(expression, Return):
                 has_ret = True
-            else:
+            if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
-        function_assembly = ("{name}:"
+        function_assembly = ("{name}:\n"
                              "push ebp\n"
                              "mov ebp, esp\n"
                              "sub esp, {stack_size}\n"
-                             "{function_body}\n").format(name=function.name, stack_size=bundle["stack_size"],
-                                                         function_body=body_assembly)
+                             "{function_body}").format(
+            name=function.name, stack_size=bundle["stack_size"],
+            function_body=body_assembly)
         if not has_ret:
             function_assembly += (
                 "leave\n"
@@ -106,7 +112,7 @@ class DivTemplateFactory(TemplateFactory):
             "pop ecx\n"
             "xor edx, edx\n"
             "div ecx\n"
-            "push eax"
+            "push eax\n"
         )
         return assembly
 
@@ -125,7 +131,7 @@ class AssignmentTemplateFactory(TemplateFactory):
                 "lea edi, [ebp - {var_offset}]\n"
                 "pop eax\n"
                 "mov [edi], eax\n"
-            ).format(var_offset=-bundle["offset_table"][assigment_expression.right.name])
+            ).format(var_offset=-bundle["offset_table"][assigment_expression.left.name])
         return assembly
 
 

@@ -50,7 +50,7 @@ class VariableDeclarationCheck(Checker):
 
 
 class SemanticChecker(Checker):
-    def __init__(self, checklist: [Checker]):
+    def __init__(self, checklist: [Checker] = []):
         self.checklist = checklist
 
     def check(self, program: Program):
