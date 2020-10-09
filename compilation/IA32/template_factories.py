@@ -7,9 +7,32 @@ class TemplateFactory:
         pass
 
 
+class FunctionCallTemplateFactory(TemplateFactory):
+    def produce(self, function_call: FunctionCall, factories: Dict[type, TemplateFactory], bundle: Dict):
+        argument_preparation = ""
+        for arg in function_call.arguments[::-1]:
+            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
+            argument_preparation += (
+                "{arg_assembly}\n"
+            ).format(arg_assembly)
+
+        assembly = ("{argument_preparation}\n"
+                    "call {function_name}\n"
+                    "add esp, {arguments_size}\n").format(argument_preparation=argument_preparation,
+                                                          function_name=function_call.name,
+                                                          arguments_size=len(function_call.arguments) * 4)
+        return assembly
+
+
 class ReturnTemplateFactory(TemplateFactory):
     def produce(self, return_expression: Return, factories: Dict[type, TemplateFactory], bundle: Dict):
-        pass
+        assembly = (
+            "pop eax\n"
+            "leave\n"
+            "ret\n"
+        )
+        return assembly
+
 
 class FunctionTemplateFactory(TemplateFactory):
     def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict):
@@ -89,11 +112,18 @@ class DivTemplateFactory(TemplateFactory):
 class AssignmentTemplateFactory(TemplateFactory):
     def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict):
         assembly = factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
-        assembly += (
-            "lea edi, [ebp - {var_offset}]\n"
-            "pop eax\n"
-            "mov [edi], eax\n"
-        ).format(var_offset=bundle["offset_table"][assigment_expression.left.name])
+        if bundle["offset_table"][assigment_expression.left.name] > 0:
+            assembly += (
+                "lea edi, [ebp + {var_offset}]\n"
+                "pop eax\n"
+                "mov [edi], eax\n"
+            ).format(var_offset=bundle["offset_table"][assigment_expression.left.name])
+        else:
+            assembly += (
+                "lea edi, [ebp - {var_offset}]\n"
+                "pop eax\n"
+                "mov [edi], eax\n"
+            ).format(var_offset=-bundle["offset_table"][assigment_expression.right.name])
         return assembly
 
 
@@ -108,9 +138,16 @@ class DecimalConstantTemplateFactory(TemplateFactory):
 
 class VariableTemplateFactory(TemplateFactory):
     def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict):
-        assembly = (
-            "lea edi, [ebp - {var_offset}]\n"
-            "mov edi, [edi]\n"
-            "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
-        )
+        if bundle["offset_table"][variable_expression.name] > 0:
+            assembly = (
+                "lea edi, [ebp + {var_offset}]\n"
+                "mov edi, [edi]\n"
+                "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
+            )
+        else:
+            assembly = (
+                "lea edi, [ebp - {var_offset}]\n"
+                "mov edi, [edi]\n"
+                "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
+            )
         return assembly

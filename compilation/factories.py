@@ -67,7 +67,7 @@ class RightParenthesisFactory(Factory):
 
 class FunctionCallFactory(Factory):
     def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
-        pass
+        return [match[0]]
 
     def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
         start, end = self.find_closing_brackets(source_code)

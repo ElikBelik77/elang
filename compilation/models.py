@@ -20,7 +20,7 @@ class Return(Compilable):
 
 
 class FunctionCall(Compilable):
-    def __init__(self, name: str, arguments: ["Variable"]):
+    def __init__(self, name: str, arguments: []):
         self.arguments = arguments
         self.name = name
 
