@@ -2,6 +2,16 @@
 ## Description
 This hobby project is just a programming language I'm implementing. It's a C-like, imperative, statically typed langauge.
 Currently, I implemented only IA32 instructions set, the compiler uses a naive stack based approach.
+## List of features
+- [x] Scopes
+- [x] Recursive functions
+- [x] Shunting yard expression parsing
+- [x] Basic semantic checks
+- [ ] if/else
+- [ ] Loops
+- [ ] Assembling with NASM
+- [ ] Support for IA64
+- [ ] Interaction with the file system
 
 ## Examples of syntax and it's assembly compiled version
 ```
