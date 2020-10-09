@@ -1,13 +1,32 @@
 from typing import Dict
-
+import fstrings
 from models import *
+
+function_base_64bit = """
+{name}:
+pushq rbp
+movq rbp, rsp
+{body}
+movq rsp, rbp
+popq rbp
+ret
+"""
 
 
 class Compiler:
-    def compile(self, program: Program):
+    def compile(self, program: Program, destination_file: str):
+        assembly = ""
         for function in program.functions:
             offset_table = self.produce_offset_table(function)
-        pass
+            assembly += self.compile_function(function, offset_table)
+
+        with open(destination_file, "w") as out:
+            out.write(assembly)
+
+    def compile_function(self, function, offset_table):
+
+        assembly = function_base_64bit.format(name=function.name, body=body_assembly)
+        return assembly
 
     def produce_offset_table(self, scopeable: Scopeable):
         scope_table = {}

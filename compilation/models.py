@@ -176,9 +176,10 @@ class Scope:
 
 
 class Function(Scopeable):
-    def __init__(self, scope: Scope, signature: str, return_type: str, body: List[Compilable],
+    def __init__(self, scope: Scope, name: str, signature: str, return_type: str, body: List[Compilable],
                  arguments: List[VariableDeclaration]):
         super(Function, self).__init__(scope, body)
+        self.name = name
         self.signature = signature
         self.return_type = return_type
         self.arguments = arguments

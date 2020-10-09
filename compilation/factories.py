@@ -134,6 +134,7 @@ class FunctionDeclarationFactory():
         source_code = source_code[len(match.group(0).strip()):].strip()
         scope_end = self.find_scope_end(source_code)
         scope = Scope(match, parent_scope)
+        function_name = match.group(3)
         function_source = source_code[1:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
@@ -144,7 +145,7 @@ class FunctionDeclarationFactory():
             elif isinstance(statement, VariableDeclaration):
                 raise Exception(
                     "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
-        f = Function(scope, match.group(0).strip(), match.group(1), function_body, function_arguments)
+        f = Function(scope, function_name, match.group(0).strip(), match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code: str):
