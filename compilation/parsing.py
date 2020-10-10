@@ -110,7 +110,7 @@ class Parser:
         for token in self.valid_tokens:
             match = token["re"].match(text)
             valid = True
-            for candidate in self.keywords:
+            for candidate in self.keywords + self.operators:
                 if candidate["re"].match(text) is not None:
                     valid = False
                     break

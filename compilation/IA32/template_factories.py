@@ -25,16 +25,16 @@ class LogicalAndTemplateFactory(TemplateFactory):
         assembly = (
             f"{factories[type(and_expression.left)].produce(and_expression.left, factories, bundle)}"
             f"{factories[type(and_expression.right)].produce(and_expression.right, factories, bundle)}"
-            "pop eax"
-            "xor ebx, ebx"
-            f"test eax, eax"
-            f"jnz {end}"
-            "pop eax"
-            "test eax, eax"
-            f"jnz {end}"
-            "mov ebx, 1"
-            f"{end}:"
-            "push ebx"
+            "pop eax\n"
+            "xor ebx, ebx\n"
+            f"test eax, eax\n"
+            f"jnz {end}\n"
+            "pop eax\n"
+            "test eax, eax\n"
+            f"jnz {end}\n"
+            "mov ebx, 1\n"
+            f"{end}:\n"
+            "push ebx\n"
         )
         return assembly
 
@@ -46,18 +46,18 @@ class LogicalOrTemplateFactory(TemplateFactory):
         assembly = (
             f"{factories[type(or_expression.left)].produce(or_expression.left, factories, bundle)}"
             f"{factories[type(or_expression.right)].produce(or_expression.right, factories, bundle)}"
-            "pop eax"
-            "xor ebx, ebx"
-            "test eax, eax"
-            f"jnz {valid}"
-            "pop eax"
-            "test eax, eax"
-            f"jnz {valid}"
-            f"jmp {invalid}"
-            f"{valid}:"
-            "mov ebx, 1"
-            f"{invalid}"
-            "push ebx"
+            "pop eax\n"
+            "xor ebx, ebx\n"
+            "test eax, eax\n"
+            f"jnz {valid}\n"
+            "pop eax\n"
+            "test eax, eax\n"
+            f"jnz {valid}\n"
+            f"jmp {invalid}\n"
+            f"{valid}:\n"
+            "mov ebx, 1\n"
+            f"{invalid}:\n"
+            "push ebx\n"
         )
         return assembly
 
@@ -68,15 +68,16 @@ class LogicalGreaterTemplateFactory(TemplateFactory):
         assembly = (
             f"{factories[type(greater_expression.left)].produce(greater_expression.left, factories, bundle)}"
             f"{factories[type(greater_expression.right)].produce(greater_expression.right, factories, bundle)}"
-            "pop ebx"
-            "pop eax"
-            "xor ecx, ecx"
-            "cmp eax, ebx"
-            f"jbe {not_greater}"
-            "mov ecx, 1"
-            f"{not_greater}:"
-            "push ecx"
+            "pop ebx\n"
+            "pop eax\n"
+            "xor ecx, ecx\n"
+            "cmp eax, ebx\n"
+            f"jbe {not_greater}\n"
+            "mov ecx, 1\n"
+            f"{not_greater}:\n"
+            "push ecx\n"
         )
+        return assembly
 
 
 class LogicalEqualTemplateFactory(TemplateFactory):
@@ -85,15 +86,16 @@ class LogicalEqualTemplateFactory(TemplateFactory):
         assembly = (
             f"{factories[type(equal_expression.left)].produce(equal_expression.left, factories, bundle)}"
             f"{factories[type(equal_expression.right)].produce(equal_expression.right, factories, bundle)}"
-            "xor ecx, ecx"
-            "pop eax"
-            "pop ebx"
-            "cmp eax, ebx"
-            f"jne {not_equal}"
-            "mov ecx, 1"
-            f"{not_equal}:"
-            "push ecx"
+            "xor ecx, ecx\n"
+            "pop eax\n"
+            "pop ebx\n"
+            "cmp eax, ebx\n"
+            f"jne {not_equal}\n"
+            "mov ecx, 1\n"
+            f"{not_equal}:\n"
+            "push ecx\n"
         )
+        return assembly
 
 
 class FunctionCallTemplateFactory(TemplateFactory):

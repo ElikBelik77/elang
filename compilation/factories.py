@@ -61,7 +61,7 @@ class LogicalAndFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalAnd(), source_code[1:]
+        return LogicalAnd(), source_code[match.span()[1]:]
 
 
 class LogicalOrFactory(Factory):
@@ -69,7 +69,7 @@ class LogicalOrFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalOr(), source_code[1:]
+        return LogicalOr(), source_code[match.span()[1]:]
 
 
 class LogicalGreaterFactory(Factory):
@@ -77,7 +77,7 @@ class LogicalGreaterFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalGreater(), source_code[1:]
+        return LogicalGreater(), source_code[match.span()[1]:]
 
 
 class EqualFactory(Factory):
@@ -85,7 +85,7 @@ class EqualFactory(Factory):
         raise Exception("Invalid placemenet of the == operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Equal(), source_code[1:]
+        return Equal(), source_code[match.span()[1]:]
 
 
 class DivFactory(Factory):
@@ -189,7 +189,7 @@ class AssignmentFactory(Factory):
         return Assignment(), source_code[len(match.group(0)):].strip()
 
 
-class FunctionDeclarationFactory():
+class FunctionDeclarationFactory:
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
         scope_end = self.find_scope_end(source_code)
@@ -197,11 +197,13 @@ class FunctionDeclarationFactory():
         function_name = match.group(3)
         function_source = source_code[0:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
-        function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], type=arg.strip().split(' ')[0]) for
+        function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], var_type=arg.strip().split(' ')[0])
+                              for
                               arg in match.group(4).split(',') if arg is not '']
         for idx, statement in enumerate(function_body):
             if isinstance(statement, VariableDeclaration) and statement.name not in scope.defined_variables:
-                scope.defined_variables[statement.name] = {"type": statement.type, "define_line": idx, "scope": scope}
+                scope.defined_variables[statement.name] = {"type": statement.var_type, "define_line": idx,
+                                                           "scope": scope}
             elif isinstance(statement, VariableDeclaration):
                 raise Exception(
                     "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))

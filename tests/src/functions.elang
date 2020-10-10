@@ -2,6 +2,9 @@ int main() {
     return 5;
 }
 
+int logical_operators() {
+    return 5 and (((6 == 6) > 0) or 1)
+}
 
 int return_i_plus_j() {
     int i = 5;

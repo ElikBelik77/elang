@@ -18,5 +18,5 @@ compiler.compile(program, f"{source_path}.asm")
 os.system("nasm -f elf {source_path}.asm -o {source_path}.o".format(source_path=source_path))
 os.system("gcc -m32 {source_path}.o -o {destination_path}".format(source_path=source_path,
                                                                   destination_path=destination_path))
-os.remove(f"{source_path}.asm")
-os.remove(f"{source_path}.o")
+# os.remove(f"{source_path}.asm")
+# os.remove(f"{source_path}.o")
