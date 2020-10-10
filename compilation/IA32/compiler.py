@@ -23,8 +23,8 @@ class ProgramCompiler:
         pass
 
     def compile(self, program: Program, destination_file: str):
-        assembly = (".SECTION text"
-                    "global main")
+        assembly = ("SECTION .text\n"
+                    "global main\n")
         for function in program.functions:
             offset_table = self.produce_offset_table(function)
             assembly += self.compile_function(function, offset_table)

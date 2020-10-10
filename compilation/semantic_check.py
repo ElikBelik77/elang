@@ -6,19 +6,20 @@ class FunctionChecker:
     def check(self, function: Function):
         pass
 
+
 class GlobalChecker:
     def check(self, program: Program):
         pass
 
+
 class HasEntryPoint(GlobalChecker):
-    def check(self,  program: Program):
+    def check(self, program: Program):
         has_entry = False
         for function in program.functions:
-            if function.name is "main":
+            if function.name == "main":
                 has_entry = True
         if not has_entry:
             raise Exception("No entry point for the program.")
-
 
 
 class FunctionArgumentShadowing(FunctionChecker):
@@ -64,13 +65,16 @@ class VariableDeclarationCheck(FunctionChecker):
 
 
 class SemanticChecker():
-    def __init__(self, function_checklist: [FunctionChecker] = [], ):
+    def __init__(self, function_checklist: List[FunctionChecker] = [], global_checklist: List[GlobalChecker] = []):
         self.function_checklist = function_checklist
+        self.global_checklist = global_checklist
 
     def check(self, program: Program):
         for checker in self.function_checklist:
             for function in program.functions:
-                checker.check(program, function)
+                checker.check(function)
+        for checker in self.global_checklist:
+            checker.check(program)
 
     def add_all(self):
         self.function_checklist += [VariableDeclarationCheck(), RepeatingArgumentDeclaration(),
