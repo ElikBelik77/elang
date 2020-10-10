@@ -106,13 +106,14 @@ class FunctionCallTemplateFactory(TemplateFactory):
             argument_preparation += (
                 "{arg_assembly}"
             ).format(arg_assembly=arg_assembly)
-
+        argument_clean_up_line = "add esp, {arguments_size}\n".format(
+            arguments_size=len(function_call.arguments) * 4) if len(function_call.arguments) is not 0 else ""
         assembly = ("{argument_preparation}"
                     "call {function_name}\n"
-                    "add esp, {arguments_size}\n"
+                    "{argument_clean_up_line}"
                     "push eax\n").format(argument_preparation=argument_preparation,
                                          function_name=function_call.name,
-                                         arguments_size=len(function_call.arguments) * 4)
+                                         argument_clean_up_line=argument_clean_up_line)
         return assembly
 
 
@@ -139,12 +140,14 @@ class FunctionTemplateFactory(TemplateFactory):
                 has_ret = True
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
+        stack_allocation_line = "sub esp, {stack_size}\n".format(stack_size=bundle["stack_size"]) if bundle[
+                                                                                                         "stack_size"] is not 0 else ""
         function_assembly = ("{name}:\n"
                              "push ebp\n"
                              "mov ebp, esp\n"
-                             "sub esp, {stack_size}\n"
+                             "{stack_allocation_line}"
                              "{function_body}").format(
-            name=function.name, stack_size=bundle["stack_size"],
+            name=function.name, stack_allocation_line=stack_allocation_line,
             function_body=body_assembly)
         if not has_ret:
             function_assembly += (
