@@ -2,26 +2,40 @@ from compilation.models import *
 from collections import Counter
 
 
-class Checker:
+class FunctionChecker:
     def check(self, function: Function):
         pass
 
+class GlobalChecker:
+    def check(self, program: Program):
+        pass
 
-class FunctionArgumentShadowing(Checker):
+class HasEntryPoint(GlobalChecker):
+    def check(self,  program: Program):
+        has_entry = False
+        for function in program.functions:
+            if function.name is "main":
+                has_entry = True
+        if not has_entry:
+            raise Exception("No entry point for the program.")
+
+
+
+class FunctionArgumentShadowing(FunctionChecker):
     def check(self, function: Function):
         for variable in function.get_mentions():
             if variable in [v.name for v in function.arguments]:
                 raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
 
 
-class RepeatingArgumentDeclaration(Checker):
+class RepeatingArgumentDeclaration(FunctionChecker):
     def check(self, function: Function):
         counter = Counter([argument.name for argument in function.arguments])
         if len(function.arguments) is not 0 and counter.most_common(1)[0][1] > 1:
             raise Exception("Function argument is declared twice")
 
 
-class RepeatingVariableDeclaration(Checker):
+class RepeatingVariableDeclaration(FunctionChecker):
     def check(self, function: Function):
         all_scopes = [function.scope] + function.scope.get_childrens()
         vars_declared = []
@@ -34,7 +48,7 @@ class RepeatingVariableDeclaration(Checker):
                     vars_declared.append(key)
 
 
-class VariableDeclarationCheck(Checker):
+class VariableDeclarationCheck(FunctionChecker):
     def check(self, function: Function):
         for idx, statement in enumerate(function.body):
             if isinstance(statement, VariableDeclaration):
@@ -49,16 +63,18 @@ class VariableDeclarationCheck(Checker):
                         "Undefined variable {0}, in function {1}".format(variable_mention, function.signature))
 
 
-class SemanticChecker(Checker):
-    def __init__(self, checklist: [Checker] = []):
-        self.checklist = checklist
+class SemanticChecker():
+    def __init__(self, function_checklist: [FunctionChecker] = [], ):
+        self.function_checklist = function_checklist
 
     def check(self, program: Program):
-        for checker in self.checklist:
+        for checker in self.function_checklist:
             for function in program.functions:
-                checker.check(function)
+                checker.check(program, function)
 
     def add_all(self):
-        self.checklist += [VariableDeclarationCheck(), RepeatingArgumentDeclaration(), RepeatingVariableDeclaration(),
-                           FunctionArgumentShadowing()]
+        self.function_checklist += [VariableDeclarationCheck(), RepeatingArgumentDeclaration(),
+                                    RepeatingVariableDeclaration(),
+                                    FunctionArgumentShadowing()]
+        self.global_checklist += [HasEntryPoint()]
         return self
