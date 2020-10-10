@@ -7,7 +7,7 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Recursive functions
 - [x] Shunting yard expression parsing
 - [x] Basic semantic checks
-- [x] Arithmetic operators (*still no support for 64 bit multiplication  on IA32)
+- [x] Arithmetic operators (*still no support for 64 bit multiplication on IA32)
 - [ ] Logical operators
 - [ ] if/else
 - [ ] Loops

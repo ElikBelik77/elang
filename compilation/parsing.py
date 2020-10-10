@@ -1,8 +1,5 @@
-import regex
 import re
-from collections import deque
-from models import LeftParenthesis, RightParenthesis
-from factories import *
+from compilation.factories import *
 from typing import *
 
 

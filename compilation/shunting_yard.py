@@ -1,4 +1,4 @@
-from models import *
+from compilation.models import *
 import queue
 
 

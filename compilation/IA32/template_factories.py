@@ -1,5 +1,5 @@
 from typing import Dict
-from models import *
+from compilation.models import *
 
 
 class TemplateFactory:

@@ -1,5 +1,5 @@
 from compilation.IA32.template_factories import *
-from models import *
+from compilation.models import *
 
 
 class ProgramCompiler:

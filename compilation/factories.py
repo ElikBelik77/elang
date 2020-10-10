@@ -1,75 +1,73 @@
-from models import *
-from parsing import Parser
-from shunting_yard import shunting_yard
+from compilation.models import *
+from compilation.shunting_yard import shunting_yard
 from typing import Pattern, Match
 
-
 class Factory:
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         pass
 
 
 class ReturnFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [Return(shunting_yard(match[1:]))]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Return(None), source_code[len(match.group(0)):].strip()
 
 
 class MinusFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid placemenet of the * operator")
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Minus(), source_code[1:]
 
 
 class MultFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid placemenet of the * operator")
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Mult(), source_code[1:]
 
 
 class DivFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid placemenet of the / operator")
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Div(), source_code[1:]
 
 
 class PlusFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [shunting_yard(match)]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Plus(), source_code[1:]
 
 
 class LeftParenthesisFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return LeftParenthesis(), source_code[1:]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return LeftParenthesis(), source_code[1:]
 
 
 class RightParenthesisFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid parenthesis placement")
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return RightParenthesis(), source_code[1:]
 
 
 class FunctionCallFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [match[0]]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         start, end = self.find_closing_brackets(source_code)
         arguments_list = source_code[start + 1:end - 1].split(',')
         arguments = []
@@ -96,41 +94,41 @@ class FunctionCallFactory(Factory):
 
 
 class DecimalConstantFactory():
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [shunting_yard(match)]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return DecimalConstantValue(int(match.group(0))), source_code[len(match.group(0)):].strip()
 
 
 class VariableFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [shunting_yard(match)]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Variable(match.group(0)), source_code[len(match.group(0)):].strip()
 
 
 class IntFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         if len(match) == 2:
             return [VariableDeclaration(match[1].name, "int")]
         return [VariableDeclaration(match[1].name, "int"), shunting_yard(match[1:])]
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return VariableDeclaration(None, "int"), source_code[len(match.group(0)):].strip()
 
 
 class AssignmentFactory(Factory):
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid placement of the = operator")
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return Assignment(), source_code[len(match.group(0)):].strip()
 
 
 class FunctionDeclarationFactory():
-    def produce(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
         scope_end = self.find_scope_end(source_code)
         scope = Scope(match, parent_scope)
@@ -159,5 +157,5 @@ class FunctionDeclarationFactory():
                 return idx
             idx += 1
 
-    def produce_shallow(self, parser: Parser, source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a function.")
