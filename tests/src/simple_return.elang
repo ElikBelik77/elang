@@ -3,6 +3,6 @@ int func(int a, int b) {
     return (5+i)*8+func(5,5);
 }
 
-int undefined_func_test() {
+int main() {
     return i;
 }

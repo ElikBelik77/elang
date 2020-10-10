@@ -1,4 +1,4 @@
-int return_five() {
+int main() {
     return 5;
 }
 
