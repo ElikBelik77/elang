@@ -10,7 +10,7 @@ if not len(sys.argv) == 3:
 source_path = sys.argv[1]
 destination_path = sys.argv[2]
 p = Parser.create_default()
-sc = SemanticChecker().add_all()
+sc = SemanticChecker.create_default()
 compiler = ProgramCompiler.create_default()
 program = Program(p.parse_file(source_path))
 sc.check(program)

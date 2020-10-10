@@ -3,8 +3,16 @@ from compilation.models import *
 
 
 class ProgramCompiler:
+    """
+    Compiler for the ELANG language.
+    """
+
     @staticmethod
     def create_default():
+        """
+        Creates a default compiler.
+        :return: an elang compiler.
+        """
         return ProgramCompiler({
             Function: FunctionTemplateFactory(),
             Mult: MultiplyTemplateFactory(),
@@ -23,6 +31,12 @@ class ProgramCompiler:
         pass
 
     def compile(self, program: Program, destination_file: str):
+        """
+        This function compiles a program.
+        :param program: the program to compile.
+        :param destination_file: the destination path to write the output to.
+        :return: None.
+        """
         assembly = ("SECTION .text\n"
                     "global main\n")
         for function in program.functions:
@@ -32,6 +46,12 @@ class ProgramCompiler:
             out.write(assembly)
 
     def compile_function(self, function, offset_table):
+        """
+        This function compiles a single function.
+        :param function: the function to compile.
+        :param offset_table: the offset table of the function.
+        :return: the assembly code of the function.
+        """
         if len(offset_table.keys()) == 0:
             stack_size = 0
         else:
@@ -41,6 +61,11 @@ class ProgramCompiler:
                                                  "parent": 'global'})
 
     def produce_offset_table(self, scopeable: Scopeable):
+        """
+        This function produces an offset table for a scope.
+        :param scopeable: the scope.
+        :return: a dictionary that matches a variable (or argument) name, to it's offset in relation to ebp.
+        """
         scope_table: Dict[str, int] = {}
 
         if isinstance(scopeable, Function):

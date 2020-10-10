@@ -3,20 +3,30 @@ import queue
 
 
 def reversequeue(queue: queue.Queue):
-    Stack = []
-    while (not queue.empty()):
-        Stack.append(queue.queue[0])
+    """
+    This function reverses a queue, used by shunting yard to produce the parsed expression.
+    :param queue: the queue to reverse.
+    :return: a reversed queue.
+    """
+    stack = []
+    while not queue.empty():
+        stack.append(queue.queue[0])
         queue.get()
-    while (len(Stack) != 0):
-        queue.put(Stack[-1])
-        Stack.pop()
+    while len(stack) != 0:
+        queue.put(stack[-1])
+        stack.pop()
 
 
-def shunting_yard(statements: [Compilable]):
+def shunting_yard(expressions: [Compilable]):
+    """
+    Shunting yard algorithm for parsing expressions.
+    :param expressions: the expressions to parse.
+    :return: a tree containing the operations and operand in the correct order.
+    """
     output_queue = queue.Queue()
     operator_stack = []
-    while len(statements) is not 0:
-        current = statements.pop(0)
+    while len(expressions) is not 0:
+        current = expressions.pop(0)
         if isinstance(current, DecimalConstantValue) or isinstance(current, Variable):
             output_queue.put(current)
         elif isinstance(current, FunctionCall):
@@ -44,6 +54,11 @@ def shunting_yard(statements: [Compilable]):
 
 
 def build_expression(output_queue: queue.Queue):
+    """
+    This function builds an expression from an output queue given by the shunting yard algorithm.
+    :param output_queue: the output_queue from shunting yard.
+    :return: an expression tree representing the queue.
+    """
     expression = output_queue.get()
     if isinstance(expression, Mult) or isinstance(expression, Plus) or isinstance(expression, Div) or isinstance(
             expression, Minus) or isinstance(expression, Assignment):
@@ -53,16 +68,3 @@ def build_expression(output_queue: queue.Queue):
                                                                                                       FunctionCall):
         return expression
     return expression
-
-
-def create_operator(value: str):
-    if value == "*":
-        return Mult()
-    elif value == "/":
-        return Div()
-    elif value == '-':
-        return Minus()
-    elif value == '+':
-        return Plus()
-    elif value == "=":
-        return Assignment()

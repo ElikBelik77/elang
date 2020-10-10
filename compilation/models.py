@@ -2,16 +2,33 @@ from typing import List
 
 
 class Compilable:
+    """
+    Interface for unifying compilable models.
+    """
+
     def get_mentions(self):
+        """
+        This function returns the variable that are mentioned in the compilable.
+        :return:
+        """
         pass
 
 
 class Scopeable(Compilable):
+    """
+    Interface for describing models that have their own scope
+    """
+
     def __init__(self, scope: "Scope", body: List[Compilable]):
         self.scope = scope
         self.body = body
 
+
 class Return(Compilable):
+    """
+    Model for the 'return' statement
+    """
+
     def __init__(self, expression: Compilable):
         self.expression = expression
 
@@ -20,6 +37,10 @@ class Return(Compilable):
 
 
 class FunctionCall(Compilable):
+    """
+    Model for function calls
+    """
+
     def __init__(self, name: str, arguments: []):
         self.arguments = arguments
         self.name = name
@@ -35,6 +56,10 @@ class FunctionCall(Compilable):
 
 
 class Mult(Compilable):
+    """
+    Model for multiplication operator
+    """
+
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -47,6 +72,10 @@ class Mult(Compilable):
 
 
 class Div(Compilable):
+    """
+    Model for divide operator
+    """
+
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -59,6 +88,10 @@ class Div(Compilable):
 
 
 class Plus(Compilable):
+    """
+    Model for addition operator
+    """
+
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -71,6 +104,10 @@ class Plus(Compilable):
 
 
 class LeftParenthesis:
+    """
+    Model for left parenthesis
+    """
+
     def get_precedence(self):
         return -1
 
@@ -81,6 +118,10 @@ class RightParenthesis:
 
 
 class Minus(Compilable):
+    """
+    Model for subtraction operator
+    """
+
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -93,6 +134,10 @@ class Minus(Compilable):
 
 
 class Assignment(Compilable):
+    """
+    Model for assignment operator
+    """
+
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -106,6 +151,10 @@ class Assignment(Compilable):
 
 
 class Variable(Compilable):
+    """
+    Model for variable mentions
+    """
+
     def __init__(self, name: str):
         self.name = name
 
@@ -114,15 +163,23 @@ class Variable(Compilable):
 
 
 class VariableDeclaration(Compilable):
-    def __init__(self, name: str, type: str):
+    """
+    Model for variable declaration
+    """
+
+    def __init__(self, name: str, var_type: str):
         self.name = name
-        self.type = type
+        self.var_type = type
 
     def get_mentions(self):
         return [self.name]
 
 
 class DecimalConstantValue:
+    """
+    Model for immediate decimal values.
+    """
+
     def __init__(self, value: int):
         self.value = value
 
@@ -131,6 +188,9 @@ class DecimalConstantValue:
 
 
 class Scope:
+    """
+    Model for a scope
+    """
     def __init__(self, name: str, parent_scope: "Scope"):
         self.parent_scope = parent_scope
         self.children: [Scope] = []
@@ -139,13 +199,22 @@ class Scope:
         self.defined_variables = {}
         self.name = name
 
-    def get_childrens(self):
+    def get_children(self):
+        """
+        This function gets all of the children of the scope
+        :return: list of all the child scopes of this scope
+        """
         children = []
         for child in self.children:
-            children += child.get_childrens()
+            children += child.get_children()
         return children + self.children
 
     def is_child_of(self, parent):
+        """
+        This function checks if this scope is a descendant of another scope.
+        :param parent: the parent to check.
+        :return: True if this scope is a descendant of the parent, false otherwise.
+        """
         p = self.parent_scope
         while p is not None:
             if p == parent:
@@ -161,6 +230,9 @@ class Scope:
 
 
 class Function(Scopeable):
+    """
+    Model for functions
+    """
     def __init__(self, scope: Scope, name: str, signature: str, return_type: str, body: List[Compilable],
                  arguments: List[VariableDeclaration]):
         super(Function, self).__init__(scope, body)
@@ -177,5 +249,8 @@ class Function(Scopeable):
 
 
 class Program(Compilable):
+    """
+    Model for the entire program
+    """
     def __init__(self, functions: List[Function]):
         self.functions = functions

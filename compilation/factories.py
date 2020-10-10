@@ -2,8 +2,33 @@ from compilation.models import *
 from compilation.shunting_yard import shunting_yard
 from typing import Pattern, Match
 
+
 class Factory:
+    """
+    Class that produces models based on parsed tokens.
+    """
+
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        """
+        Produces a model based on a token from the source code, when the model is the first token in the line.
+        :param parser: the parser that parsed the token.
+        :param source_code: the source code.
+        :param parent_scope: the parent scope of the token.
+        :param match: the token that was matched.
+        :return: list of expressions that were created by the match.
+        """
+        pass
+
+    def produce_shallw(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        """
+        Produces a model for shunting yard purpose, if it not the first token in the line.
+        :param parser: the parser that parsed the token.
+        :param source_code: the source code.
+        :param parent_scope: the parent scope of the token.
+        :param match: the token that was matched.
+        :return: (expression, source_code) where expression is the produces shallow expression and source_code is the
+        original source code without the current match.
+        """
         pass
 
 
@@ -77,6 +102,11 @@ class FunctionCallFactory(Factory):
         return FunctionCall(match.group(2), arguments), source_code[end:]
 
     def find_closing_brackets(self, source_code: str):
+        """
+        This function find the right parenthesis that closes the current parenthesis.
+        :param source_code: the source code
+        :return: the index of the ')' that closes the current '('
+        """
         count, idx = 1, 0
         start = 0
         first = True
@@ -147,6 +177,11 @@ class FunctionDeclarationFactory():
         return [f], source_code[scope_end + 1:]
 
     def find_scope_end(self, source_code: str):
+        """
+        This function find where the current scope ends.
+        :param source_code: the source code.
+        :return: the index of the end of the current scope.
+        """
         count, idx = 1, 0
         while count is not 0:
             if source_code[idx] == "{":

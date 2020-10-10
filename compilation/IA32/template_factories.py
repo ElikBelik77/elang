@@ -3,7 +3,18 @@ from compilation.models import *
 
 
 class TemplateFactory:
+    """
+    Interface factory for object that create the assembly equivalent of compilable models.
+    """
+
     def produce(self, object: Compilable, factories: Dict[type, "TemplateFactory"], bundle: Dict):
+        """
+        This function produces assembly code that executes the compilable models.
+        :param object: the object to assemble.
+        :param factories: the factories of the other compilabe objects.
+        :param bundle: a bundle of extra information to use.
+        :return: assembly code.
+        """
         pass
 
 
