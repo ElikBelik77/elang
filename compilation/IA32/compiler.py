@@ -23,7 +23,11 @@ class ProgramCompiler:
             DecimalConstantValue: DecimalConstantTemplateFactory(),
             Variable: VariableTemplateFactory(),
             Return: ReturnTemplateFactory(),
-            FunctionCall: FunctionCallTemplateFactory()
+            FunctionCall: FunctionCallTemplateFactory(),
+            Equal: LogicalEqualTemplateFactory(),
+            LogicalGreater: LogicalGreaterTemplateFactory(),
+            LogicalAnd: LogicalAndTemplateFactory(),
+            LogicalOr: LogicalOrTemplateFactory()
         })
 
     def __init__(self, factories: Dict[type, TemplateFactory]):
