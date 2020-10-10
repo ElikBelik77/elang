@@ -23,7 +23,11 @@ class Parser:
                      {"re": re.compile(r"\s*-\s*"), "factory": MinusFactory()},
                      {"re": re.compile(r"\s*\*\s*"), "factory": MultFactory()},
                      {"re": re.compile(r"\s*/\s*"), "factory": DivFactory()},
-                     {"re": re.compile(r"\s*=\s*"), "factory": AssignmentFactory()}]
+                     {"re": re.compile(r"\s*=\s*"), "factory": AssignmentFactory()},
+                     {"re": re.compile(r"\s*==\s"), "factory": EqualFactory()},
+                     {"re": re.compile(r"\s*>\s"), "factory": LogicalGreaterFactory()},
+                     {"re": re.compile(r"\s*and\s"), "factory": LogicalAndFactory()},
+                     {"re": re.compile(r"\s*or\s"), "factory": LogicalOrFactory()}]
         valid_tokens = [{"re": re.compile(r"\s*((\w[\w]*)\s*\((.*)\))\s*"), "factory": FunctionCallFactory()},
                         {"re": re.compile(r"\s*([a-zA-Z][\w]*)+"), "factory": VariableFactory()},
                         {"re": re.compile(r"\s*[\d]+"), "factory": DecimalConstantFactory()},

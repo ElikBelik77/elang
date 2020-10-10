@@ -14,6 +14,15 @@ class Compilable:
         pass
 
 
+class Operator:
+    """
+    Interface for unifying operators.
+    """
+
+    def get_precedence(self):
+        pass
+
+
 class Scopeable(Compilable):
     """
     Interface for describing models that have their own scope
@@ -55,7 +64,7 @@ class FunctionCall(Compilable):
         return 3
 
 
-class Mult(Compilable):
+class Mult(Compilable, Operator):
     """
     Model for multiplication operator
     """
@@ -71,7 +80,7 @@ class Mult(Compilable):
         return 2
 
 
-class Div(Compilable):
+class Div(Compilable, Operator):
     """
     Model for divide operator
     """
@@ -87,7 +96,7 @@ class Div(Compilable):
         return 2
 
 
-class Plus(Compilable):
+class Plus(Compilable, Operator):
     """
     Model for addition operator
     """
@@ -117,7 +126,7 @@ class RightParenthesis:
         return -1
 
 
-class Minus(Compilable):
+class Minus(Compilable, Operator):
     """
     Model for subtraction operator
     """
@@ -133,7 +142,59 @@ class Minus(Compilable):
         return 1
 
 
-class Assignment(Compilable):
+class LogicalAnd(Compilable, Operator):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
+
+    def get_mentions(self):
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
+
+    def get_precedence(self):
+        return 1
+
+
+class LogicalOr(Compilable, Operator):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
+
+    def get_mentions(self):
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
+
+    def get_precedence(self):
+        return 1
+
+
+class LogicalGreater(Compilable, Operator):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
+
+    def get_mentions(self):
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
+
+    def get_precedence(self):
+        return 1
+
+
+class Equal(Compilable, Operator):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
+
+    def get_mentions(self):
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
+
+    def get_precedence(self):
+        return 1
+
+
+class Assignment(Compilable, Operator):
     """
     Model for assignment operator
     """
@@ -191,6 +252,7 @@ class Scope:
     """
     Model for a scope
     """
+
     def __init__(self, name: str, parent_scope: "Scope"):
         self.parent_scope = parent_scope
         self.children: [Scope] = []
@@ -233,6 +295,7 @@ class Function(Scopeable):
     """
     Model for functions
     """
+
     def __init__(self, scope: Scope, name: str, signature: str, return_type: str, body: List[Compilable],
                  arguments: List[VariableDeclaration]):
         super(Function, self).__init__(scope, body)
@@ -252,5 +315,6 @@ class Program(Compilable):
     """
     Model for the entire program
     """
+
     def __init__(self, functions: List[Function]):
         self.functions = functions

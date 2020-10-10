@@ -1,5 +1,6 @@
 from typing import Dict
 from compilation.models import *
+from compilation.IA32.utils import get_unqiue_id
 
 
 class TemplateFactory:
@@ -16,6 +17,83 @@ class TemplateFactory:
         :return: assembly code.
         """
         pass
+
+
+class LogicalAndTemplateFactory(TemplateFactory):
+    def produce(self, and_expression: LogicalAnd, factories: Dict[type, TemplateFactory], bundle: Dict):
+        end = get_unqiue_id()
+        assembly = (
+            f"{factories[type(and_expression.left)].produce(and_expression.left, factories, bundle)}"
+            f"{factories[type(and_expression.right)].produce(and_expression.right, factories, bundle)}"
+            "pop eax"
+            "xor ebx, ebx"
+            f"test eax, eax"
+            f"jnz {end}"
+            "pop eax"
+            "test eax, eax"
+            f"jnz {end}"
+            "mov ebx, 1"
+            f"{end}:"
+            "push ebx"
+        )
+        return assembly
+
+
+class LogicalOrTemplateFactory(TemplateFactory):
+    def produce(self, or_expression: LogicalOr, factories: Dict[type, TemplateFactory], bundle: Dict):
+        valid = get_unqiue_id()
+        invalid = get_unqiue_id()
+        assembly = (
+            f"{factories[type(or_expression.left)].produce(or_expression.left, factories, bundle)}"
+            f"{factories[type(or_expression.right)].produce(or_expression.right, factories, bundle)}"
+            "pop eax"
+            "xor ebx, ebx"
+            "test eax, eax"
+            f"jnz {valid}"
+            "pop eax"
+            "test eax, eax"
+            f"jnz {valid}"
+            f"jmp {invalid}"
+            f"{valid}:"
+            "mov ebx, 1"
+            f"{invalid}"
+            "push ebx"
+        )
+        return assembly
+
+
+class LogicalGreaterTemplateFactory(TemplateFactory):
+    def produce(self, greater_expression: LogicalGreater, factories: Dict[type, TemplateFactory], bundle: Dict):
+        not_greater = get_unqiue_id()
+        assembly = (
+            f"{factories[type(greater_expression.left)].produce(greater_expression.left, factories, bundle)}"
+            f"{factories[type(greater_expression.right)].produce(greater_expression.right, factories, bundle)}"
+            "pop ebx"
+            "pop eax"
+            "xor ecx, ecx"
+            "cmp eax, ebx"
+            f"jbe {not_greater}"
+            "mov ecx, 1"
+            f"{not_greater}:"
+            "push ecx"
+        )
+
+
+class LogicalEqualTemplateFactory(TemplateFactory):
+    def produce(self, equal_expression: Equal, factories: Dict[type, TemplateFactory], bundle: Dict):
+        not_equal = get_unqiue_id()
+        assembly = (
+            f"{factories[type(equal_expression.left)].produce(equal_expression.left, factories, bundle)}"
+            f"{factories[type(equal_expression.right)].produce(equal_expression.right, factories, bundle)}"
+            "xor ecx, ecx"
+            "pop eax"
+            "pop ebx"
+            "cmp eax, ebx"
+            f"jne {not_equal}"
+            "mov ecx, 1"
+            f"{not_equal}:"
+            "push ecx"
+        )
 
 
 class FunctionCallTemplateFactory(TemplateFactory):

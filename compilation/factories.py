@@ -56,6 +56,38 @@ class MultFactory(Factory):
         return Mult(), source_code[1:]
 
 
+class LogicalAndFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placemenet of the * operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return LogicalAnd(), source_code[1:]
+
+
+class LogicalOrFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placemenet of the * operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return LogicalOr(), source_code[1:]
+
+
+class LogicalGreaterFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placemenet of the * operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return LogicalGreater(), source_code[1:]
+
+
+class EqualFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placemenet of the == operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return Equal(), source_code[1:]
+
+
 class DivFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid placemenet of the / operator")
