@@ -14,6 +14,12 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Assembling with NASM
 - [ ] Support for IA64
 - [ ] Interaction with the file system
+## Prerequisites & Usage
+The compiler relies on NASM and GCC to assemble and link the source file and object files, so make sure they are in your ```PATH```.
+Produce an executable by running the command
+```
+python3 elang.py <source_file.elang> <destination_file>
+```
 
 ## Examples of syntax and it's assembly compiled version
 ```
