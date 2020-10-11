@@ -24,64 +24,43 @@ python3 elang.py <source_file.elang> <destination_file>
 
 ## Examples of syntax and it's assembly compiled version
 ```
-int return_five() {
-    return 5;
-}
-
-
-int return_i_plus_j() {
-    int i = 5;
-    int j = 6;
-    return i+j;
-}
-
-int this_function_calls_i_plus_j() {
-    return return_i_plus_j();
+int main() {
+    int i = 0;
+    if (6 > 5) {
+        i = 5;
+    }
 }
 ```
 Compiling to IA32 using stack based approach will yield:
 ```
-return_five:
+SECTION .text
+global main
+main:
 push ebp
 mov ebp, esp
-sub esp, 0
-push 5
-pop eax
-leave
-ret
-return_i_plus_j:
-push ebp
-mov ebp, esp
-sub esp, 8
-push 5
+sub esp, 4
+push 0
 lea edi, [ebp - 4]
 pop eax
 mov [edi], eax
 push 6
-lea edi, [ebp - 8]
+push 5
+pop ebx
+pop eax
+xor ecx, ecx
+cmp eax, ebx
+jbe loc_386BEE
+mov ecx, 1
+loc_386BEE:
+push ecx
+pop eax
+test eax, eax
+jz loc_A13E29
+push 5
+lea edi, [ebp - 4]
 pop eax
 mov [edi], eax
-lea edi, [ebp - 8]
-mov edi, [edi]
-push edi
-lea edi, [ebp - 4]
-mov edi, [edi]
-push edi
-pop eax
-pop ebx
-add eax, ebx
-push eax
-pop eax
-leave
-ret
-this_function_calls_i_plus_j:
-push ebp
-mov ebp, esp
-sub esp, 0
-call return_i_plus_j
-add esp, 0
-push eax
-pop eax
+loc_A13E29:
 leave
 ret
 ```
