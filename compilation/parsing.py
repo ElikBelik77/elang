@@ -17,8 +17,8 @@ class Parser:
         keywords = [{"re": re.compile(r"\s*return\s"), "factory": ReturnFactory()},
                     {"re": re.compile(r"\s*int\s"), "factory": IntFactory()},
                     {"re": re.compile(r"\s*(\w[\w]*)\s+((\w[\w]*)\s*\((.*)\))\s*{\s*"),
-                     "factory": FunctionDeclarationFactory(),
-                     "scopeable": True}]
+                     "factory": FunctionDeclarationFactory(), "scopeable": True},
+                    {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": PlusFactory()},
                      {"re": re.compile(r"\s*-\s*"), "factory": MinusFactory()},
                      {"re": re.compile(r"\s*\*\s*"), "factory": MultFactory()},

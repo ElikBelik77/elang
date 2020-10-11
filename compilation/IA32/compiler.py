@@ -27,7 +27,8 @@ class ProgramCompiler:
             Equal: LogicalEqualTemplateFactory(),
             LogicalGreater: LogicalGreaterTemplateFactory(),
             LogicalAnd: LogicalAndTemplateFactory(),
-            LogicalOr: LogicalOrTemplateFactory()
+            LogicalOr: LogicalOrTemplateFactory(),
+            If:IfTemplateFactory()
         })
 
     def __init__(self, factories: Dict[type, TemplateFactory]):

@@ -191,11 +191,35 @@ class AssignmentFactory(Factory):
         return Assignment(), source_code[len(match.group(0)):].strip()
 
 
-class FunctionDeclarationFactory:
+class IfFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
-        scope_end = self.find_scope_end(source_code)
-        scope = Scope(match, parent_scope)
+        source_end = find_scope_end(source_code)
+        scope = Scope(match.group(0), parent_scope)
+        body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
+        condition = [token for token in parser.parse_source_code(match.group(1), parent_scope)]
+        if len(condition) > 1:
+            raise Exception("Too many expressions in an 'if' condition")
+        condition = condition[0]
+        for idx, statement in enumerate(body):
+            if isinstance(statement, VariableDeclaration) and statement.name not in scope.defined_variables:
+                scope.defined_variables[statement.name] = {"type": statement.var_type, "define_line": idx,
+                                                           "scope": scope}
+            elif isinstance(statement, VariableDeclaration):
+                raise Exception(
+                    "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
+
+        return [If(scope, condition, body)], source_code[source_end + 1:]
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid 'if' statement.")
+
+
+class FunctionDeclarationFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        source_code = source_code[len(match.group(0).strip()):].strip()
+        scope_end = find_scope_end(source_code)
+        scope = Scope(match.group(0), parent_scope)
         function_name = match.group(3)
         function_source = source_code[0:scope_end].strip()
         function_body = [token for token in parser.parse_source_code(function_source, scope)]
@@ -209,24 +233,25 @@ class FunctionDeclarationFactory:
             elif isinstance(statement, VariableDeclaration):
                 raise Exception(
                     "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
-        f = Function(scope, function_name, match.group(0).strip(), match.group(1), function_body, function_arguments)
+        f = Function(scope, function_name, match.group(0).strip().replace('{',''), match.group(1), function_body, function_arguments)
         return [f], source_code[scope_end + 1:]
-
-    def find_scope_end(self, source_code: str):
-        """
-        This function find where the current scope ends.
-        :param source_code: the source code.
-        :return: the index of the end of the current scope.
-        """
-        count, idx = 1, 0
-        while count is not 0:
-            if source_code[idx] == "{":
-                count += 1
-            elif source_code[idx] == "}":
-                count -= 1
-            if count == 0:
-                return idx
-            idx += 1
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a function.")
+
+
+def find_scope_end(source_code: str):
+    """
+    This function find where the current scope ends.
+    :param source_code: the source code.
+    :return: the index of the end of the current scope.
+    """
+    count, idx = 1, 0
+    while count is not 0:
+        if source_code[idx] == "{":
+            count += 1
+        elif source_code[idx] == "}":
+            count -= 1
+        if count == 0:
+            return idx
+        idx += 1

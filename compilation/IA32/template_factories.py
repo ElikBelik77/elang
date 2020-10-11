@@ -1,6 +1,6 @@
 from typing import Dict
 from compilation.models import *
-from compilation.IA32.utils import get_unqiue_id
+from compilation.IA32.utils import get_unique_id
 
 
 class TemplateFactory:
@@ -21,7 +21,7 @@ class TemplateFactory:
 
 class LogicalAndTemplateFactory(TemplateFactory):
     def produce(self, and_expression: LogicalAnd, factories: Dict[type, TemplateFactory], bundle: Dict):
-        end = get_unqiue_id()
+        end = get_unique_id()
         assembly = (
             f"{factories[type(and_expression.left)].produce(and_expression.left, factories, bundle)}"
             f"{factories[type(and_expression.right)].produce(and_expression.right, factories, bundle)}"
@@ -41,8 +41,8 @@ class LogicalAndTemplateFactory(TemplateFactory):
 
 class LogicalOrTemplateFactory(TemplateFactory):
     def produce(self, or_expression: LogicalOr, factories: Dict[type, TemplateFactory], bundle: Dict):
-        valid = get_unqiue_id()
-        invalid = get_unqiue_id()
+        valid = get_unique_id()
+        invalid = get_unique_id()
         assembly = (
             f"{factories[type(or_expression.left)].produce(or_expression.left, factories, bundle)}"
             f"{factories[type(or_expression.right)].produce(or_expression.right, factories, bundle)}"
@@ -64,7 +64,7 @@ class LogicalOrTemplateFactory(TemplateFactory):
 
 class LogicalGreaterTemplateFactory(TemplateFactory):
     def produce(self, greater_expression: LogicalGreater, factories: Dict[type, TemplateFactory], bundle: Dict):
-        not_greater = get_unqiue_id()
+        not_greater = get_unique_id()
         assembly = (
             f"{factories[type(greater_expression.left)].produce(greater_expression.left, factories, bundle)}"
             f"{factories[type(greater_expression.right)].produce(greater_expression.right, factories, bundle)}"
@@ -82,7 +82,7 @@ class LogicalGreaterTemplateFactory(TemplateFactory):
 
 class LogicalEqualTemplateFactory(TemplateFactory):
     def produce(self, equal_expression: Equal, factories: Dict[type, TemplateFactory], bundle: Dict):
-        not_equal = get_unqiue_id()
+        not_equal = get_unique_id()
         assembly = (
             f"{factories[type(equal_expression.left)].produce(equal_expression.left, factories, bundle)}"
             f"{factories[type(equal_expression.right)].produce(equal_expression.right, factories, bundle)}"
@@ -252,4 +252,23 @@ class VariableTemplateFactory(TemplateFactory):
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
             )
+        return assembly
+
+
+class IfTemplateFactory(TemplateFactory):
+    def produce(self, if_expression: If, factories: Dict[type, TemplateFactory], bundle: Dict):
+        skip_if_id = get_unique_id()
+        body_assembly = ""
+        for expression in if_expression.body:
+            if not isinstance(expression, VariableDeclaration):
+                body_assembly += factories[type(expression)].produce(expression, factories, bundle)
+
+        assembly = (
+            f"{factories[type(if_expression.condition)].produce(if_expression.condition, factories, bundle)}"
+            "pop eax\n"
+            "test eax, eax\n"
+            f"jz loc_{skip_if_id}\n"
+            f"{body_assembly}"
+            f"loc_{skip_if_id}:\n"
+        )
         return assembly

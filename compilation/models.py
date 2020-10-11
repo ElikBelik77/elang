@@ -32,6 +32,12 @@ class Scopeable(Compilable):
         self.scope = scope
         self.body = body
 
+    def get_mentions(self):
+        mentions = []
+        for expression in self.body:
+            mentions += expression.get_mentions()
+        return mentions
+
 
 class Return(Compilable):
     """
@@ -291,6 +297,16 @@ class Scope:
         return self.parent_scope.search_variable(name)
 
 
+class If(Scopeable):
+    """
+    Model for if statements
+    """
+
+    def __init__(self, scope: Scope, condition: Compilable, body: List[Compilable]):
+        super(If, self).__init__(scope, body)
+        self.condition = condition
+
+
 class Function(Scopeable):
     """
     Model for functions
@@ -303,12 +319,6 @@ class Function(Scopeable):
         self.signature = signature
         self.return_type = return_type
         self.arguments = arguments
-
-    def get_mentions(self):
-        mentions = []
-        for expression in self.body:
-            mentions += expression.get_mentions()
-        return mentions
 
 
 class Program(Compilable):
