@@ -28,12 +28,12 @@ class LogicalAndTemplateFactory(TemplateFactory):
             "pop eax\n"
             "xor ebx, ebx\n"
             f"test eax, eax\n"
-            f"jnz {end}\n"
+            f"jz loc_{end}\n"
             "pop eax\n"
             "test eax, eax\n"
-            f"jnz {end}\n"
+            f"jz loc_{end}\n"
             "mov ebx, 1\n"
-            f"{end}:\n"
+            f"loc_{end}:\n"
             "push ebx\n"
         )
         return assembly
@@ -47,16 +47,16 @@ class LogicalOrTemplateFactory(TemplateFactory):
             f"{factories[type(or_expression.left)].produce(or_expression.left, factories, bundle)}"
             f"{factories[type(or_expression.right)].produce(or_expression.right, factories, bundle)}"
             "pop eax\n"
+            "pop ecx\n"
             "xor ebx, ebx\n"
             "test eax, eax\n"
-            f"jnz {valid}\n"
-            "pop eax\n"
-            "test eax, eax\n"
-            f"jnz {valid}\n"
-            f"jmp {invalid}\n"
-            f"{valid}:\n"
+            f"jnz loc_{valid}\n"
+            "test ecx, ecx\n"
+            f"jnz loc_{valid}\n"
+            f"jmp loc_{invalid}\n"
+            f"loc_{valid}:\n"
             "mov ebx, 1\n"
-            f"{invalid}:\n"
+            f"loc_{invalid}:\n"
             "push ebx\n"
         )
         return assembly
@@ -72,9 +72,9 @@ class LogicalGreaterTemplateFactory(TemplateFactory):
             "pop eax\n"
             "xor ecx, ecx\n"
             "cmp eax, ebx\n"
-            f"jbe {not_greater}\n"
+            f"jbe loc_{not_greater}\n"
             "mov ecx, 1\n"
-            f"{not_greater}:\n"
+            f"loc_{not_greater}:\n"
             "push ecx\n"
         )
         return assembly
@@ -90,9 +90,9 @@ class LogicalEqualTemplateFactory(TemplateFactory):
             "pop eax\n"
             "pop ebx\n"
             "cmp eax, ebx\n"
-            f"jne {not_equal}\n"
+            f"jne loc_{not_equal}\n"
             "mov ecx, 1\n"
-            f"{not_equal}:\n"
+            f"loc_{not_equal}:\n"
             "push ecx\n"
         )
         return assembly
