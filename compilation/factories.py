@@ -1,6 +1,6 @@
 from compilation.models import *
 from compilation.shunting_yard import shunting_yard
-from typing import Pattern, Match
+from typing import Pattern, Match, Tuple
 
 
 class Factory:
@@ -133,7 +133,7 @@ class FunctionCallFactory(Factory):
                 arguments += parser.parse_source_code(arg, parent_scope)
         return FunctionCall(match.group(2), arguments), source_code[end:]
 
-    def find_closing_brackets(self, source_code: str):
+    def find_closing_brackets(self, source_code: str) -> int:
         """
         This function find the right parenthesis that closes the current parenthesis.
         :param source_code: the source code
@@ -184,7 +184,7 @@ class IntFactory(Factory):
 
 
 class AssignmentFactory(Factory):
-    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
         raise Exception("Invalid placement of the = operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
@@ -192,7 +192,7 @@ class AssignmentFactory(Factory):
 
 
 class IfFactory(Factory):
-    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
         source_code = source_code[len(match.group(0).strip()):].strip()
         source_end = find_scope_end(source_code)
         scope = Scope(match.group(0), parent_scope)
@@ -216,7 +216,7 @@ class IfFactory(Factory):
 
 
 class FunctionDeclarationFactory(Factory):
-    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
         source_code = source_code[len(match.group(0).strip()):].strip()
         scope_end = find_scope_end(source_code)
         scope = Scope(match.group(0), parent_scope)
@@ -233,14 +233,15 @@ class FunctionDeclarationFactory(Factory):
             elif isinstance(statement, VariableDeclaration):
                 raise Exception(
                     "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
-        f = Function(scope, function_name, match.group(0).strip().replace('{',''), match.group(1), function_body, function_arguments)
+        f = Function(scope, function_name, match.group(0).strip().replace('{', ''), match.group(1), function_body,
+                     function_arguments)
         return [f], source_code[scope_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a function.")
 
 
-def find_scope_end(source_code: str):
+def find_scope_end(source_code: str) -> int:
     """
     This function find where the current scope ends.
     :param source_code: the source code.

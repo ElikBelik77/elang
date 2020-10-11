@@ -2,7 +2,7 @@ from compilation.models import *
 import queue
 
 
-def reversequeue(queue: queue.Queue):
+def reversequeue(queue: queue.Queue) -> queue.Queue:
     """
     This function reverses a queue, used by shunting yard to produce the parsed expression.
     :param queue: the queue to reverse.
@@ -17,7 +17,7 @@ def reversequeue(queue: queue.Queue):
         stack.pop()
 
 
-def shunting_yard(expressions: [Compilable]):
+def shunting_yard(expressions: [Compilable]) -> Compilable:
     """
     Shunting yard algorithm for parsing expressions.
     :param expressions: the expressions to parse.
@@ -53,7 +53,7 @@ def shunting_yard(expressions: [Compilable]):
     return expression
 
 
-def build_expression(output_queue: queue.Queue):
+def build_expression(output_queue: queue.Queue) -> Compilable:
     """
     This function builds an expression from an output queue given by the shunting yard algorithm.
     :param output_queue: the output_queue from shunting yard.

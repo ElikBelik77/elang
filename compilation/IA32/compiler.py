@@ -8,7 +8,7 @@ class ProgramCompiler:
     """
 
     @staticmethod
-    def create_default():
+    def create_default() -> "ProgramCompiler":
         """
         Creates a default compiler.
         :return: an elang compiler.
@@ -28,14 +28,14 @@ class ProgramCompiler:
             LogicalGreater: LogicalGreaterTemplateFactory(),
             LogicalAnd: LogicalAndTemplateFactory(),
             LogicalOr: LogicalOrTemplateFactory(),
-            If:IfTemplateFactory()
+            If: IfTemplateFactory()
         })
 
-    def __init__(self, factories: Dict[type, TemplateFactory]):
+    def __init__(self, factories: Dict[type, TemplateFactory]) -> None:
         self.factories = factories
         pass
 
-    def compile(self, program: Program, destination_file: str):
+    def compile(self, program: Program, destination_file: str) -> None:
         """
         This function compiles a program.
         :param program: the program to compile.
@@ -50,7 +50,7 @@ class ProgramCompiler:
         with open(destination_file, "w") as out:
             out.write(assembly)
 
-    def compile_function(self, function, offset_table):
+    def compile_function(self, function, offset_table) -> str:
         """
         This function compiles a single function.
         :param function: the function to compile.
@@ -65,7 +65,7 @@ class ProgramCompiler:
                                                 {"stack_size": stack_size, "offset_table": offset_table,
                                                  "parent": 'global'})
 
-    def produce_offset_table(self, scopeable: Scopeable):
+    def produce_offset_table(self, scopeable: Scopeable) -> Dict[str, int]:
         """
         This function produces an offset table for a scope.
         :param scopeable: the scope.
@@ -75,7 +75,7 @@ class ProgramCompiler:
 
         if isinstance(scopeable, Function):
             for idx, arg in enumerate(scopeable.arguments):
-                scope_table[arg.name] = 12 + idx * 8
+                scope_table[arg.name] = 12 + idx * 4
         scopes: List[Scopeable] = [scopeable]
         while len(scopes) is not 0:
             current_scope = scopes.pop()

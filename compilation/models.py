@@ -6,7 +6,7 @@ class Compilable:
     Interface for unifying compilable models.
     """
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         """
         This function returns the variable that are mentioned in the compilable.
         :return:
@@ -32,7 +32,7 @@ class Scopeable(Compilable):
         self.scope = scope
         self.body = body
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = []
         for expression in self.body:
             mentions += expression.get_mentions()
@@ -47,7 +47,7 @@ class Return(Compilable):
     def __init__(self, expression: Compilable):
         self.expression = expression
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return self.expression.get_mentions()
 
 
@@ -60,7 +60,7 @@ class FunctionCall(Compilable):
         self.arguments = arguments
         self.name = name
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = []
         for argument in self.arguments:
             mentions += argument.get_mentions()
@@ -79,7 +79,7 @@ class Mult(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
     def get_precedence(self):
@@ -95,7 +95,7 @@ class Div(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
     def get_precedence(self):
@@ -111,7 +111,7 @@ class Plus(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
     def get_precedence(self):
@@ -141,7 +141,7 @@ class Minus(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
     def get_precedence(self):
@@ -153,7 +153,7 @@ class LogicalAnd(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
@@ -166,7 +166,7 @@ class LogicalOr(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
@@ -179,7 +179,7 @@ class LogicalGreater(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
@@ -192,7 +192,7 @@ class Equal(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
@@ -209,7 +209,7 @@ class Assignment(Compilable, Operator):
         self.left = left
         self.right = right
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
@@ -225,7 +225,7 @@ class Variable(Compilable):
     def __init__(self, name: str):
         self.name = name
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return [self.name]
 
 
@@ -238,7 +238,7 @@ class VariableDeclaration(Compilable):
         self.name = name
         self.var_type = var_type
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return [self.name]
 
 
@@ -250,7 +250,7 @@ class DecimalConstantValue:
     def __init__(self, value: int):
         self.value = value
 
-    def get_mentions(self):
+    def get_mentions(self) -> List[str]:
         return []
 
 

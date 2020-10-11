@@ -49,7 +49,7 @@ class Parser:
         self.operators = operators
         self.valid_tokens = valid_tokens
 
-    def parse_file(self, file: str):
+    def parse_file(self, file: str) -> List[Function]:
         """
         This function parses a file.
         :param file: the path to the file to parse.
@@ -60,7 +60,7 @@ class Parser:
             source_code = f.read().strip()
         return self.parse_source_code(source_code, parent_scope=global_scope)
 
-    def parse_source_code(self, source_code: str, parent_scope: Scope):
+    def parse_source_code(self, source_code: str, parent_scope: Scope) -> List[Function]:
         """
         This function parses a source code into tokens.
         :param source_code: the source code to parse.
@@ -95,7 +95,7 @@ class Parser:
                                           match=match_models)
         return parsed
 
-    def get_maximal_match(self, text: str):
+    def get_maximal_match(self, text: str) -> Tuple[Dict, Match]:
         """
         This function find the maximal regex match in the text.
         Keywords have a priority over valid tokens and operators.

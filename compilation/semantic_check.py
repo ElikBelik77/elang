@@ -37,7 +37,7 @@ class HasEntryPoint(GlobalChecker):
     This semantic check ensures the program has an entry point names 'main'
     """
 
-    def check(self, program: Program):
+    def check(self, program: Program) -> None:
         has_entry = False
         for function in program.functions:
             if function.name == "main":
@@ -51,7 +51,7 @@ class FunctionArgumentShadowing(FunctionChecker):
     This semantic check ensures that function arguments are not being shadowed by local defined variables.
     """
 
-    def check(self, function: Function):
+    def check(self, function: Function) -> None:
         for variable in function.get_mentions():
             if variable in [v.name for v in function.arguments]:
                 raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
@@ -62,7 +62,7 @@ class RepeatingArgumentDeclaration(FunctionChecker):
     This semantic check ensures that a function argument is not appearing twice.
     """
 
-    def check(self, function: Function):
+    def check(self, function: Function) -> None:
         counter = Counter([argument.name for argument in function.arguments])
         if len(function.arguments) is not 0 and counter.most_common(1)[0][1] > 1:
             raise Exception("Function argument is declared twice")
@@ -73,7 +73,7 @@ class RepeatingVariableDeclaration(FunctionChecker):
     This semantic check ensures that there are no variables that are declared twice.
     """
 
-    def check(self, function: Function):
+    def check(self, function: Function) -> None:
         all_scopes = [function.scope] + function.scope.get_children()
         vars_declared = []
         for scope in all_scopes:
@@ -90,7 +90,7 @@ class VariableDeclarationCheck(FunctionChecker):
     This semantic check ensures that variables are declared before they are used.
     """
 
-    def check(self, function: Function):
+    def check(self, function: Function) -> None:
         for idx, statement in enumerate(function.body):
             if isinstance(statement, VariableDeclaration):
                 continue
@@ -113,7 +113,7 @@ class SemanticChecker:
         self.function_checklist = function_checklist
         self.global_checklist = global_checklist
 
-    def check(self, program: Program):
+    def check(self, program: Program) -> None:
         """
         This funcion applies each of the semantic checks to the program.
         :param program: the program to check.
@@ -126,7 +126,7 @@ class SemanticChecker:
             checker.check(program)
 
     @staticmethod
-    def create_default():
+    def create_default() -> "SemanticChecker":
         """
         This function creates a default semantic checker. It has all of the default semantic checks.
         :return: a semantic checker.

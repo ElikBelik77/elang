@@ -8,7 +8,7 @@ class TemplateFactory:
     Interface factory for object that create the assembly equivalent of compilable models.
     """
 
-    def produce(self, object: Compilable, factories: Dict[type, "TemplateFactory"], bundle: Dict):
+    def produce(self, object: Compilable, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
         """
         This function produces assembly code that executes the compilable models.
         :param object: the object to assemble.
@@ -20,7 +20,7 @@ class TemplateFactory:
 
 
 class LogicalAndTemplateFactory(TemplateFactory):
-    def produce(self, and_expression: LogicalAnd, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, and_expression: LogicalAnd, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         end = get_unique_id()
         assembly = (
             f"{factories[type(and_expression.left)].produce(and_expression.left, factories, bundle)}"
@@ -40,7 +40,7 @@ class LogicalAndTemplateFactory(TemplateFactory):
 
 
 class LogicalOrTemplateFactory(TemplateFactory):
-    def produce(self, or_expression: LogicalOr, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, or_expression: LogicalOr, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         valid = get_unique_id()
         invalid = get_unique_id()
         assembly = (
@@ -63,7 +63,7 @@ class LogicalOrTemplateFactory(TemplateFactory):
 
 
 class LogicalGreaterTemplateFactory(TemplateFactory):
-    def produce(self, greater_expression: LogicalGreater, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, greater_expression: LogicalGreater, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         not_greater = get_unique_id()
         assembly = (
             f"{factories[type(greater_expression.left)].produce(greater_expression.left, factories, bundle)}"
@@ -81,7 +81,7 @@ class LogicalGreaterTemplateFactory(TemplateFactory):
 
 
 class LogicalEqualTemplateFactory(TemplateFactory):
-    def produce(self, equal_expression: Equal, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, equal_expression: Equal, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         not_equal = get_unique_id()
         assembly = (
             f"{factories[type(equal_expression.left)].produce(equal_expression.left, factories, bundle)}"
@@ -99,7 +99,7 @@ class LogicalEqualTemplateFactory(TemplateFactory):
 
 
 class FunctionCallTemplateFactory(TemplateFactory):
-    def produce(self, function_call: FunctionCall, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, function_call: FunctionCall, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         argument_preparation = ""
         for arg in function_call.arguments[::-1]:
             arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
@@ -118,7 +118,7 @@ class FunctionCallTemplateFactory(TemplateFactory):
 
 
 class ReturnTemplateFactory(TemplateFactory):
-    def produce(self, return_expression: Return, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, return_expression: Return, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = ("{return_expression}".format(
             return_expression=factories[type(return_expression.expression)].produce(return_expression.expression,
                                                                                     factories,
@@ -132,7 +132,7 @@ class ReturnTemplateFactory(TemplateFactory):
 
 
 class FunctionTemplateFactory(TemplateFactory):
-    def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         body_assembly = ""
         has_ret = False
         for expression in function.body:
@@ -158,7 +158,7 @@ class FunctionTemplateFactory(TemplateFactory):
 
 
 class MultiplyTemplateFactory(TemplateFactory):
-    def produce(self, mult_expression: Mult, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, mult_expression: Mult, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(mult_expression.right)].produce(mult_expression.right, factories, bundle) \
                    + factories[type(mult_expression.left)].produce(mult_expression.left, factories, bundle)
         assembly += (
@@ -172,7 +172,7 @@ class MultiplyTemplateFactory(TemplateFactory):
 
 
 class PlusTemplateFactory(TemplateFactory):
-    def produce(self, plus_expression: Plus, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, plus_expression: Plus, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(plus_expression.right)].produce(plus_expression.right, factories, bundle) \
                    + factories[type(plus_expression.left)].produce(plus_expression.left, factories, bundle)
         assembly += (
@@ -185,7 +185,7 @@ class PlusTemplateFactory(TemplateFactory):
 
 
 class MinusTemplateFactory(TemplateFactory):
-    def produce(self, minus_expression: Minus, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, minus_expression: Minus, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(minus_expression.right)].produce(minus_expression.right, factories, bundle) \
                    + factories[type(minus_expression.left)].produce(minus_expression.left, factories, bundle)
         assembly += (
@@ -198,7 +198,7 @@ class MinusTemplateFactory(TemplateFactory):
 
 
 class DivTemplateFactory(TemplateFactory):
-    def produce(self, div_expression: Div, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, div_expression: Div, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(div_expression.right)].produce(div_expression.right, factories, bundle) \
                    + factories[type(div_expression.left)].produce(div_expression.left, factories, bundle)
         assembly += (
@@ -212,7 +212,7 @@ class DivTemplateFactory(TemplateFactory):
 
 
 class AssignmentTemplateFactory(TemplateFactory):
-    def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
         if bundle["offset_table"][assigment_expression.left.name] > 0:
             assembly += (
@@ -231,7 +231,7 @@ class AssignmentTemplateFactory(TemplateFactory):
 
 class DecimalConstantTemplateFactory(TemplateFactory):
     def produce(self, decimal_value_expression: DecimalConstantValue, factories: Dict[type, TemplateFactory],
-                bundle: Dict):
+                bundle: Dict) -> str:
         assembly = (
             "push {value}\n".format(value=decimal_value_expression.value)
         )
@@ -239,7 +239,7 @@ class DecimalConstantTemplateFactory(TemplateFactory):
 
 
 class VariableTemplateFactory(TemplateFactory):
-    def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         if bundle["offset_table"][variable_expression.name] > 0:
             assembly = (
                 "lea edi, [ebp + {var_offset}]\n"
@@ -256,7 +256,7 @@ class VariableTemplateFactory(TemplateFactory):
 
 
 class IfTemplateFactory(TemplateFactory):
-    def produce(self, if_expression: If, factories: Dict[type, TemplateFactory], bundle: Dict):
+    def produce(self, if_expression: If, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         skip_if_id = get_unique_id()
         body_assembly = ""
         for expression in if_expression.body:
