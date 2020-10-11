@@ -191,6 +191,26 @@ class AssignmentFactory(Factory):
         return Assignment(), source_code[len(match.group(0)):].strip()
 
 
+class WhileFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
+        source_code = source_code[len(match.group(0).strip()):].strip()
+        source_end = find_scope_end(source_code)
+        scope = Scope(match.group(0), parent_scope)
+        body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
+        condition = [token for token in parser.parse_source_code(match.group(1), parent_scope)][0]
+        if len(condition) > 1:
+            raise Exception("Too many expression in an 'while' condition")
+        for idx, statement in enumerate(body):
+            if isinstance(statement, VariableDeclaration) and statement.name not in scope.defined_variables:
+                scope.defined_variables[statement.name] = {"type": statement.var_type, "define_line": idx,
+                                                           "scope": scope}
+            elif isinstance(statement, VariableDeclaration):
+                raise Exception(
+                    "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
+
+        return [While(scope, body, condition)], source_code[source_end + 1:]
+
+
 class IfFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
         source_code = source_code[len(match.group(0).strip()):].strip()
@@ -209,7 +229,7 @@ class IfFactory(Factory):
                 raise Exception(
                     "Variable {0} is declared more than once in function {1}".format(statement.name, match.group(0)))
 
-        return [If(scope, condition, body)], source_code[source_end + 1:]
+        return [If(scope, body, condition)], source_code[source_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid 'if' statement.")

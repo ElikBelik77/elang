@@ -18,7 +18,8 @@ class Parser:
                     {"re": re.compile(r"\s*int\s"), "factory": IntFactory()},
                     {"re": re.compile(r"\s*(\w[\w]*)\s+((\w[\w]*)\s*\((.*)\))\s*{\s*"),
                      "factory": FunctionDeclarationFactory(), "scopeable": True},
-                    {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True}]
+                    {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
+                    {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": PlusFactory()},
                      {"re": re.compile(r"\s*-\s*"), "factory": MinusFactory()},
                      {"re": re.compile(r"\s*\*\s*"), "factory": MultFactory()},

@@ -28,7 +28,8 @@ class ProgramCompiler:
             LogicalGreater: LogicalGreaterTemplateFactory(),
             LogicalAnd: LogicalAndTemplateFactory(),
             LogicalOr: LogicalOrTemplateFactory(),
-            If: IfTemplateFactory()
+            If: IfTemplateFactory(),
+            While: WhileTemplateFactory()
         })
 
     def __init__(self, factories: Dict[type, TemplateFactory]) -> None:

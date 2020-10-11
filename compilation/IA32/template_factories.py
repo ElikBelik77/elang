@@ -272,3 +272,25 @@ class IfTemplateFactory(TemplateFactory):
             f"loc_{skip_if_id}:\n"
         )
         return assembly
+
+
+class WhileTemplateFactory(TemplateFactory):
+    def produce(self, while_expression: While, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+
+        loop_start = get_unique_id()
+        loop_end = get_unique_id()
+        body_assembly = ""
+        for expression in while_expression.body:
+            if not isinstance(expression, VariableDeclaration):
+                body_assembly += factories[type(expression)].produce(expression, factories, bundle)
+        assembly = (
+            f"loc_{loop_start}:\n"
+            f"{factories[type(while_expression.condition)].produce(while_expression.condition, factories, bundle)}"
+            "pop eax\n"
+            "test eax, eax\n"
+            f"jz loc_{loop_end}\n"
+            f"{body_assembly}"
+            f"jmp loc_{loop_start}\n"
+            f"loc_{loop_end}:\n"
+        )
+        return assembly
