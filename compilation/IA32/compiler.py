@@ -45,7 +45,7 @@ class ProgramCompiler:
                     "global main\n")
         for function in program.functions:
             offset_table = self.produce_offset_table(function)
-            assembly += self.compile_function(function, offset_table)
+            assembly += self.compile_function(function, offset_table) + "\n"
         with open(destination_file, "w") as out:
             out.write(assembly)
 
