@@ -10,7 +10,7 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Arithmetic operators (*still no support for 64 bit multiplication on IA32)
 - [x] Logical operators
 - [ ] if/else
-- [ ] Loops
+- [x] While loops
 - [ ] Global variables
 - [x] Assembling with NASM
 - [ ] Support for IA64
