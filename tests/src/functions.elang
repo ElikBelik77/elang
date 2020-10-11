@@ -1,6 +1,3 @@
-int main() {
-    return 5;
-}
 
 int logical_operators() {
     return 5 and (((6 == 6) > 0) or 1)
@@ -14,4 +11,11 @@ int return_i_plus_j() {
 
 int this_function_calls_i_plus_j() {
     return return_i_plus_j();
+}
+
+int main() {
+    int a = logical_operators();
+    int b = return_i_plus_j();
+    inc c = this_function_calls_i_plus_j();
+    return 1;
 }

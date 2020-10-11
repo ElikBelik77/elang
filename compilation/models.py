@@ -230,7 +230,7 @@ class VariableDeclaration(Compilable):
 
     def __init__(self, name: str, var_type: str):
         self.name = name
-        self.var_type = type
+        self.var_type = var_type
 
     def get_mentions(self):
         return [self.name]

@@ -19,7 +19,7 @@ class Factory:
         """
         pass
 
-    def produce_shallw(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         """
         Produces a model for shunting yard purpose, if it not the first token in the line.
         :param parser: the parser that parsed the token.
@@ -173,6 +173,8 @@ class VariableFactory(Factory):
 
 class IntFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        if len(match) < 2:
+            raise Exception("Invalid position of the 'int' keyword")
         if len(match) == 2:
             return [VariableDeclaration(match[1].name, "int")]
         return [VariableDeclaration(match[1].name, "int"), shunting_yard(match[1:])]
