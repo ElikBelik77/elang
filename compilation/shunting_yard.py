@@ -1,4 +1,4 @@
-from compilation.models.base_classes import *
+from compilation.models.base import *
 from compilation.models.values import *
 from compilation.models.operators import *
 import queue

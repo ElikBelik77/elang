@@ -1,4 +1,4 @@
-from compilation.models.base_classes import *
+from compilation.models.base import *
 
 
 class Variable(Compilable):

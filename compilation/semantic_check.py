@@ -1,4 +1,4 @@
-from compilation.models.base_classes import Program
+from compilation.models.base import Program
 from compilation.models.keywords import *
 from collections import Counter
 from typing import List

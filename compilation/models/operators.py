@@ -1,5 +1,5 @@
 from typing import List
-from compilation.models.base_classes import *
+from compilation.models.base import *
 
 
 class MultiplicationOperator(Compilable, Operator):
@@ -147,3 +147,16 @@ class Assignment(Compilable, Operator):
 
     def get_precedence(self):
         return 3
+
+
+class ArrayIndexer(Compilable, Operator):
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
+
+    def get_mentions(self) -> List[str]:
+        mentions = self.left.get_mentions() + self.right.get_mentions()
+        return mentions
+
+    def get_precedence(self):
+        return 4

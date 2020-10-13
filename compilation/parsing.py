@@ -2,6 +2,10 @@ import re
 from compilation.factories import *
 from typing import *
 
+from parsing_factories.keywords import *
+from parsing_factories.operators import *
+from parsing_factories.valid_tokens import *
+
 
 class Parser:
     """
@@ -20,10 +24,10 @@ class Parser:
                      "factory": FunctionDeclarationFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
-        operators = [{"re": re.compile(r"\s*\+\s*"), "factory": PlusFactory()},
-                     {"re": re.compile(r"\s*-\s*"), "factory": MinusFactory()},
-                     {"re": re.compile(r"\s*\*\s*"), "factory": MultFactory()},
-                     {"re": re.compile(r"\s*/\s*"), "factory": DivFactory()},
+        operators = [{"re": re.compile(r"\s*\+\s*"), "factory": AdditionFactory()},
+                     {"re": re.compile(r"\s*-\s*"), "factory": SubtractionFactory()},
+                     {"re": re.compile(r"\s*\*\s*"), "factory": MultiplicationFactory()},
+                     {"re": re.compile(r"\s*/\s*"), "factory": DivisionFactory()},
                      {"re": re.compile(r"\s*=\s*"), "factory": AssignmentFactory()},
                      {"re": re.compile(r"\s*==\s"), "factory": EqualFactory()},
                      {"re": re.compile(r"\s*>\s"), "factory": LogicalGreaterFactory()},
