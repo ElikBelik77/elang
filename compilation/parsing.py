@@ -15,7 +15,7 @@ class Parser:
         :return: a default parser.
         """
         keywords = [{"re": re.compile(r"\s*return\s"), "factory": ReturnFactory()},
-                    {"re": re.compile(r"\s*int\s"), "factory": IntFactory()},
+                    {"re": re.compile(r"\s*int\s+"), "factory": IntFactory()},
                     {"re": re.compile(r"\s*(\w[\w]*)\s+((\w[\w]*)\s*\((.*)\))\s*{\s*"),
                      "factory": FunctionDeclarationFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
@@ -28,7 +28,8 @@ class Parser:
                      {"re": re.compile(r"\s*==\s"), "factory": EqualFactory()},
                      {"re": re.compile(r"\s*>\s"), "factory": LogicalGreaterFactory()},
                      {"re": re.compile(r"\s*and\s"), "factory": LogicalAndFactory()},
-                     {"re": re.compile(r"\s*or\s"), "factory": LogicalOrFactory()}]
+                     {"re": re.compile(r"\s*or\s"), "factory": LogicalOrFactory()},
+                     {"re": re.compile(r"\s*\[(.*)]\s*")}]
         valid_tokens = [{"re": re.compile(r"\s*((\w[\w]*)\s*\((.*)\))\s*"), "factory": FunctionCallFactory()},
                         {"re": re.compile(r"\s*([a-zA-Z][\w]*)+"), "factory": VariableFactory()},
                         {"re": re.compile(r"\s*[\d]+"), "factory": DecimalConstantFactory()},

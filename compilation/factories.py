@@ -1,6 +1,9 @@
-from compilation.models import *
+from compilation.models.base_classes import *
+from compilation.models.values import *
+from compilation.models.operators import *
+from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
-from typing import Pattern, Match, Tuple
+from typing import Match, Tuple
 
 
 class Factory:
@@ -45,7 +48,7 @@ class MinusFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Minus(), source_code[1:]
+        return SubtractOperator(), source_code[1:]
 
 
 class MultFactory(Factory):
@@ -53,7 +56,7 @@ class MultFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Mult(), source_code[1:]
+        return MultiplicationOperator(), source_code[1:]
 
 
 class LogicalAndFactory(Factory):
@@ -93,7 +96,7 @@ class DivFactory(Factory):
         raise Exception("Invalid placemenet of the / operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Div(), source_code[1:]
+        return DivisionOperator(), source_code[1:]
 
 
 class PlusFactory(Factory):
@@ -101,7 +104,7 @@ class PlusFactory(Factory):
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Plus(), source_code[1:]
+        return AdditionOperator(), source_code[1:]
 
 
 class LeftParenthesisFactory(Factory):

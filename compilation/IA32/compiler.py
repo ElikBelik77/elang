@@ -1,5 +1,5 @@
 from compilation.IA32.template_factories import *
-from compilation.models import *
+from models.models import *
 
 
 class ProgramCompiler:
@@ -15,10 +15,10 @@ class ProgramCompiler:
         """
         return ProgramCompiler({
             Function: FunctionTemplateFactory(),
-            Mult: MultiplyTemplateFactory(),
-            Minus: MinusTemplateFactory(),
-            Plus: PlusTemplateFactory(),
-            Div: DivTemplateFactory(),
+            MultiplicationOperator: MultiplyTemplateFactory(),
+            SubtractOperator: MinusTemplateFactory(),
+            AdditionOperator: PlusTemplateFactory(),
+            DivisionOperator: DivTemplateFactory(),
             Assignment: AssignmentTemplateFactory(),
             DecimalConstantValue: DecimalConstantTemplateFactory(),
             Variable: VariableTemplateFactory(),

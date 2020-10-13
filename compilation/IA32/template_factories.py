@@ -1,5 +1,7 @@
 from typing import Dict
-from compilation.models import *
+from compilation.models.values import *
+from compilation.models.keywords import *
+from compilation.models.operators import *
 from compilation.IA32.utils import get_unique_id
 
 
@@ -158,7 +160,7 @@ class FunctionTemplateFactory(TemplateFactory):
 
 
 class MultiplyTemplateFactory(TemplateFactory):
-    def produce(self, mult_expression: Mult, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+    def produce(self, mult_expression: MultiplicationOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(mult_expression.right)].produce(mult_expression.right, factories, bundle) \
                    + factories[type(mult_expression.left)].produce(mult_expression.left, factories, bundle)
         assembly += (
@@ -172,7 +174,7 @@ class MultiplyTemplateFactory(TemplateFactory):
 
 
 class PlusTemplateFactory(TemplateFactory):
-    def produce(self, plus_expression: Plus, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+    def produce(self, plus_expression: AdditionOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(plus_expression.right)].produce(plus_expression.right, factories, bundle) \
                    + factories[type(plus_expression.left)].produce(plus_expression.left, factories, bundle)
         assembly += (
@@ -185,7 +187,7 @@ class PlusTemplateFactory(TemplateFactory):
 
 
 class MinusTemplateFactory(TemplateFactory):
-    def produce(self, minus_expression: Minus, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+    def produce(self, minus_expression: SubtractOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(minus_expression.right)].produce(minus_expression.right, factories, bundle) \
                    + factories[type(minus_expression.left)].produce(minus_expression.left, factories, bundle)
         assembly += (
@@ -198,7 +200,7 @@ class MinusTemplateFactory(TemplateFactory):
 
 
 class DivTemplateFactory(TemplateFactory):
-    def produce(self, div_expression: Div, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+    def produce(self, div_expression: DivisionOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(div_expression.right)].produce(div_expression.right, factories, bundle) \
                    + factories[type(div_expression.left)].produce(div_expression.left, factories, bundle)
         assembly += (

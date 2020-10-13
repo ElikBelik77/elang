@@ -11,6 +11,8 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Logical operators
 - [ ] if/else
 - [x] While loops
+- [ ] Arrays
+- [ ] Strings
 - [ ] Global variables
 - [x] Assembling with NASM
 - [ ] Support for IA64

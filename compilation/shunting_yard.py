@@ -1,8 +1,10 @@
-from compilation.models import *
+from compilation.models.base_classes import *
+from compilation.models.values import *
+from compilation.models.operators import *
 import queue
 
 
-def reversequeue(queue: queue.Queue) -> queue.Queue:
+def reversequeue(queue: queue.Queue) -> None:
     """
     This function reverses a queue, used by shunting yard to produce the parsed expression.
     :param queue: the queue to reverse.
