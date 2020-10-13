@@ -3,6 +3,8 @@ from compilation.models.operators import *
 from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
 
+from parsing_factories.utils import find_closing_brackets
+
 
 class AssignmentFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]) -> Tuple[List, str]:
@@ -96,5 +98,8 @@ class ArrayIndexerFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid position for the array indexer opeartor")
 
-    def produce_shallow(self):
-        pass
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        bracket_start, bracket_end = find_closing_brackets(source_code)
+        index_expression = shunting_yard(
+            [token for token in parser.parse_source_code(source_code[bracket_start:bracket_end])])
+        return [ArrayIndexer(), index_expression], source_code[bracket_end + 1:]

@@ -14,18 +14,18 @@ pop ebx
 pop eax
 xor ecx, ecx
 cmp eax, ebx
-jbe loc_A67794
+jbe loc_1C7D66
 mov ecx, 1
-loc_A67794:
+loc_1C7D66:
 push ecx
 pop eax
 test eax, eax
-jz loc_C1D17D
+jz loc_A698C8
 push 5
 lea edi, [ebp - 4]
 pop eax
 mov [edi], eax
-loc_C1D17D:
+loc_A698C8:
 leave
 ret
 

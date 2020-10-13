@@ -1,5 +1,6 @@
 from compilation.parsing_factories.base import *
 from compilation.models.values import DecimalConstantValue, FunctionCall, Variable
+from parsing_factories.utils import find_closing_parenthesis
 from shunting_yard import shunting_yard
 
 
@@ -8,7 +9,7 @@ class FunctionCallFactory(Factory):
         return [match[0]]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        start, end = self.find_closing_brackets(source_code)
+        start, end = find_closing_parenthesis(source_code)
         arguments_list = source_code[start + 1:end - 1].split(',')
         arguments = []
         for arg in arguments_list:
