@@ -2,7 +2,7 @@ from typing import List
 from compilation.models.base import *
 
 
-class MultiplicationOperator(Compilable, Operator):
+class MultiplicationOperator(Compilable, BinaryOperator):
     """
     Model for multiplication operator
     """
@@ -18,7 +18,7 @@ class MultiplicationOperator(Compilable, Operator):
         return 2
 
 
-class DivisionOperator(Compilable, Operator):
+class DivisionOperator(Compilable, BinaryOperator):
     """
     Model for divide operator
     """
@@ -34,7 +34,7 @@ class DivisionOperator(Compilable, Operator):
         return 2
 
 
-class AdditionOperator(Compilable, Operator):
+class AdditionOperator(Compilable, BinaryOperator):
     """
     Model for addition operator
     """
@@ -64,7 +64,7 @@ class RightParenthesis:
         return -1
 
 
-class SubtractOperator(Compilable, Operator):
+class SubtractOperator(Compilable, BinaryOperator):
     """
     Model for subtraction operator
     """
@@ -80,7 +80,7 @@ class SubtractOperator(Compilable, Operator):
         return 1
 
 
-class LogicalAnd(Compilable, Operator):
+class LogicalAnd(Compilable, BinaryOperator):
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -93,7 +93,7 @@ class LogicalAnd(Compilable, Operator):
         return 1
 
 
-class LogicalOr(Compilable, Operator):
+class LogicalOr(Compilable, BinaryOperator):
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -106,7 +106,7 @@ class LogicalOr(Compilable, Operator):
         return 1
 
 
-class LogicalGreater(Compilable, Operator):
+class LogicalGreater(Compilable, BinaryOperator):
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -119,7 +119,7 @@ class LogicalGreater(Compilable, Operator):
         return 1
 
 
-class Equal(Compilable, Operator):
+class Equal(Compilable, BinaryOperator):
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right
@@ -132,7 +132,7 @@ class Equal(Compilable, Operator):
         return 1
 
 
-class Assignment(Compilable, Operator):
+class Assignment(Compilable, BinaryOperator):
     """
     Model for assignment operator
     """
@@ -146,10 +146,10 @@ class Assignment(Compilable, Operator):
         return mentions
 
     def get_precedence(self):
-        return 3
+        return 0
 
 
-class ArrayIndexer(Compilable, Operator):
+class ArrayIndexer(Compilable, BinaryOperator):
     def __init__(self, left: Compilable = None, right: Compilable = None):
         self.left = left
         self.right = right

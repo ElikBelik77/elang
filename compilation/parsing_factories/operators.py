@@ -101,5 +101,5 @@ class ArrayIndexerFactory(Factory):
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         bracket_start, bracket_end = find_closing_brackets(source_code)
         index_expression = shunting_yard(
-            [token for token in parser.parse_source_code(source_code[bracket_start:bracket_end])])
+            [token for token in parser.parse_source_code(source_code[bracket_start + 1:bracket_end - 1], parent_scope)])
         return [ArrayIndexer(), index_expression], source_code[bracket_end + 1:]

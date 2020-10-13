@@ -15,9 +15,10 @@ class ProgramCompiler:
         return ProgramCompiler({
             Function: FunctionTemplateFactory(),
             MultiplicationOperator: MultiplyTemplateFactory(),
-            SubtractOperator: MinusTemplateFactory(),
-            AdditionOperator: PlusTemplateFactory(),
-            DivisionOperator: DivTemplateFactory(),
+            SubtractOperator: SubtractionTemplateFactory(),
+            AdditionOperator: AdditionTemplateFactory(),
+            DivisionOperator: DivisionTemplateFactory(),
+            ArrayIndexer: ArrayIndexerTemplateFactory(),
             Assignment: AssignmentTemplateFactory(),
             DecimalConstantValue: DecimalConstantTemplateFactory(),
             Variable: VariableTemplateFactory(),

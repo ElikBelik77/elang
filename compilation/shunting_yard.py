@@ -33,7 +33,7 @@ def shunting_yard(expressions: [Compilable]) -> Compilable:
             output_queue.put(current)
         elif isinstance(current, FunctionCall):
             operator_stack.append(FunctionCall(current.name, current.arguments))
-        elif issubclass(type(current), Operator):
+        elif issubclass(type(current), BinaryOperator) or issubclass(type(current), UnaryOperator):
             while ((len(operator_stack) is not 0) and (
                     operator_stack[-1].get_precedence() >= current.get_precedence()) and (
                            operator_stack[-1].get_precedence() is not -1)):
@@ -62,7 +62,7 @@ def build_expression(output_queue: queue.Queue) -> Compilable:
     :return: an expression tree representing the queue.
     """
     expression = output_queue.get()
-    if issubclass(type(expression), Operator):
+    if issubclass(type(expression), BinaryOperator):
         expression.right = build_expression(output_queue)
         expression.left = build_expression(output_queue)
     if isinstance(expression, DecimalConstantValue) or isinstance(expression, Variable) or isinstance(expression,

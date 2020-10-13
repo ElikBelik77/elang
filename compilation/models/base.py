@@ -30,7 +30,12 @@ class Scopeable(Compilable):
         return mentions
 
 
-class Operator:
+class UnaryOperator:
+    def get_precedence(self):
+        pass
+
+
+class BinaryOperator:
     """
     Interface for unifying operators.
     """
