@@ -9,7 +9,7 @@ class AssignmentFactory(Factory):
         raise Exception("Invalid placement of the = operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Assignment(), source_code[len(match.group(0)):].strip()
+        return [Assignment()], source_code[len(match.group(0)):].strip()
 
 
 class SubtractionFactory(Factory):
@@ -17,7 +17,7 @@ class SubtractionFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return SubtractOperator(), source_code[1:]
+        return [SubtractOperator()], source_code[1:]
 
 
 class MultiplicationFactory(Factory):
@@ -25,7 +25,7 @@ class MultiplicationFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return MultiplicationOperator(), source_code[1:]
+        return [MultiplicationOperator()], source_code[1:]
 
 
 class LogicalAndFactory(Factory):
@@ -33,7 +33,7 @@ class LogicalAndFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalAnd(), source_code[match.span()[1]:]
+        return [LogicalAnd()], source_code[match.span()[1]:]
 
 
 class LogicalOrFactory(Factory):
@@ -41,7 +41,7 @@ class LogicalOrFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalOr(), source_code[match.span()[1]:]
+        return [LogicalOr()], source_code[match.span()[1]:]
 
 
 class LogicalGreaterFactory(Factory):
@@ -49,7 +49,7 @@ class LogicalGreaterFactory(Factory):
         raise Exception("Invalid placemenet of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LogicalGreater(), source_code[match.span()[1]:]
+        return [LogicalGreater()], source_code[match.span()[1]:]
 
 
 class EqualFactory(Factory):
@@ -57,7 +57,7 @@ class EqualFactory(Factory):
         raise Exception("Invalid placemenet of the == operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Equal(), source_code[match.span()[1]:]
+        return [Equal()], source_code[match.span()[1]:]
 
 
 class DivisionFactory(Factory):
@@ -65,7 +65,7 @@ class DivisionFactory(Factory):
         raise Exception("Invalid placemenet of the / operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return DivisionOperator(), source_code[1:]
+        return [DivisionOperator()], source_code[1:]
 
 
 class AdditionFactory(Factory):
@@ -73,15 +73,15 @@ class AdditionFactory(Factory):
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return AdditionOperator(), source_code[1:]
+        return [AdditionOperator()], source_code[1:]
 
 
 class LeftParenthesisFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LeftParenthesis(), source_code[1:]
+        return [LeftParenthesis()], source_code[1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return LeftParenthesis(), source_code[1:]
+        return [LeftParenthesis()], source_code[1:]
 
 
 class RightParenthesisFactory(Factory):
@@ -89,4 +89,12 @@ class RightParenthesisFactory(Factory):
         raise Exception("Invalid parenthesis placement")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return RightParenthesis(), source_code[1:]
+        return [RightParenthesis()], source_code[1:]
+
+
+class ArrayIndexerFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid position for the array indexer opeartor")
+
+    def produce_shallow(self):
+        pass

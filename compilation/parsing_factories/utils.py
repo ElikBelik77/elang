@@ -1,4 +1,4 @@
-from models.keywords import VariableDeclaration
+from compilation.models.keywords import VariableDeclaration
 
 
 def find_scope_end(source_code: str) -> int:

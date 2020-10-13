@@ -82,10 +82,37 @@ class Scope:
         return self.parent_scope.search_variable(name)
 
 
+class VariableDeclaration(Compilable):
+    """
+    Model for variable declaration
+    """
+
+    def __init__(self, name: str, var_type: str):
+        self.name = name
+        self.var_type = var_type
+
+    def get_mentions(self) -> List[str]:
+        return [self.name]
+
+
+class Function(Scopeable):
+    """
+    Model for functions
+    """
+
+    def __init__(self, scope: Scope, name: str, signature: str, return_type: str, body: List[Compilable],
+                 arguments: List[VariableDeclaration]):
+        super(Function, self).__init__(scope, body)
+        self.name = name
+        self.signature = signature
+        self.return_type = return_type
+        self.arguments = arguments
+
+
 class Program(Compilable):
     """
     Model for the entire program
     """
 
-    def __init__(self, functions: List[Function]):
+    def __init__(self, functions: List["Function"]):
         self.functions = functions

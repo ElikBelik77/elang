@@ -12,7 +12,7 @@ class ReturnFactory(Factory):
 
 
 def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-    return Return(None), source_code[len(match.group(0)):].strip()
+    return [Return(None)], source_code[len(match.group(0)):].strip()
 
 
 class IntFactory(Factory):
@@ -24,7 +24,7 @@ class IntFactory(Factory):
         return [VariableDeclaration(match[1].name, "int"), shunting_yard(match[1:])]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return VariableDeclaration(None, "int"), source_code[len(match.group(0)):].strip()
+        return [VariableDeclaration(None, "int")], source_code[len(match.group(0)):].strip()
 
 
 class WhileFactory(Factory):

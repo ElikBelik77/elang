@@ -14,7 +14,7 @@ class FunctionCallFactory(Factory):
         for arg in arguments_list:
             if len(arg) is not 0:
                 arguments += parser.parse_source_code(arg, parent_scope)
-        return FunctionCall(match.group(2), arguments), source_code[end:]
+        return [FunctionCall(match.group(2), arguments)], source_code[end:]
 
 
 class DecimalConstantFactory(Factory):
@@ -22,7 +22,7 @@ class DecimalConstantFactory(Factory):
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return DecimalConstantValue(int(match.group(0))), source_code[len(match.group(0)):].strip()
+        return [DecimalConstantValue(int(match.group(0)))], source_code[len(match.group(0)):].strip()
 
 
 class VariableFactory(Factory):
@@ -30,4 +30,4 @@ class VariableFactory(Factory):
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return Variable(match.group(0)), source_code[len(match.group(0)):].strip()
+        return [Variable(match.group(0))], source_code[len(match.group(0)):].strip()

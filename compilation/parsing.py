@@ -1,5 +1,4 @@
 import re
-from compilation.factories import *
 from typing import *
 
 from parsing_factories.keywords import *
@@ -89,12 +88,12 @@ class Parser:
                 factory = next_token["factory"]
                 model, source_code = next_token["factory"].produce_shallow(parser=self, source_code=source_code,
                                                                            parent_scope=parent_scope, match=match)
-                match_models = [model]
+                match_models = [] + model
                 while len(source_code) is not 0 and source_code[0] is not ';':
                     next_token, match = self.get_maximal_match(source_code)
                     model, source_code = next_token["factory"].produce_shallow(parser=self, source_code=source_code,
                                                                                parent_scope=parent_scope, match=match)
-                    match_models.append(model)
+                    match_models += model
                 source_code = source_code[1:]
                 parsed += factory.produce(parser=self, source_code=None,
                                           parent_scope=parent_scope,
