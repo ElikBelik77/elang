@@ -7,7 +7,7 @@ from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
 
 from compilation.models.arrays import ArrayInitializer
-from type_system.arrays import Array, StackLayer, HeapLayer
+from compilation.type_system.arrays import Array, StackLayer, HeapLayer
 
 
 class ReturnFactory(Factory):

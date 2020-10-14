@@ -333,13 +333,13 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
         arrays_metadata = array.array.get_metadata(bundle["primitive_bundle"])
         assembly = self.add_verbose(bundle)
         assembly += (
-            f"mov edi, [ebp - {-array_start_offset}]\n"
+            f"lea edi, [ebp - {-array_start_offset}]\n"
         )
         for metadata in arrays_metadata:
             for offset in metadata["offsets"]:
                 assembly += (
-                    f"mov [edi - {offset}], {metadata['array_size']}\n"
-                    f"mov [edi - {offset + bundle['primitive_bundle']['int']}], {metadata['cell_size']}\n"
+                    f"mov [edi - {offset}], dword {metadata['array_size']}\n"
+                    f"mov [edi - {offset + bundle['primitive_bundle']['int']}], dword {metadata['cell_size']}\n"
                 )
         return assembly
 

@@ -3,7 +3,7 @@ from compilation.models.operators import *
 from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
 
-from parsing_factories.utils import find_closing_brackets
+from compilation.parsing_factories.utils import find_closing_brackets
 
 
 class AssignmentFactory(Factory):
