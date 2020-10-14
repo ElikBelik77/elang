@@ -24,6 +24,7 @@ class TemplateFactory:
     def add_verbose(self, bundle):
         if bundle["verbose"]:
             return f";{type(self).__name__}\n"
+        return ""
 
 
 class LogicalAndTemplateFactory(TemplateFactory):
