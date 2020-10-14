@@ -346,7 +346,7 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
 
 class ArrayIndexerTemplateFactory(TemplateFactory):
     def produce(self, indexer_expression: ArrayIndexer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        boundary_check = get_unique_id()
+        passed_boundary_check = get_unique_id()
         assembly = self.add_verbose(bundle)
         assembly += (
             f"{factories[type(indexer_expression.right)].produce(indexer_expression.right, factories, bundle)}\n"
@@ -355,12 +355,17 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "pop eax\n"
             "mov [edi], ebx\n"
             "cmp eax, ebx\n"  # Check if index is of bounds
-            f"jge loc_{boundary_check}\n"
+            f"jb loc_{passed_boundary_check}\n"
+            "mov eax, 0\n"
+            "mov ebx, 0\n"
+            "int 0x80\n"
+            f"loc_{passed_boundary_check}:"
             "mov [edi - 4], ecx\n"
             "xor edx, edx\n"
             "mul ecx\n"
             "add edi, eax\n"
             "push edi\n"
+
         )
         return assembly
     # Array meta_data: dimension_size ,size_rest, values..
