@@ -21,11 +21,16 @@ class TemplateFactory:
         """
         pass
 
+    def add_verbose(self, bundle):
+        if bundle["verbose"]:
+            return f";{type(self).__name__}\n"
+
 
 class LogicalAndTemplateFactory(TemplateFactory):
     def produce(self, and_expression: LogicalAnd, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         end = get_unique_id()
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"{factories[type(and_expression.left)].produce(and_expression.left, factories, bundle)}"
             f"{factories[type(and_expression.right)].produce(and_expression.right, factories, bundle)}"
             "pop eax\n"
@@ -46,7 +51,8 @@ class LogicalOrTemplateFactory(TemplateFactory):
     def produce(self, or_expression: LogicalOr, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         valid = get_unique_id()
         invalid = get_unique_id()
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"{factories[type(or_expression.left)].produce(or_expression.left, factories, bundle)}"
             f"{factories[type(or_expression.right)].produce(or_expression.right, factories, bundle)}"
             "pop eax\n"
@@ -68,7 +74,8 @@ class LogicalOrTemplateFactory(TemplateFactory):
 class LogicalGreaterTemplateFactory(TemplateFactory):
     def produce(self, greater_expression: LogicalGreater, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         not_greater = get_unique_id()
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"{factories[type(greater_expression.left)].produce(greater_expression.left, factories, bundle)}"
             f"{factories[type(greater_expression.right)].produce(greater_expression.right, factories, bundle)}"
             "pop ebx\n"
@@ -86,7 +93,8 @@ class LogicalGreaterTemplateFactory(TemplateFactory):
 class LogicalEqualTemplateFactory(TemplateFactory):
     def produce(self, equal_expression: Equal, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         not_equal = get_unique_id()
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"{factories[type(equal_expression.left)].produce(equal_expression.left, factories, bundle)}"
             f"{factories[type(equal_expression.right)].produce(equal_expression.right, factories, bundle)}"
             "xor ecx, ecx\n"
@@ -111,18 +119,20 @@ class FunctionCallTemplateFactory(TemplateFactory):
             ).format(arg_assembly=arg_assembly)
         argument_clean_up_line = "add esp, {arguments_size}\n".format(
             arguments_size=len(function_call.arguments) * 4) if len(function_call.arguments) is not 0 else ""
-        assembly = ("{argument_preparation}"
-                    "call {function_name}\n"
-                    "{argument_clean_up_line}"
-                    "push eax\n").format(argument_preparation=argument_preparation,
-                                         function_name=function_call.name,
-                                         argument_clean_up_line=argument_clean_up_line)
+        assembly = self.add_verbose(bundle)
+        assembly += ("{argument_preparation}"
+                     "call {function_name}\n"
+                     "{argument_clean_up_line}"
+                     "push eax\n").format(argument_preparation=argument_preparation,
+                                          function_name=function_call.name,
+                                          argument_clean_up_line=argument_clean_up_line)
         return assembly
 
 
 class ReturnTemplateFactory(TemplateFactory):
     def produce(self, return_expression: Return, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        assembly = ("{return_expression}".format(
+        assembly = self.add_verbose(bundle)
+        assembly += ("{return_expression}".format(
             return_expression=factories[type(return_expression.expression)].produce(return_expression.expression,
                                                                                     factories,
                                                                                     bundle)))
@@ -145,7 +155,8 @@ class FunctionTemplateFactory(TemplateFactory):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
         stack_allocation_line = "sub esp, {stack_size}\n".format(stack_size=bundle["stack_size"]) if bundle[
                                                                                                          "stack_size"] is not 0 else ""
-        function_assembly = ("{name}:\n"
+        function_assembly = (f"{self.add_verbose(bundle)}"
+                             "{name}:\n"
                              "push ebp\n"
                              "mov ebp, esp\n"
                              "{stack_allocation_line}"
@@ -163,8 +174,9 @@ class FunctionTemplateFactory(TemplateFactory):
 class MultiplyTemplateFactory(TemplateFactory):
     def produce(self, mult_expression: MultiplicationOperator, factories: Dict[type, TemplateFactory],
                 bundle: Dict) -> str:
-        assembly = factories[type(mult_expression.right)].produce(mult_expression.right, factories, bundle) \
-                   + factories[type(mult_expression.left)].produce(mult_expression.left, factories, bundle)
+        assembly = self.add_verbose(bundle)
+        assembly += factories[type(mult_expression.right)].produce(mult_expression.right, factories, bundle) \
+                    + factories[type(mult_expression.left)].produce(mult_expression.left, factories, bundle)
         assembly += (
             "pop eax\n"
             "pop ecx\n"
@@ -177,8 +189,9 @@ class MultiplyTemplateFactory(TemplateFactory):
 
 class AdditionTemplateFactory(TemplateFactory):
     def produce(self, plus_expression: AdditionOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        assembly = factories[type(plus_expression.right)].produce(plus_expression.right, factories, bundle) \
-                   + factories[type(plus_expression.left)].produce(plus_expression.left, factories, bundle)
+        assembly = self.add_verbose(bundle)
+        assembly += factories[type(plus_expression.right)].produce(plus_expression.right, factories, bundle) \
+                    + factories[type(plus_expression.left)].produce(plus_expression.left, factories, bundle)
         assembly += (
             "pop eax\n"
             "pop ebx\n"
@@ -190,8 +203,9 @@ class AdditionTemplateFactory(TemplateFactory):
 
 class SubtractionTemplateFactory(TemplateFactory):
     def produce(self, minus_expression: SubtractOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        assembly = factories[type(minus_expression.right)].produce(minus_expression.right, factories, bundle) \
-                   + factories[type(minus_expression.left)].produce(minus_expression.left, factories, bundle)
+        assembly = self.add_verbose(bundle)
+        assembly += factories[type(minus_expression.right)].produce(minus_expression.right, factories, bundle) \
+                    + factories[type(minus_expression.left)].produce(minus_expression.left, factories, bundle)
         assembly += (
             "pop eax\n"
             "pop ebx\n"
@@ -203,8 +217,9 @@ class SubtractionTemplateFactory(TemplateFactory):
 
 class DivisionTemplateFactory(TemplateFactory):
     def produce(self, div_expression: DivisionOperator, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        assembly = factories[type(div_expression.right)].produce(div_expression.right, factories, bundle) \
-                   + factories[type(div_expression.left)].produce(div_expression.left, factories, bundle)
+        assembly = self.add_verbose(bundle)
+        assembly += factories[type(div_expression.right)].produce(div_expression.right, factories, bundle) \
+                    + factories[type(div_expression.left)].produce(div_expression.left, factories, bundle)
         assembly += (
             "pop eax\n"
             "pop ecx\n"
@@ -217,9 +232,16 @@ class DivisionTemplateFactory(TemplateFactory):
 
 class AssignmentTemplateFactory(TemplateFactory):
     def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        assembly = factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
+        assembly = self.add_verbose(bundle)
+        assembly += factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
+        # TODO: check if left produces a POINTER TYPE, instead of array indexer for the future
         if isinstance(assigment_expression.left, ArrayIndexer):
-            pass
+            assembly += (
+                f"{factories[type(assigment_expression.left)].produce(assigment_expression.left, factories, bundle)}"
+                "pop edi\n"
+                "pop eax\n"
+                "mov [edi], eax\n"
+            )
         elif bundle["offset_table"][assigment_expression.left.name] > 0:
             assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
@@ -238,7 +260,8 @@ class AssignmentTemplateFactory(TemplateFactory):
 class DecimalConstantTemplateFactory(TemplateFactory):
     def produce(self, decimal_value_expression: DecimalConstantValue, factories: Dict[type, TemplateFactory],
                 bundle: Dict) -> str:
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             "push {value}\n".format(value=decimal_value_expression.value)
         )
         return assembly
@@ -246,14 +269,15 @@ class DecimalConstantTemplateFactory(TemplateFactory):
 
 class VariableTemplateFactory(TemplateFactory):
     def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        assembly = self.add_verbose(bundle)
         if bundle["offset_table"][variable_expression.name] > 0:
-            assembly = (
+            assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
             )
         else:
-            assembly = (
+            assembly += (
                 "lea edi, [ebp - {var_offset}]\n"
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
@@ -268,8 +292,8 @@ class IfTemplateFactory(TemplateFactory):
         for expression in if_expression.body:
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
-
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"{factories[type(if_expression.condition)].produce(if_expression.condition, factories, bundle)}"
             "pop eax\n"
             "test eax, eax\n"
@@ -290,6 +314,7 @@ class WhileTemplateFactory(TemplateFactory):
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
         assembly = (
+            f"{self.add_verbose(bundle)}"
             f"loc_{loop_start}:\n"
             f"{factories[type(while_expression.condition)].produce(while_expression.condition, factories, bundle)}"
             "pop eax\n"
@@ -306,7 +331,8 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
     def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         array_start_offset = bundle["offset_table"][array.variable_name]
         arrays_metadata = array.array.get_metadata(bundle["primitive_bundle"])
-        assembly = (
+        assembly = self.add_verbose(bundle)
+        assembly += (
             f"mov edi, [ebp - {-array_start_offset}]\n"
         )
         for metadata in arrays_metadata:
@@ -321,20 +347,36 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
 class ArrayIndexerTemplateFactory(TemplateFactory):
     def produce(self, indexer_expression: ArrayIndexer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         boundary_check = get_unique_id()
-
-        assembly = (
-            f"{factories[type(indexer_expression.right)].produce(indexer_expression.right, factories, bundle)}"
-            f"{factories[type(indexer_expression.left)].produce(indexer_expression.left, factories, bundle)}"
-            "pop edi"
-            "pop eax"
-            "mov [edi], ebx"
-            "cmp eax, ebx"
-            f"jge loc_{boundary_check}"
-            "mov [edi+4], ecx"
-            "xor ebx, ebx"
-            "mul ecx"
-            "add edi, eax"
-            "push edi"
+        assembly = self.add_verbose(bundle)
+        assembly += (
+            f"{factories[type(indexer_expression.right)].produce(indexer_expression.right, factories, bundle)}\n"
+            f"{factories[type(indexer_expression.left)].produce(indexer_expression.left, factories, bundle)}\n"
+            "pop edi\n"
+            "pop eax\n"
+            "mov [edi], ebx\n"
+            "cmp eax, ebx\n"  # Check if index is of bounds
+            f"jge loc_{boundary_check}\n"
+            "mov [edi - 4], ecx\n"
+            "xor edx, edx\n"
+            "mul ecx\n"
+            "add edi, eax\n"
+            "push edi\n"
         )
         return assembly
     # Array meta_data: dimension_size ,size_rest, values..
+
+
+class PointerVariableTemplateFactory(TemplateFactory):
+    def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        assembly = self.add_verbose(bundle)
+        if bundle["offset_table"][variable_expression.name] > 0:
+            assembly += (
+                "lea edi, [ebp + {var_offset}]\n"
+                "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
+            )
+        else:
+            assembly += (
+                "lea edi, [ebp - {var_offset}]\n"
+                "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
+            )
+        return assembly

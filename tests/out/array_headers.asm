@@ -1,12 +1,15 @@
 SECTION .text
 global main
+;FunctionTemplateFactory
 main:
 push ebp
 mov ebp, esp
 sub esp, 408
+;ArrayInitializeTemplateFactory
 mov edi, [ebp - 28]
 mov [edi - 0], 5
 mov [edi - 4], 4
+;ArrayInitializeTemplateFactory
 mov edi, [ebp - 176]
 mov [edi - 0], 5
 mov [edi - 4], 28
@@ -20,6 +23,7 @@ mov [edi - 92], 5
 mov [edi - 96], 4
 mov [edi - 120], 5
 mov [edi - 124], 4
+;ArrayInitializeTemplateFactory
 mov edi, [ebp - 408]
 mov [edi - 0], 4
 mov [edi - 4], 56

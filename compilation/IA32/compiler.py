@@ -22,6 +22,7 @@ class ProgramCompiler:
             Assignment: AssignmentTemplateFactory(),
             DecimalConstantValue: DecimalConstantTemplateFactory(),
             Variable: VariableTemplateFactory(),
+            PointerVariable: PointerVariableTemplateFactory(),
             Return: ReturnTemplateFactory(),
             FunctionCall: FunctionCallTemplateFactory(),
             Equal: LogicalEqualTemplateFactory(),
@@ -30,14 +31,15 @@ class ProgramCompiler:
             LogicalOr: LogicalOrTemplateFactory(),
             If: IfTemplateFactory(),
             While: WhileTemplateFactory(),
-            ArrayInitializer:ArrayInitializeTemplateFactory()
+            ArrayInitializer: ArrayInitializeTemplateFactory()
         })
 
-    def __init__(self, factories: Dict[type, TemplateFactory]) -> None:
+    def __init__(self, factories: Dict[type, TemplateFactory], verbose: bool = True) -> None:
         self.factories = factories
         self.primitive_bundle = {
             "int": 4
         }
+        self.verbose = True
 
     def compile(self, program: Program, destination_file: str) -> None:
         """
@@ -67,7 +69,8 @@ class ProgramCompiler:
             stack_size = abs(min(offset_table.values()))
         return self.factories[Function].produce(function, self.factories,
                                                 {"stack_size": stack_size, "offset_table": offset_table,
-                                                 "parent": 'global', "primitive_bundle": self.primitive_bundle})
+                                                 "parent": 'global', "primitive_bundle": self.primitive_bundle,
+                                                 "verbose": self.verbose})
 
     def produce_offset_table(self, scopeable: Scopeable) -> Dict[str, int]:
         """
