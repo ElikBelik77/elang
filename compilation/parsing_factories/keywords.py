@@ -6,6 +6,7 @@ from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
 
+from compilation.models.arrays import ArrayInitializer
 from type_system.arrays import Array, StackLayer, HeapLayer
 
 
@@ -27,11 +28,16 @@ class PrimitiveFactory(Factory):
         if len(match) < 2:
             raise Exception("Invalid position of the '{0}' type".format(self.type.name))
         if len(match) == 2:
-            return [VariableDeclaration(match[1].name, match[0].var_type)]
+            if isinstance(match[0].var_type, Array):
+                return [VariableDeclaration(match[1].name, match[0].var_type),
+                        ArrayInitializer(match[0].var_type, match[1].name)]
+        if isinstance(match[0].var_type, Array):
+            return [VariableDeclaration(match[1].name, match[0].var_type),
+                    ArrayInitializer(match[0].var_type, match[1].name), shunting_yard(match[1:])]
         return [VariableDeclaration(match[1].name, match[0].var_type), shunting_yard(match[1:])]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        lookahead_match = self.array_re_lookahead.match(source_code)
+        lookahead_match = self.array_re_lookahead.match(source_code[len(match.group(0)) - 1:])
         if lookahead_match is None:
             return [VariableDeclaration(None, self.type)], source_code[len(match.group(0)):].strip()
         last_stack_layer = 0
@@ -49,10 +55,12 @@ class PrimitiveFactory(Factory):
                         last_stack_layer + 1))
             if brackets_start != brackets_end - 1:
                 layers.append(StackLayer(shunting_yard(
-                    [token for token in parser.parse_source_code(source_code[brackets_start + 1:brackets_end - 1])])))
+                    [token for token in
+                     parser.parse_source_code(lookahead_match.group(0)[brackets_start + 1:brackets_end],
+                                              parent_scope)])))
             else:
                 layers.append(HeapLayer())
-        return [VariableDeclaration(None, Array(self.type, layers))], source_code[brackets_end + 1:]
+        return [VariableDeclaration(None, Array(self.type, layers))], source_code[len(match.group(0)) + brackets_end:]
 
 
 class WhileFactory(Factory):

@@ -6,9 +6,11 @@ class Variable(Compilable):
     Model for variable mentions
     """
 
-    def __init__(self, name: str, type):
+    def __init__(self, name: str):
         self.name = name
-        self.type = type
+
+    def is_constant(self):
+        return False
 
     def get_mentions(self) -> List[str]:
         return [self.name]
@@ -22,8 +24,14 @@ class DecimalConstantValue:
     def __init__(self, value: int):
         self.value = value
 
+    def is_constant(self):
+        return True
+
     def get_mentions(self) -> List[str]:
         return []
+
+    def evaluate(self):
+        return self.value
 
 
 class FunctionCall(Compilable):
@@ -40,6 +48,9 @@ class FunctionCall(Compilable):
         for argument in self.arguments:
             mentions += argument.get_mentions()
         return mentions
+
+    def is_constant(self):
+        return False
 
     def get_precedence(self):
         return 3

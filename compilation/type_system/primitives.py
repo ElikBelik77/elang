@@ -17,5 +17,5 @@ class PrimitiveSyntax:
 
 def get_default_primitives():
     int_p = Primitive("int")
-    int_syntax = PrimitiveSyntax(int_p, re.compile(r"\s*int\s+"), PrimitiveFactory(int_p))
+    int_syntax = PrimitiveSyntax(int_p, re.compile(r"\s*int(\s+|\[)"), PrimitiveFactory(int_p))
     return [int_syntax]

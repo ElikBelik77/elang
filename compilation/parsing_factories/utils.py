@@ -65,7 +65,7 @@ def find_closing_brackets(source_code: str) -> Tuple[int, int]:
 
 
 def find_bracket_pairs(text: str):
-    count, idx = 0, 0
+    count, idx = 1, 1
     start = 0
     while idx < len(text):
         if (text[idx] != "[" and text[idx] != "]") and idx is not 0 and count is 0:

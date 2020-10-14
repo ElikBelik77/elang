@@ -3,6 +3,7 @@ from compilation.models.values import *
 from compilation.models.keywords import *
 from compilation.models.operators import *
 from compilation.IA32.utils import get_unique_id
+from compilation.models.arrays import ArrayInitializer
 
 
 class TemplateFactory:
@@ -299,6 +300,11 @@ class WhileTemplateFactory(TemplateFactory):
         return assembly
 
 
+class ArrayInitializeTemplateFactory(TemplateFactory):
+    def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        return ""
+
+
 class ArrayIndexerTemplateFactory(TemplateFactory):
     def produce(self, indexer_expression: ArrayIndexer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         boundary_check = get_unique_id()
@@ -317,4 +323,5 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "push edi"
 
         )
+        return assembly
     # Array meta_data: dimension_size ,size_rest, values..

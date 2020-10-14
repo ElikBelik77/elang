@@ -34,6 +34,9 @@ class UnaryOperator:
     def get_precedence(self):
         pass
 
+    def is_constant(self):
+        pass
+
 
 class BinaryOperator:
     """
@@ -41,6 +44,9 @@ class BinaryOperator:
     """
 
     def get_precedence(self):
+        pass
+
+    def is_constant(self):
         pass
 
 

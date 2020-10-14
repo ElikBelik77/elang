@@ -1,4 +1,3 @@
-from typing import List
 from compilation.models.base import *
 
 
@@ -11,11 +10,17 @@ class MultiplicationOperator(Compilable, BinaryOperator):
         self.left = left
         self.right = right
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
     def get_precedence(self):
         return 2
+
+    def evaluate(self):
+        return self.left * self.right
 
 
 class DivisionOperator(Compilable, BinaryOperator):
@@ -30,8 +35,14 @@ class DivisionOperator(Compilable, BinaryOperator):
     def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 2
+
+    def evaluate(self):
+        return self.left // self.right
 
 
 class AdditionOperator(Compilable, BinaryOperator):
@@ -46,8 +57,14 @@ class AdditionOperator(Compilable, BinaryOperator):
     def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return self.left + self.right
 
 
 class LeftParenthesis:
@@ -76,8 +93,14 @@ class SubtractOperator(Compilable, BinaryOperator):
     def get_mentions(self) -> List[str]:
         return self.left.get_mentions() + self.right.get_mentions()
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return self.left - self.right
 
 
 class LogicalAnd(Compilable, BinaryOperator):
@@ -89,8 +112,14 @@ class LogicalAnd(Compilable, BinaryOperator):
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return 1 if self.left and self.right else 0
 
 
 class LogicalOr(Compilable, BinaryOperator):
@@ -102,8 +131,14 @@ class LogicalOr(Compilable, BinaryOperator):
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return 1 if self.left or self.right else 0
 
 
 class LogicalGreater(Compilable, BinaryOperator):
@@ -115,8 +150,14 @@ class LogicalGreater(Compilable, BinaryOperator):
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return 1 if self.left > self.right else 0
 
 
 class Equal(Compilable, BinaryOperator):
@@ -128,8 +169,14 @@ class Equal(Compilable, BinaryOperator):
         mentions = self.left.get_mentions() + self.right.get_mentions()
         return mentions
 
+    def is_constant(self):
+        return self.left.is_constant() and self.right.is_constant()
+
     def get_precedence(self):
         return 1
+
+    def evaluate(self):
+        return 1 if self.left == self.right else 0
 
 
 class Assignment(Compilable, BinaryOperator):
@@ -160,3 +207,6 @@ class ArrayIndexer(Compilable, BinaryOperator):
 
     def get_precedence(self):
         return 4
+
+    def is_constant(self):
+        return False
