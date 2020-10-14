@@ -354,17 +354,18 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             f"{factories[type(indexer_expression.left)].produce(indexer_expression.left, factories, bundle)}\n"
             "pop edi\n"
             "pop eax\n"
-            "mov [edi], ebx\n"
+            "mov ebx, [edi]\n"
             "cmp eax, ebx\n"  # Check if index is of bounds
             f"jb loc_{passed_boundary_check}\n"
             "mov eax, 0\n"
             "mov ebx, 0\n"
             "int 0x80\n"
             f"loc_{passed_boundary_check}:"
-            "mov [edi - 4], ecx\n"
+            "mov ecx, [edi - 4]\n"
             "xor edx, edx\n"
             "mul ecx\n"
-            "add edi, eax\n"
+            "sub edi, 8\n"
+            "sub edi, eax\n"
             "push edi\n"
 
         )
