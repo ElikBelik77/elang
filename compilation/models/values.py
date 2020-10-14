@@ -6,8 +6,9 @@ class Variable(Compilable):
     Model for variable mentions
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, type):
         self.name = name
+        self.type = type
 
     def get_mentions(self) -> List[str]:
         return [self.name]

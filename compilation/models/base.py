@@ -92,7 +92,7 @@ class VariableDeclaration(Compilable):
     Model for variable declaration
     """
 
-    def __init__(self, name: str, var_type: str):
+    def __init__(self, name: str, var_type):  # TODO: add type hinting here
         self.name = name
         self.var_type = var_type
 

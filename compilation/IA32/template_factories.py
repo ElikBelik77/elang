@@ -301,4 +301,20 @@ class WhileTemplateFactory(TemplateFactory):
 
 class ArrayIndexerTemplateFactory(TemplateFactory):
     def produce(self, indexer_expression: ArrayIndexer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        return ""
+        boundary_check = get_unique_id()
+        assembly = (
+            f"{factories[type(indexer_expression.right)].produce(indexer_expression.right, factories, bundle)}"
+            f"{factories[type(indexer_expression.left)].produce(indexer_expression.left, factories, bundle)}"
+            "pop edi"
+            "pop eax"
+            "mov [edi], ebx"
+            "cmp eax, ebx"
+            f"jge loc_{boundary_check}"
+            "mov [edi+4], ecx"
+            "xor ebx, ebx"
+            "mul ecx"
+            "add edi, eax"
+            "push edi"
+
+        )
+    # Array meta_data: dimension_size ,size_rest, values..

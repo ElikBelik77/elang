@@ -20,7 +20,7 @@ def find_scope_end(source_code: str) -> int:
         idx += 1
 
 
-def find_closing_parenthesis(source_code: str) -> Tuple[int,int]:
+def find_closing_parenthesis(source_code: str) -> Tuple[int, int]:
     """
     This function find the right parenthesis that closes the current parenthesis.
     :param source_code: the source code
@@ -42,7 +42,7 @@ def find_closing_parenthesis(source_code: str) -> Tuple[int,int]:
         idx += 1
 
 
-def find_closing_brackets(source_code: str) -> Tuple[int,int]:
+def find_closing_brackets(source_code: str) -> Tuple[int, int]:
     """
     This function find the right parenthesis that closes the current parenthesis.
     :param source_code: the source code
@@ -61,6 +61,22 @@ def find_closing_brackets(source_code: str) -> Tuple[int,int]:
             count -= 1
         if count == 0:
             return start, idx + 1
+        idx += 1
+
+
+def find_bracket_pairs(text: str):
+    count, idx = 0, 0
+    start = 0
+    while idx < len(text):
+        if (text[idx] != "[" and text[idx] != "]") and idx is not 0 and count is 0:
+            break
+        if text[idx] == "[":
+            count += 1
+            start = idx
+        if text[idx] == "]":
+            count -= 1
+            if count == 0:
+                yield (start, idx)
         idx += 1
 
 

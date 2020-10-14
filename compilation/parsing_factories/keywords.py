@@ -1,9 +1,12 @@
+import re
+
 from compilation.parsing_factories.base import *
 from compilation.parsing_factories.utils import *
 from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
 
+from type_system.arrays import Array, StackLayer, HeapLayer
 
 
 class ReturnFactory(Factory):
@@ -18,16 +21,38 @@ def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scop
 class PrimitiveFactory(Factory):
     def __init__(self, primitive: "Primitive"):
         self.type = primitive
+        self.array_re_lookahead = re.compile(r"(s*\[(.*)]\s*)+")
 
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         if len(match) < 2:
             raise Exception("Invalid position of the '{0}' type".format(self.type.name))
         if len(match) == 2:
-            return [VariableDeclaration(self.type, self.type.name)]
-        return [VariableDeclaration(self.type, self.type.name), shunting_yard(match[1:])]
+            return [VariableDeclaration(match[1].name, match[0].var_type)]
+        return [VariableDeclaration(match[1].name, match[0].var_type), shunting_yard(match[1:])]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return [VariableDeclaration(self.type, self.type.name)], source_code[len(match.group(0)):].strip()
+        lookahead_match = self.array_re_lookahead.match(source_code)
+        if lookahead_match is None:
+            return [VariableDeclaration(None, self.type)], source_code[len(match.group(0)):].strip()
+        last_stack_layer = 0
+        stack_settled = False
+        layers = []
+        brackets_end = 0
+        for idx, brackets in enumerate(find_bracket_pairs(lookahead_match.group(0))):
+            brackets_start, brackets_end = brackets
+            if brackets_start == brackets_end - 1 and not stack_settled:
+                last_stack_layer = idx - 1
+                stack_settled = True
+            if brackets_start == brackets_end - 1 and stack_settled:
+                raise Exception(
+                    "Cannot use stack dimension declaration after defining array dimension {0} to be heap based.".format(
+                        last_stack_layer + 1))
+            if brackets_start != brackets_end - 1:
+                layers.append(StackLayer(shunting_yard(
+                    [token for token in parser.parse_source_code(source_code[brackets_start + 1:brackets_end - 1])])))
+            else:
+                layers.append(HeapLayer())
+        return [VariableDeclaration(None, Array(self.type, layers))], source_code[brackets_end + 1:]
 
 
 class WhileFactory(Factory):
