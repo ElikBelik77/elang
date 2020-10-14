@@ -360,7 +360,7 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "mov eax, 0\n"
             "mov ebx, 0\n"
             "int 0x80\n"
-            f"loc_{passed_boundary_check}:"
+            f"loc_{passed_boundary_check}:\n"
             "mov ecx, [edi - 4]\n"
             "xor edx, edx\n"
             "mul ecx\n"
