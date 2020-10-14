@@ -4,6 +4,7 @@ from typing import *
 from parsing_factories.keywords import *
 from parsing_factories.operators import *
 from parsing_factories.valid_tokens import *
+from type_system.primitives import PrimitiveSyntax, get_default_primitives
 
 
 class Parser:
@@ -18,10 +19,10 @@ class Parser:
         :return: a default parser.
         """
         keywords = [{"re": re.compile(r"\s*return\s"), "factory": ReturnFactory()},
-                    {"re": re.compile(r"\s*int\s+"), "factory": IntFactory()},
                     # Add int array keyword
                     {"re": re.compile(r"\s*(\w[\w]*)\s+((\w[\w]*)\s*\((.*)\))\s*{\s*"),
                      "factory": FunctionDeclarationFactory(), "scopeable": True},
+
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": AdditionFactory()},
@@ -39,7 +40,8 @@ class Parser:
                         {"re": re.compile(r"\s*[\d]+"), "factory": DecimalConstantFactory()},
                         {"re": re.compile(r"\s*\(\s*"), "factory": LeftParenthesisFactory()},
                         {"re": re.compile(r"\s*\)\s*"), "factory": RightParenthesisFactory()}]
-        return Parser(keywords=keywords, operators=operators, valid_tokens=valid_tokens)
+        return Parser(keywords=keywords, operators=operators, valid_tokens=valid_tokens).add_primitives(
+            get_default_primitives())
 
     def __init__(self, keywords: [Dict], operators: [Dict], valid_tokens: [Dict]):
         """
@@ -54,6 +56,11 @@ class Parser:
         self.keywords = keywords
         self.operators = operators
         self.valid_tokens = valid_tokens
+
+    def add_primitives(self, primitives_syntax: List[PrimitiveSyntax]):
+        for syntax in primitives_syntax:
+            self.keywords.append({"re": syntax.re, "factory": syntax.parsing_factory})
+        return self
 
     def parse_file(self, file: str) -> List[Function]:
         """

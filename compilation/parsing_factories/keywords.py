@@ -1,9 +1,9 @@
 from compilation.parsing_factories.base import *
 from compilation.parsing_factories.utils import *
 from compilation.models.keywords import *
-
 from compilation.shunting_yard import shunting_yard
 from typing import Match, Tuple
+
 
 
 class ReturnFactory(Factory):
@@ -15,16 +15,19 @@ def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scop
     return [Return(None)], source_code[len(match.group(0)):].strip()
 
 
-class IntFactory(Factory):
+class PrimitiveFactory(Factory):
+    def __init__(self, primitive: "Primitive"):
+        self.type = primitive
+
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         if len(match) < 2:
-            raise Exception("Invalid position of the 'int' keyword")
+            raise Exception("Invalid position of the '{0}' type".format(self.type.name))
         if len(match) == 2:
-            return [VariableDeclaration(match[1].name, "int")]
-        return [VariableDeclaration(match[1].name, "int"), shunting_yard(match[1:])]
+            return [VariableDeclaration(self.type, self.type.name)]
+        return [VariableDeclaration(self.type, self.type.name), shunting_yard(match[1:])]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return [VariableDeclaration(None, "int")], source_code[len(match.group(0)):].strip()
+        return [VariableDeclaration(self.type, self.type.name)], source_code[len(match.group(0)):].strip()
 
 
 class WhileFactory(Factory):
