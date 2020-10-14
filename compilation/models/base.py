@@ -1,5 +1,7 @@
 from typing import List
 
+from compilation.type_system.base import PointerType
+
 
 class Compilable:
     """
@@ -13,6 +15,9 @@ class Compilable:
         """
         pass
 
+    def convert_ptr_types(self, var_list):
+        pass
+
 
 class Scopeable(Compilable):
     """
@@ -22,12 +27,51 @@ class Scopeable(Compilable):
     def __init__(self, scope: "Scope", body: List[Compilable]):
         self.scope = scope
         self.body = body
+        self.convert_ptr_types()
 
     def get_mentions(self) -> List[str]:
         mentions = []
         for expression in self.body:
             mentions += expression.get_mentions()
         return mentions
+
+    def convert_ptr_types(self, var_list=[]):
+        pointer_variables = []
+        for variable in self.scope.defined_variables:
+            if issubclass(type(self.scope.defined_variables[variable]["type"]), PointerType):
+                pointer_variables.append(variable)
+
+        for statement in self.body:
+            statement.convert_ptr_types(pointer_variables)
+
+
+class Variable(Compilable):
+    """
+    Model for variable mentions
+    """
+
+    def __init__(self, name: str):
+        self.name = name
+
+    def is_constant(self):
+        return False
+
+    def get_mentions(self) -> List[str]:
+        return [self.name]
+
+    def to_ptr_type(self):
+        return PointerVariable(self.name)
+
+
+class PointerVariable(Compilable):
+    def __init__(self, name: str):
+        self.name = name
+
+    def is_constant(self):
+        return False
+
+    def get_mentions(self) -> List[str]:
+        return [self.name]
 
 
 class UnaryOperator:
@@ -38,16 +82,33 @@ class UnaryOperator:
         pass
 
 
-class BinaryOperator:
+class BinaryOperator(Compilable):
     """
     Interface for unifying operators.
     """
+
+    def __init__(self, left: Compilable = None, right: Compilable = None):
+        self.left = left
+        self.right = right
 
     def get_precedence(self):
         pass
 
     def is_constant(self):
-        pass
+        return self.left.is_constant() and self.right.is_constant()
+
+    def convert_ptr_types(self, var_list):
+        if isinstance(self.left, Variable):
+            self.left = self.left.to_ptr_type()
+        elif isinstance(self.left, BinaryOperator):
+            self.left.convert_ptr_types(var_list)
+        if isinstance(self.right, Variable):
+            self.right = self.right.to_ptr_type()
+        elif isinstance(self.right, BinaryOperator):
+            self.right.convert_ptr_types(var_list)
+
+    def get_mentions(self) -> List[str]:
+        return self.left.get_mentions() + self.right.get_mentions()
 
 
 class Scope:

@@ -12,6 +12,9 @@ class Return(Compilable):
     def get_mentions(self) -> List[str]:
         return self.expression.get_mentions()
 
+    def convert_ptr_types(self, var_list):
+        self.expression.convert_ptr_types(var_list)
+
 
 class If(Scopeable):
     """
@@ -21,7 +24,6 @@ class If(Scopeable):
     def __init__(self, scope: Scope, body: List[Compilable], condition: Compilable):
         super(If, self).__init__(scope, body)
         self.condition = condition
-
 
 class While(Scopeable):
     def __init__(self, scope: Scope, body: List[Compilable], condition: Compilable):

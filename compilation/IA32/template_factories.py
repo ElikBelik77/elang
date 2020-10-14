@@ -218,7 +218,9 @@ class DivisionTemplateFactory(TemplateFactory):
 class AssignmentTemplateFactory(TemplateFactory):
     def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
-        if bundle["offset_table"][assigment_expression.left.name] > 0:
+        if isinstance(assigment_expression.left, ArrayIndexer):
+            pass
+        elif bundle["offset_table"][assigment_expression.left.name] > 0:
             assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
                 "pop eax\n"
@@ -319,6 +321,7 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
 class ArrayIndexerTemplateFactory(TemplateFactory):
     def produce(self, indexer_expression: ArrayIndexer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         boundary_check = get_unique_id()
+
         assembly = (
             f"{factories[type(indexer_expression.right)].produce(indexer_expression.right, factories, bundle)}"
             f"{factories[type(indexer_expression.left)].produce(indexer_expression.left, factories, bundle)}"
@@ -332,7 +335,6 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "mul ecx"
             "add edi, eax"
             "push edi"
-
         )
         return assembly
     # Array meta_data: dimension_size ,size_rest, values..

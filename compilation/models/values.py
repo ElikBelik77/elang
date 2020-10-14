@@ -1,20 +1,6 @@
 from compilation.models.base import *
 
 
-class Variable(Compilable):
-    """
-    Model for variable mentions
-    """
-
-    def __init__(self, name: str):
-        self.name = name
-
-    def is_constant(self):
-        return False
-
-    def get_mentions(self) -> List[str]:
-        return [self.name]
-
 
 class DecimalConstantValue:
     """

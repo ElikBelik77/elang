@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+from compilation.type_system.base import PointerType
+
 
 class Layer:
     def get_size(self) -> int:
@@ -22,7 +24,7 @@ class StackLayer(Layer):
         return self.size
 
 
-class Array:
+class Array(PointerType):
     def __init__(self, underlying_type, layers: List[Layer]):
         self.underlying_type = underlying_type
         self.layers = layers

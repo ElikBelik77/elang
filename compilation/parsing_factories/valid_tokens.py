@@ -31,6 +31,6 @@ class VariableFactory(Factory):
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return [Variable(match.group(0))], source_code[len(match.group(0)):].strip()
+        return [Variable(match.group(0).strip())], source_code[len(match.group(0)):].strip()
 
 
