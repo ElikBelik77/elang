@@ -1,4 +1,5 @@
 import re
+from typing import Dict
 
 from compilation.parsing_factories.keywords import PrimitiveFactory
 
@@ -6,6 +7,9 @@ from compilation.parsing_factories.keywords import PrimitiveFactory
 class Primitive:
     def __init__(self, name):
         self.name = name
+
+    def get_size(self, bundle: Dict):
+        return bundle[self.name]
 
 
 class PrimitiveSyntax:

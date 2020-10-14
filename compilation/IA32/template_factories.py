@@ -302,7 +302,10 @@ class WhileTemplateFactory(TemplateFactory):
 
 class ArrayInitializeTemplateFactory(TemplateFactory):
     def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        array_start_offset = -bundle["offset_table"][array.variable_name]
+        arrays_metadata = array.array.get_metadata(bundle["primitive_bundle"])
         return ""
+
 
 
 class ArrayIndexerTemplateFactory(TemplateFactory):

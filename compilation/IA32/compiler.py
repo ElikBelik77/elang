@@ -29,12 +29,15 @@ class ProgramCompiler:
             LogicalAnd: LogicalAndTemplateFactory(),
             LogicalOr: LogicalOrTemplateFactory(),
             If: IfTemplateFactory(),
-            While: WhileTemplateFactory()
+            While: WhileTemplateFactory(),
+            ArrayInitializer:ArrayInitializeTemplateFactory()
         })
 
     def __init__(self, factories: Dict[type, TemplateFactory]) -> None:
         self.factories = factories
-        pass
+        self.primitive_bundle = {
+            "int": 4
+        }
 
     def compile(self, program: Program, destination_file: str) -> None:
         """
@@ -64,7 +67,7 @@ class ProgramCompiler:
             stack_size = abs(min(offset_table.values()))
         return self.factories[Function].produce(function, self.factories,
                                                 {"stack_size": stack_size, "offset_table": offset_table,
-                                                 "parent": 'global'})
+                                                 "parent": 'global', "primitive_bundle": self.primitive_bundle})
 
     def produce_offset_table(self, scopeable: Scopeable) -> Dict[str, int]:
         """
@@ -80,8 +83,11 @@ class ProgramCompiler:
         scopes: List[Scopeable] = [scopeable]
         while len(scopes) is not 0:
             current_scope = scopes.pop()
+            last_offset = 0
             for idx, key in enumerate(current_scope.scope.defined_variables):
-                scope_table[key] = -4 * (idx + 1)
+                scope_table[key] = last_offset - current_scope.scope.defined_variables[key]["type"].get_size(
+                    self.primitive_bundle)
+                last_offset = scope_table[key]
             for compilable in current_scope.body:
                 if issubclass(type(compilable), Scopeable):
                     scopes.append(compilable)
