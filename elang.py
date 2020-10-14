@@ -1,5 +1,5 @@
 from compilation.parsing import Parser
-from semantic.semantic_check import *
+from compilation.semantic.semantic_check import *
 from compilation.IA32.compiler import ProgramCompiler
 import os
 import sys

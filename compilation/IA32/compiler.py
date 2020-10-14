@@ -88,9 +88,9 @@ class ProgramCompiler:
             current_scope = scopes.pop()
             last_offset = 0
             for idx, key in enumerate(current_scope.scope.defined_variables):
-                scope_table[key] = last_offset - current_scope.scope.defined_variables[key]["type"].get_size(
+                scope_table[key] = last_offset
+                last_offset = scope_table[key] - current_scope.scope.defined_variables[key]["type"].get_size(
                     self.primitive_bundle)
-                last_offset = scope_table[key]
             for compilable in current_scope.body:
                 if issubclass(type(compilable), Scopeable):
                     scopes.append(compilable)

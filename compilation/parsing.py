@@ -1,10 +1,10 @@
 import re
 from typing import *
 
-from parsing_factories.keywords import *
-from parsing_factories.operators import *
-from parsing_factories.valid_tokens import *
-from type_system.primitives import PrimitiveSyntax, get_default_primitives
+from compilation.parsing_factories.keywords import *
+from compilation.parsing_factories.operators import *
+from compilation.parsing_factories.valid_tokens import *
+from compilation.type_system.primitives import PrimitiveSyntax, get_default_primitives
 
 
 class Parser:
