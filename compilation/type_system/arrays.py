@@ -50,11 +50,8 @@ class Array:
         metadata[0]["offsets"] = [0]
         for idx, layer in enumerate(self.layers[1::]):
             header_size = 2 * bundle["int"]
-            metadata[idx + 1]["offsets"] = []  # current metadata
+            metadata[idx + 1]["offsets"] = []  # current metadata, attention enumerate starts from second element.
             for offset in metadata[idx]["offsets"]:
                 for cell in range(0, metadata[idx]["array_size"]):
                     metadata[idx + 1]["offsets"].append(offset + header_size + cell * metadata[idx]["cell_size"])
         return metadata
-    # offsets = 8 +[1..n]*current_array_size
-# int + int + dim_size*layers_size
-# dim_size, primitive_size : [primitives]

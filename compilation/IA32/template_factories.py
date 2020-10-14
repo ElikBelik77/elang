@@ -302,10 +302,18 @@ class WhileTemplateFactory(TemplateFactory):
 
 class ArrayInitializeTemplateFactory(TemplateFactory):
     def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        array_start_offset = -bundle["offset_table"][array.variable_name]
+        array_start_offset = bundle["offset_table"][array.variable_name]
         arrays_metadata = array.array.get_metadata(bundle["primitive_bundle"])
-        return ""
-
+        assembly = (
+            f"mov edi, [ebp - {-array_start_offset}]\n"
+        )
+        for metadata in arrays_metadata:
+            for offset in metadata["offsets"]:
+                assembly += (
+                    f"mov [edi - {offset}], {metadata['array_size']}\n"
+                    f"mov [edi - {offset + bundle['primitive_bundle']['int']}], {metadata['cell_size']}\n"
+                )
+        return assembly
 
 
 class ArrayIndexerTemplateFactory(TemplateFactory):
