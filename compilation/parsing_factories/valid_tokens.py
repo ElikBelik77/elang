@@ -32,5 +32,3 @@ class VariableFactory(Factory):
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [Variable(match.group(0).strip())], source_code[len(match.group(0)):].strip()
-
-

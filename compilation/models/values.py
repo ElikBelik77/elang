@@ -1,6 +1,19 @@
 from compilation.models.base import *
 
 
+class StringConstantValue:
+    def __init__(self, value):
+        self.value = value
+
+    def is_constant(self) -> bool:
+        return True
+
+    def get_mentions(self) -> List[str]:
+        return []
+
+    def evaluate(self):
+        return ord(self.value)
+
 
 class DecimalConstantValue:
     """
