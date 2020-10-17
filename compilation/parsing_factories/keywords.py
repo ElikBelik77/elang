@@ -4,10 +4,9 @@ from compilation.parsing_factories.base import *
 from compilation.parsing_factories.utils import *
 from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
-from typing import Match, Tuple
+from compilation.models.arrays import ArrayInitializer, Array, HeapLayer, StackLayer
 
-from compilation.models.arrays import ArrayInitializer
-from compilation.type_system.arrays import Array, StackLayer, HeapLayer
+from typing import Match, Tuple
 
 
 class ReturnFactory(Factory):
@@ -17,6 +16,15 @@ class ReturnFactory(Factory):
 
 def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
     return [Return(None)], source_code[len(match.group(0)):].strip()
+
+
+class ElangClassDeclarationFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        # TODO: fill this
+        pass
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid location to declare a class.")
 
 
 class PrimitiveFactory(Factory):

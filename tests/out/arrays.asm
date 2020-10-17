@@ -17,11 +17,11 @@ pop edi
 pop eax
 mov ebx, [edi]
 cmp eax, ebx
-jb loc_0CACD1
+jb loc_F2F920
 mov eax, 0
 mov ebx, 0
 int 0x80
-loc_0CACD1:
+loc_F2F920:
 mov ecx, [edi - 4]
 xor edx, edx
 mul ecx
@@ -54,11 +54,11 @@ pop edi
 pop eax
 mov ebx, [edi]
 cmp eax, ebx
-jb loc_E65F10
+jb loc_9B984A
 mov eax, 0
 mov ebx, 0
 int 0x80
-loc_E65F10:
+loc_9B984A:
 mov ecx, [edi - 4]
 xor edx, edx
 mul ecx
@@ -70,11 +70,11 @@ pop edi
 pop eax
 mov ebx, [edi]
 cmp eax, ebx
-jb loc_512AAF
+jb loc_02EEB0
 mov eax, 0
 mov ebx, 0
 int 0x80
-loc_512AAF:
+loc_02EEB0:
 mov ecx, [edi - 4]
 xor edx, edx
 mul ecx
