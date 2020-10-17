@@ -1,19 +1,34 @@
-from typing import List, Dict
-
 from compilation.type_system.base import PointerType
+from typing import List, Dict
 
 
 class Layer:
+    """
+    Interface for array layer (one dimension of an array)
+    """
+
     def get_size(self) -> int:
+        """
+        This function returns the size of the layer
+        :return:
+        """
         pass
 
 
 class HeapLayer(Layer):
+    """
+    Type of layer that is stored on the heap.
+    """
+
     def get_size(self):
         return 4
 
 
 class StackLayer(Layer):
+    """
+    Type of layer that is stored on the stack
+    """
+
     def __init__(self, size_expression):
         self.size_expression = size_expression
         if not size_expression.is_constant():
@@ -25,11 +40,20 @@ class StackLayer(Layer):
 
 
 class Array(PointerType):
+    """
+    Class for array types.
+    """
+
     def __init__(self, underlying_type, layers: List[Layer]):
         self.underlying_type = underlying_type
         self.layers = layers
 
     def get_size(self, bundle: Dict):
+        """
+        This function calculates the size of the entire array on the stack.
+        :param bundle: the bundle of primitive sizes
+        :return: the size in bytes of the array
+        """
         base_size = self.layers[-1].get_size() * bundle[self.underlying_type.name] + 2 * bundle["int"]
         stack_size = base_size
         for idx, layer in enumerate(self.layers[:-1][::-1]):
@@ -38,7 +62,13 @@ class Array(PointerType):
             stack_size = bundle["int"] * 2 + layer.size * stack_size
         return stack_size
 
-    def get_metadata(self, bundle: Dict):
+    def get_metadata(self, bundle: Dict) -> List[Dict]:
+        """
+        This function creates the headers metadata for all the array and its' subarrays.
+        Aswell as calculating the offsets on the stack for every sub array.
+        :param bundle: the bundle of primitive types.
+        :return: list of header information and offsets.
+        """
         metadata = [
             {"array_size": self.layers[-1].get_size(), "cell_size": bundle[self.underlying_type.name], "offsets": [0]}]
         base_size = self.layers[-1].get_size() * bundle[self.underlying_type.name] + 2 * bundle["int"]

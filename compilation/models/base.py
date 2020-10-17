@@ -64,6 +64,10 @@ class Variable(Compilable):
 
 
 class PointerVariable(Compilable):
+    """
+    Model for a variable that is a pointer type.
+    """
+
     def __init__(self, name: str):
         self.name = name
 

@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 
 from compilation.models.keywords import VariableDeclaration
 
@@ -64,7 +64,12 @@ def find_closing_brackets(source_code: str) -> Tuple[int, int]:
         idx += 1
 
 
-def find_bracket_pairs(text: str):
+def find_bracket_pairs(text: str) -> List[Tuple[int, int]]:
+    """
+    Helper function for array indexing and declaration. Finds all pairs of opening and closing brackets in a given text.
+    :param text: the text.
+    :return: yields tuples of (start, end) for every bracket.
+    """
     count, idx = 1, 1
     start = 0
     while idx < len(text):
@@ -81,6 +86,13 @@ def find_bracket_pairs(text: str):
 
 
 def populate_scope(scope, body, match):
+    """
+    This function populates a scopes body with variable declarations#TODO: move over into scopeable class function
+    :param scope: the scope.
+    :param body: the body of the scope
+    :param match: the match that contains the scope
+    :return:
+    """
     for idx, statement in enumerate(body):
         if isinstance(statement, VariableDeclaration) and statement.name not in scope.defined_variables:
             scope.defined_variables[statement.name] = {"type": statement.var_type, "define_line": idx,
