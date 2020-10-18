@@ -12,9 +12,6 @@ class Return(Compilable):
     def get_mentions(self) -> List[str]:
         return self.expression.get_mentions()
 
-    def convert_ptr_types(self, var_list):
-        self.expression.convert_ptr_types(var_list)
-
 
 class If(Scopeable):
     """

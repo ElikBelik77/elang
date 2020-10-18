@@ -1,9 +1,9 @@
 import re
-from compilation.parsing_factories.keywords import PrimitiveFactory
+from compilation.parsing_factories.keywords import PrimitiveFactory, Type
 from typing import Dict, List
 
 
-class Primitive:
+class Primitive(Type):
     """
     Class for primitive types.
     """

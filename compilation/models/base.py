@@ -1,6 +1,7 @@
 from typing import List
 
-from compilation.type_system.base import PointerType
+from compilation.type_system.base import Type
+from headers import CompileAsPointer
 
 
 class Compilable:
@@ -38,7 +39,7 @@ class Scopeable(Compilable):
     def convert_ptr_types(self, var_list=[]):
         pointer_variables = []
         for variable in self.scope.defined_variables:
-            if issubclass(type(self.scope.defined_variables[variable]["type"]), PointerType):
+            if issubclass(type(self.scope.defined_variables[variable]["type"]), CompileAsPointer):
                 pointer_variables.append(variable)
 
         for statement in self.body:
@@ -163,7 +164,7 @@ class VariableDeclaration(Compilable):
     Model for variable declaration
     """
 
-    def __init__(self, name: str, var_type):  # TODO: add type hinting here
+    def __init__(self, name: str, var_type: Type):  # TODO: add type hinting here
         self.name = name
         self.var_type = var_type
 

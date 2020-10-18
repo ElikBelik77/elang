@@ -74,7 +74,7 @@ class Parser:
             source_code = f.read().strip()
         return self.parse_source_code(source_code, parent_scope=global_scope, top_level=True)
 
-    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False) -> Program:
+    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False):
         """
         This function parses a source code into tokens.
         :param source_code: the source code to parse.
