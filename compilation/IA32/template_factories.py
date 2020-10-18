@@ -370,7 +370,6 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
 
         )
         return assembly
-    # Array meta_data: dimension_size ,size_rest, values..
 
 
 class PointerVariableTemplateFactory(TemplateFactory):

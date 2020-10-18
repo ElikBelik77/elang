@@ -1,6 +1,7 @@
 from typing import Tuple
 
 from compilation.IA32.template_factories import *
+from type_system.primitives import Primitive
 
 
 class ProgramCompiler:
@@ -81,8 +82,13 @@ class ProgramCompiler:
         arguments_size = 12
         if isinstance(scopeable, Function):
             for idx, arg in enumerate(scopeable.arguments):
-                scope_table[arg.name] = arguments_size + idx * 4
-                arguments_size += idx * self.size_bundle[arg.var_type]
+                if issubclass(type(arg.var_type), CompileAsPointer):
+                    scope_table[arg.name] = arguments_size + idx * self.size_bundle["int"]
+                    arguments_size += idx * self.size_bundle["int"]
+                elif isinstance(type(arg.var_type), Primitive):
+                    scope_table[arg.name] = arguments_size + idx * arg.var_type.get_size(self.size_bundle)
+                    arguments_size += idx * self.size_bundle[arg.var_type.get_size(self.size_bundle)]
+
         scopes: List[Scopeable] = [scopeable]
         stack_size = 0
         while len(scopes) is not 0:
