@@ -1,0 +1,11 @@
+class Foo {
+    int a;
+
+    int function() {
+
+    }
+}
+
+int main() {
+
+}

@@ -190,5 +190,9 @@ class Program(Compilable):
     Model for the entire program
     """
 
-    def __init__(self, functions: List["Function"]):
+    def __init__(self, globals: List[Variable], globals_init: List[Compilable], functions: List[Function],
+                 classes: List["ElangClass"]):
+        self.classes = classes
+        self.globals = globals
+        self.globals_init = globals_init
         self.functions = functions

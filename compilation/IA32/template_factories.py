@@ -331,7 +331,7 @@ class WhileTemplateFactory(TemplateFactory):
 class ArrayInitializeTemplateFactory(TemplateFactory):
     def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         array_start_offset = bundle["offset_table"][array.variable_name]
-        arrays_metadata = array.array.get_metadata(bundle["primitive_bundle"])
+        arrays_metadata = array.array.get_metadata(bundle["size_bundle"])
         assembly = self.add_verbose(bundle)
         assembly += (
             f"lea edi, [ebp - {-array_start_offset}]\n"
@@ -340,7 +340,7 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
             for offset in metadata["offsets"]:
                 assembly += (
                     f"mov [edi - {offset}], dword {metadata['array_size']}\n"
-                    f"mov [edi - {offset + bundle['primitive_bundle']['int']}], dword {metadata['cell_size']}\n"
+                    f"mov [edi - {offset + bundle['size_bundle']['int']}], dword {metadata['cell_size']}\n"
                 )
         return assembly
 

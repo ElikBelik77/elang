@@ -22,7 +22,8 @@ class Parser:
                     # Add int array keyword
                     {"re": re.compile(r"\s*(\w[\w]*)\s+((\w[\w]*)\s*\((.*)\))\s*{\s*"),
                      "factory": FunctionDeclarationFactory(), "scopeable": True},
-                    {"re": re.compile(r"\s*class\s*(\w[\w]*)\s*{\s*"), "factory":ElangClassDeclarationFactory(), "scopeable":True}
+                    {"re": re.compile(r"\s*class\s*(\w[\w]*)\s*{\s*"), "factory": ElangClassDeclarationFactory(),
+                     "scopeable": True},
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": AdditionFactory()},
@@ -62,7 +63,7 @@ class Parser:
             self.keywords.append({"re": syntax.re, "factory": syntax.parsing_factory})
         return self
 
-    def parse_file(self, file: str) -> List[Function]:
+    def parse_file(self, file: str) -> Program:
         """
         This function parses a file.
         :param file: the path to the file to parse.
@@ -71,9 +72,9 @@ class Parser:
         global_scope = Scope('global', None)
         with open(file, "r") as f:
             source_code = f.read().strip()
-        return self.parse_source_code(source_code, parent_scope=global_scope)
+        return self.parse_source_code(source_code, parent_scope=global_scope, top_level=True)
 
-    def parse_source_code(self, source_code: str, parent_scope: Scope) -> List[Function]:
+    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False) -> Program:
         """
         This function parses a source code into tokens.
         :param source_code: the source code to parse.
@@ -106,6 +107,8 @@ class Parser:
                 parsed += factory.produce(parser=self, source_code=None,
                                           parent_scope=parent_scope,
                                           match=match_models)
+        if top_level:
+            return Program(*self.classify_entities(parsed))
         return parsed
 
     def get_maximal_match(self, text: str) -> Tuple[Dict, Match]:
@@ -131,3 +134,16 @@ class Parser:
                     maximal_match is None or len(maximal_match.group(0)) < len(match.group(0))):
                 maximal_match, token_entry = match, token
         return token_entry, maximal_match
+
+    def classify_entities(self, tokens):
+        globals, globals_initialization, functions, classes = [], [], [], []
+        for token in tokens:
+            if isinstance(token, Function):
+                functions.append(token)
+            if isinstance(token, ElangClass):
+                classes.append(token)
+            if isinstance(token, VariableDeclaration):
+                globals.append(token)
+            else:
+                globals_initialization.append(token)
+        return globals, globals_initialization, functions, classes

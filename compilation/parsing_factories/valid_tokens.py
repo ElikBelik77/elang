@@ -28,6 +28,8 @@ class DecimalConstantFactory(Factory):
 
 class VariableFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        if len(match) == 1:
+            return []
         return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):

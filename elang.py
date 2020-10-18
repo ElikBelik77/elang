@@ -12,7 +12,7 @@ destination_path = sys.argv[2]
 p = Parser.create_default()
 sc = SemanticChecker.create_default()
 compiler = ProgramCompiler.create_default()
-program = Program(p.parse_file(source_path))
+program = p.parse_file(source_path)
 sc.check(program)
 compiler.compile(program, f"{source_path}.asm")
 os.system("nasm -f elf {source_path}.asm -o {source_path}.o".format(source_path=source_path))

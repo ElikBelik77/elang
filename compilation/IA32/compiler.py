@@ -38,7 +38,7 @@ class ProgramCompiler:
 
     def __init__(self, factories: Dict[type, TemplateFactory], verbose: bool = True) -> None:
         self.factories = factories
-        self.primitive_bundle = {
+        self.size_bundle = {
             "int": 4
         }
         self.verbose = True
@@ -67,7 +67,7 @@ class ProgramCompiler:
         offset_table, stack_size = self.produce_offset_table(function)
         return self.factories[Function].produce(function, self.factories,
                                                 {"stack_size": stack_size, "offset_table": offset_table,
-                                                 "parent": 'global', "primitive_bundle": self.primitive_bundle,
+                                                 "parent": 'global', "size_bundle": self.size_bundle,
                                                  "verbose": self.verbose})
 
     def produce_offset_table(self, scopeable: Scopeable) -> Tuple[Dict[str, int], int]:
@@ -78,9 +78,11 @@ class ProgramCompiler:
         """
         scope_table: Dict[str, int] = {}
 
+        arguments_size = 12
         if isinstance(scopeable, Function):
             for idx, arg in enumerate(scopeable.arguments):
-                scope_table[arg.name] = 12 + idx * 4
+                scope_table[arg.name] = arguments_size + idx * 4
+                arguments_size += idx * self.size_bundle[arg.var_type]
         scopes: List[Scopeable] = [scopeable]
         stack_size = 0
         while len(scopes) is not 0:
@@ -88,7 +90,7 @@ class ProgramCompiler:
             for idx, key in enumerate(current_scope.scope.defined_variables):
                 scope_table[key] = stack_size
                 stack_size = scope_table[key] - current_scope.scope.defined_variables[key]["type"].get_size(
-                    self.primitive_bundle)
+                    self.size_bundle)
             for compilable in current_scope.body:
                 if issubclass(type(compilable), Scopeable):
                     scopes.append(compilable)

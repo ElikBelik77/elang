@@ -5,7 +5,7 @@ from compilation.parsing_factories.utils import *
 from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
 from compilation.models.arrays import ArrayInitializer, Array, HeapLayer, StackLayer
-
+from compilation.models.classes import ElangClass
 from typing import Match, Tuple
 
 
@@ -20,8 +20,17 @@ def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scop
 
 class ElangClassDeclarationFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        # TODO: fill this
-        pass
+        source_code = source_code[len(match.group(0).strip()):].strip()
+        source_end = find_scope_end(source_code)
+        scope = Scope(match.group(0), parent_scope)
+        body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
+        member_variables = [token for token in body if isinstance(token, VariableDeclaration)]
+        member_variables_initialization = [token for token in body if
+                                           not isinstance(token, VariableDeclaration) and not isinstance(token,
+                                                                                                         Function)]
+        functions = [token for token in body if isinstance(token, Function)]
+        return [ElangClass(match.group(0), scope, functions, member_variables,
+                           member_variables_initialization)], source_code[source_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a class.")
@@ -39,6 +48,9 @@ class PrimitiveFactory(Factory):
             if isinstance(match[0].var_type, Array):
                 return [VariableDeclaration(match[1].name, match[0].var_type),
                         ArrayInitializer(match[0].var_type, match[1].name)]
+            else:
+                return [VariableDeclaration(match[1].name, match[0].var_type)]
+
         if isinstance(match[0].var_type, Array):
             return [VariableDeclaration(match[1].name, match[0].var_type),
                     ArrayInitializer(match[0].var_type, match[1].name), shunting_yard(match[1:])]
