@@ -57,6 +57,7 @@ class ProgramCompiler:
         :return: None.
         """
         assembly = ("SECTION .text\n"
+                    "extern malloc\n"
                     "global main\n")
         vtables = {}
         for elang_class in program.classes:

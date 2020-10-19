@@ -407,7 +407,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
         if class_type.constructor is not None:
             assembly += (
                 "push eax\n"
-                f"call vt_{class_type.name}_{class_type.constructor.name}\n"
+                f"call vt_{class_type.constructor.name}\n"
                 "add esp, 4\n"
             )
         assembly += "\n"
