@@ -89,7 +89,7 @@ int main() {
 }
 ```
 Will compile to
-
+```
 SECTION .text
 extern malloc
 global main
