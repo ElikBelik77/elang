@@ -1,9 +1,9 @@
 from typing import Tuple
 
-from IA32.utils import produce_offset_table, produce_class_vtable
+from compilation.IA32.utils import produce_offset_table, produce_class_vtable
 from compilation.IA32.template_factories import *
 from compilation.models.classes import ElangClass
-from type_system.primitives import Primitive
+from compilation.type_system.primitives import Primitive
 
 
 class ProgramCompiler:

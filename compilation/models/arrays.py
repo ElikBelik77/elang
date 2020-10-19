@@ -2,8 +2,8 @@ from compilation.models.base import Compilable
 
 from typing import List, Dict
 
-from headers import CompileAsPointer
-from type_system.base import Type
+from compilation.headers import CompileAsPointer
+from compilation.type_system.base import Type
 
 
 class Layer:

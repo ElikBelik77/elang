@@ -1,10 +1,10 @@
 import uuid
 from typing import Tuple, Dict, List
 
-from headers import CompileAsPointer
+from compilation.headers import CompileAsPointer
 from compilation.models.base import Scopeable, Function
 from compilation.models.classes import ElangClass
-from type_system.primitives import Primitive
+from compilation.type_system.primitives import Primitive
 
 
 def get_unique_id() -> str:

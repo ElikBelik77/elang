@@ -2,7 +2,7 @@ from typing import List
 
 from compilation.models.base import Scopeable, Scope, VariableDeclaration, Compilable, Function
 from compilation.type_system.base import Type
-from headers import CompileAsPointer
+from compilation.headers import CompileAsPointer
 
 
 class ElangClass(Scopeable, CompileAsPointer):

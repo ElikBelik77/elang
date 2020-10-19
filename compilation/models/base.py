@@ -1,7 +1,7 @@
 from typing import List
 
 from compilation.type_system.base import Type
-from headers import CompileAsPointer
+from compilation.headers import CompileAsPointer
 
 
 class Compilable:
