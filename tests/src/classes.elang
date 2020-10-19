@@ -1,11 +1,19 @@
+class Bar {
+    int b;
+}
 class Foo {
     int a;
+    Bar b;
+    int Bar(Foo this) {
 
-    int function() {
+    }
+
+    int constructor(Foo this) {
 
     }
 }
 
 int main() {
-
+    Foo foo = new Foo();
+    foo.b.b = 5;
 }

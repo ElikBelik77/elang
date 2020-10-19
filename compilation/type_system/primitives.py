@@ -1,5 +1,5 @@
 import re
-from compilation.parsing_factories.keywords import PrimitiveFactory, Type
+from compilation.parsing_factories.keywords import TypeFactory, Type
 from typing import Dict, List
 
 
@@ -9,7 +9,7 @@ class Primitive(Type):
     """
 
     def __init__(self, name):
-        self.name = name
+        super(Primitive, self).__init__(name)
 
     def get_size(self, bundle: Dict):
         """
@@ -34,7 +34,7 @@ class PrimitiveSyntax:
         """
         self.primitive = primitive
         self.re = regex
-        self.parsing_factory = PrimitiveFactory(primitive)
+        self.parsing_factory = TypeFactory(primitive)
 
 
 def get_default_primitives() -> List[PrimitiveSyntax]:

@@ -3,6 +3,7 @@ from compilation.models.base import Compilable
 from typing import List, Dict
 
 from headers import CompileAsPointer
+from type_system.base import Type
 
 
 class Layer:
@@ -42,7 +43,7 @@ class StackLayer(Layer):
         return self.size
 
 
-class Array(CompileAsPointer):
+class Array(Type, CompileAsPointer):
     """
     Class for array types.
     """

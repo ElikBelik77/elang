@@ -16,7 +16,7 @@ class AssignmentFactory(Factory):
 
 class SubtractionFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the * operator")
+        raise Exception("Invalid placement of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [SubtractOperator()], source_code[1:]
@@ -24,7 +24,7 @@ class SubtractionFactory(Factory):
 
 class MultiplicationFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the * operator")
+        raise Exception("Invalid placement of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [MultiplicationOperator()], source_code[1:]
@@ -32,7 +32,7 @@ class MultiplicationFactory(Factory):
 
 class LogicalAndFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the * operator")
+        raise Exception("Invalid placement of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [LogicalAnd()], source_code[match.span()[1]:]
@@ -40,7 +40,7 @@ class LogicalAndFactory(Factory):
 
 class LogicalOrFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the * operator")
+        raise Exception("Invalid placement of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [LogicalOr()], source_code[match.span()[1]:]
@@ -48,7 +48,7 @@ class LogicalOrFactory(Factory):
 
 class LogicalGreaterFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the * operator")
+        raise Exception("Invalid placement of the * operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [LogicalGreater()], source_code[match.span()[1]:]
@@ -56,7 +56,7 @@ class LogicalGreaterFactory(Factory):
 
 class EqualFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the == operator")
+        raise Exception("Invalid placement of the == operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [Equal()], source_code[match.span()[1]:]
@@ -64,7 +64,7 @@ class EqualFactory(Factory):
 
 class DivisionFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        raise Exception("Invalid placemenet of the / operator")
+        raise Exception("Invalid placement of the / operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [DivisionOperator()], source_code[1:]
@@ -72,10 +72,26 @@ class DivisionFactory(Factory):
 
 class AdditionFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return [shunting_yard(match)]
+        raise Exception("Invalid placement of the + operator")
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [AdditionOperator()], source_code[1:]
+
+
+class DotOperatorFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placement of the . operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return [DotOperator()], source_code[len(match.group(0)):]
+
+
+class NewOperatorFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid placement of the 'new' operator")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return [NewOperator()], source_code[len(match.group(0)):]
 
 
 class LeftParenthesisFactory(Factory):

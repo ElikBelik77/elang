@@ -32,6 +32,9 @@ class DecimalConstantValue:
     def evaluate(self):
         return self.value
 
+    def has_ptr_type(self):
+        return False
+
 
 class FunctionCall(Compilable):
     """
@@ -54,4 +57,5 @@ class FunctionCall(Compilable):
     def get_precedence(self):
         return 3
 
-
+    def has_ptr_type(self):
+        False  # TODO: take into account return type of function to determine ptr

@@ -63,6 +63,9 @@ class Variable(Compilable):
     def to_ptr_type(self):
         return PointerVariable(self.name)
 
+    def has_ptr_type(self):
+        return False
+
 
 class PointerVariable(Compilable):
     """
@@ -78,13 +81,26 @@ class PointerVariable(Compilable):
     def get_mentions(self) -> List[str]:
         return [self.name]
 
+    def has_ptr_type(self):
+        return True
 
-class UnaryOperator:
+
+class UnaryOperator(Compilable):
+    def __init__(self, obj: Compilable = None):
+        self.obj = obj
+
     def get_precedence(self):
         pass
 
     def is_constant(self):
         pass
+
+    def has_ptr_type(self):
+        if isinstance(self.obj, PointerVariable):
+            return True
+        elif isinstance(self.obj, BinaryOperator) or isinstance(self.obj, UnaryOperator):
+            return self.obj.has_ptr_type()
+        return False
 
 
 class BinaryOperator(Compilable):
@@ -103,16 +119,25 @@ class BinaryOperator(Compilable):
         return self.left.is_constant() and self.right.is_constant()
 
     def convert_ptr_types(self, var_list):
-        if isinstance(self.left, Variable):
+        if isinstance(self.left, Variable) and self.left.name in var_list:
             self.left = self.left.to_ptr_type()
-        elif isinstance(self.left, BinaryOperator):
+        elif isinstance(self.left, BinaryOperator) or isinstance(self.left, UnaryOperator):
             self.left.convert_ptr_types(var_list)
-        if isinstance(self.right, Variable):
+        if isinstance(self.right, Variable) and self.right.name in var_list:
             self.right = self.right.to_ptr_type()
-        elif isinstance(self.right, BinaryOperator):
+        elif isinstance(self.right, BinaryOperator) or isinstance(self.right, UnaryOperator):
             self.right.convert_ptr_types(var_list)
 
+    def has_ptr_type(self):
+        if isinstance(self.left, PointerVariable) or isinstance(self.right, PointerVariable):
+            return True
+        elif (isinstance(self.left, BinaryOperator) or isinstance(self.left, UnaryOperator)
+              and isinstance(self.right, BinaryOperator) or isinstance(self.right, UnaryOperator)):
+            return self.right.has_ptr_type() or self.left.has_ptr_type()
+        return False
+
     def get_mentions(self) -> List[str]:
+
         return self.left.get_mentions() + self.right.get_mentions()
 
 

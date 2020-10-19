@@ -113,5 +113,30 @@ class ArrayIndexer(BinaryOperator):
     def get_precedence(self):
         return 4
 
-    def is_constant(self):
-        return False
+
+class DotOperator(BinaryOperator):
+    def get_precedence(self):
+        return 3
+
+    def get_mentions(self) -> List[str]:
+        if isinstance(self.left, PointerVariable):  # TODO: properly check semantics of dot operator
+            return [self.left.name]
+        return []
+
+    def convert_ptr_types(self, var_list):
+        if isinstance(self.right, Variable):
+            self.right = self.right.to_ptr_type()
+        elif isinstance(self.right, BinaryOperator) or isinstance(self.right, UnaryOperator):
+            self.right.convert_ptr_types(var_list)
+        if isinstance(self.left, Variable):
+            self.left = self.left.to_ptr_type()
+        elif isinstance(self.left, BinaryOperator) or isinstance(self.left, UnaryOperator):
+            self.left.convert_ptr_types(var_list)
+
+
+class NewOperator(UnaryOperator):
+    def get_precedence(self):
+        return 3
+
+    def get_mentions(self):
+        return []

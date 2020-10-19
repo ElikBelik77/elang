@@ -65,6 +65,8 @@ def build_expression(output_queue: queue.Queue) -> Compilable:
     if issubclass(type(expression), BinaryOperator):
         expression.right = build_expression(output_queue)
         expression.left = build_expression(output_queue)
+    if issubclass(type(expression), UnaryOperator):
+        expression.obj = build_expression(output_queue)
     if isinstance(expression, DecimalConstantValue) or isinstance(expression, Variable) or isinstance(expression,
                                                                                                       FunctionCall):
         return expression

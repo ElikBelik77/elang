@@ -2,8 +2,10 @@ from typing import Dict
 from compilation.models.values import *
 from compilation.models.keywords import *
 from compilation.models.operators import *
-from compilation.IA32.utils import get_unique_id
+from compilation.IA32.utils import get_unique_id, produce_offset_table, produce_class_member_offset_table
 from compilation.models.arrays import ArrayInitializer
+from compilation.models.classes import ElangClass
+from queue import Queue
 
 
 class TemplateFactory:
@@ -154,8 +156,8 @@ class FunctionTemplateFactory(TemplateFactory):
                 has_ret = True
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
-        stack_allocation_line = "sub esp, {stack_size}\n".format(stack_size=bundle["stack_size"]) if bundle[
-                                                                                                         "stack_size"] is not 0 else ""
+        stack_allocation_line = "sub esp, {stack_size}\n".format(stack_size=bundle["stack_size"]) \
+            if bundle["stack_size"] is not 0 else ""
         function_assembly = (f"{self.add_verbose(bundle)}"
                              "{name}:\n"
                              "push ebp\n"
@@ -236,7 +238,7 @@ class AssignmentTemplateFactory(TemplateFactory):
         assembly = self.add_verbose(bundle)
         assembly += factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
         # TODO: check if left produces a POINTER TYPE, instead of array indexer for the future
-        if isinstance(assigment_expression.left, ArrayIndexer):
+        if assigment_expression.left.has_ptr_type():
             assembly += (
                 f"{factories[type(assigment_expression.left)].produce(assigment_expression.left, factories, bundle)}"
                 "pop edi\n"
@@ -385,4 +387,97 @@ class PointerVariableTemplateFactory(TemplateFactory):
                 "lea edi, [ebp - {var_offset}]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
             )
+        return assembly
+
+
+class NewOperatorTemplateFactory(TemplateFactory):
+    def produce(self, new: NewOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
+        assembly = self.add_verbose(bundle)
+
+        assert isinstance(new.obj, FunctionCall)
+        class_size = bundle["size_bundle"][new.obj.name]
+        class_type = [elang_class for elang_class in bundle["classes"] if elang_class.name == new.obj.name][0]
+        assert isinstance(class_type, ElangClass)
+
+        assembly += (
+            f"push {class_type.get_malloc_size(bundle['size_bundle'])}\n"
+            "call malloc\n"
+            "add esp, 4\n"
+            "push eax\n"
+        )
+        if class_type.constructor is not None:
+            assembly += (
+                "push eax\n"
+                f"call {class_type.name}_{class_type.constructor.name}\n"
+                "add esp, 4\n"
+            )
+        assembly += "\n"
+        return assembly
+
+
+class ElangClassTemplateFactory(TemplateFactory):
+    def produce(self, elang_class: ElangClass, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
+        assembly = self.add_verbose(bundle)
+        plt_section = ""
+        for function in elang_class.functions:
+            function.name = f"{elang_class.name}_{function.name}"
+            offset_table, stack_size = produce_offset_table(function, bundle["size_bundle"])
+            bundle["offset_table"], bundle["stack_size"] = offset_table, stack_size
+            assembly += factories[Function].produce(function, factories, bundle)
+            plt_section += (
+                f"vt_{elang_class.name}_{function.name}:\n"  # properly set up vtable
+                f"jmp {elang_class.name}_{function.name}\n"
+            )
+        assembly += plt_section
+        return assembly
+
+
+class DotOperatorTemplateFactory(TemplateFactory):
+    def produce(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
+        assembly = self.add_verbose(bundle)
+        q = []
+        current = dot
+        produced = None
+        first = True
+        while len(q) is not 0 or first:
+            if isinstance(current, DotOperator):
+                q.append((current.left, current))
+                current = current.left
+                first = False
+            else:
+                previous_left, previous = q.pop()
+
+                if produced is None:
+                    assert isinstance(previous.right, PointerVariable) and isinstance(previous.left, PointerVariable)
+                    left_class = [elang_class for elang_class in bundle["classes"] if
+                                  elang_class.name == bundle["scope"].defined_variables[previous.left.name][
+                                      "type"].name][0]
+                    produced = left_class
+                    assert isinstance(produced, ElangClass)
+                    offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
+                    assembly += (
+                        f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
+                        "pop eax\n"
+                        "mov eax, [eax]\n"
+                        f"add eax, {offset_table[previous.right.name]}\n"
+                    )
+                    produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][0].var_type
+                    if isinstance(produced, ElangClass):
+                        assembly += (
+                            "mov eax, [eax]\n"
+                        )
+                    assembly += "push eax\n"
+                else:
+                    assert isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable)
+                    offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
+                    assembly += (
+                        "pop eax\n"
+                        f"add eax, {offset_table[previous.right.name]}\n"
+                    )
+                    produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][0].var_type
+                    if isinstance(produced, ElangClass):
+                        assembly += (
+                            "mov eax, [eax]\n"
+                        )
+                    assembly += "push eax\n"
         return assembly

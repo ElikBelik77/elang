@@ -22,23 +22,26 @@ class ElangClassDeclarationFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
         source_end = find_scope_end(source_code)
-        scope = Scope(match.group(0), parent_scope)
+        scope = Scope(match.group(1), parent_scope)
         body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
         member_variables = [token for token in body if isinstance(token, VariableDeclaration)]
         member_variables_initialization = [token for token in body if
                                            not isinstance(token, VariableDeclaration) and not isinstance(token,
                                                                                                          Function)]
         functions = [token for token in body if isinstance(token, Function)]
-        return [ElangClass(match.group(0), scope, functions, member_variables,
-                           member_variables_initialization)], source_code[source_end + 1:]
+        elang_class = ElangClass(match.group(1), scope, functions, member_variables,
+                                 member_variables_initialization)
+        parser.keywords.append(
+            {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
+        return [elang_class], source_code[source_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid location to declare a class.")
 
 
-class PrimitiveFactory(Factory):
-    def __init__(self, primitive: "Primitive"):
-        self.type = primitive
+class TypeFactory(Factory):
+    def __init__(self, type):
+        self.type = type
         self.array_re_lookahead = re.compile(r"(s*\[(.*)]\s*)+")
 
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):

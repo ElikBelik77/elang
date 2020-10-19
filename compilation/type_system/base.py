@@ -2,6 +2,9 @@ from typing import Dict
 
 
 class Type:
+    def __init__(self, name):
+        self.name = name
+
     def get_size(self, size_bundle: Dict):
         pass
 
