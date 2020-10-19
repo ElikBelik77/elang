@@ -467,6 +467,38 @@ class DotOperatorTemplateFactory(TemplateFactory):
                                 "mov eax, [eax]\n"
                             )
                         assembly += "push eax\n"
+                    elif isinstance(previous.right, FunctionCall) and isinstance(previous.left, PointerVariable):
+                        left_class = [elang_class for elang_class in bundle["classes"] if
+                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
+                                          "type"].name][0]
+                        produced = left_class
+                        assert isinstance(produced, ElangClass)
+                        argument_preparation = ""
+                        for arg in previous.right.arguments[1::][::-1]:
+                            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
+                            argument_preparation = (
+                                "{arg_assembly}"
+                            ).format(arg_assembly=arg_assembly)
+                        argument_clean_up_line = "add esp, {arguments_size}\n".format(
+                            arguments_size=len(previous.right.arguments) * 4) if len(
+                            previous.right.arguments) is not 0 else ""
+                        assembly = self.add_verbose(bundle)
+                        assembly += (
+                            f"{argument_preparation}"
+                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
+                            "pop eax\n"
+                            "mov eax, [eax]\n"
+                            "push eax\n"
+                            f"call vt_{previous.right.name}"
+                            f"{argument_clean_up_line}"
+                        )
+                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
+                            0].var_type
+                        if isinstance(produced, ElangClass):
+                            assembly += (
+                                "mov eax, [eax]\n"
+                            )
+                        assembly += "push eax\n"
                 else:
                     if isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable):
                         offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
@@ -475,6 +507,38 @@ class DotOperatorTemplateFactory(TemplateFactory):
                             f"add eax, {offset_table[previous.right.name]}\n"
                         )
                         produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][
+                            0].var_type
+                        if isinstance(produced, ElangClass):
+                            assembly += (
+                                "mov eax, [eax]\n"
+                            )
+                        assembly += "push eax\n"
+                    elif isinstance(previous.right, FunctionCall) and isinstance(previous.left, PointerVariable):
+                        left_class = [elang_class for elang_class in bundle["classes"] if
+                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
+                                          "type"].name][0]
+                        produced = left_class
+                        assert isinstance(produced, ElangClass)
+                        argument_preparation = ""
+                        for arg in previous.right.arguments[1::][::-1]:
+                            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
+                            argument_preparation = (
+                                "{arg_assembly}"
+                            ).format(arg_assembly=arg_assembly)
+                        argument_clean_up_line = "add esp, {arguments_size}\n".format(
+                            arguments_size=len(previous.right.arguments) * 4) if len(
+                            previous.right.arguments) is not 0 else ""
+                        assembly = self.add_verbose(bundle)
+                        assembly += (
+                            f"{argument_preparation}"
+                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
+                            "pop eax\n"
+                            "mov eax, [eax]\n"
+                            "push eax\n"
+                            f"call vt_{previous.right.name}"
+                            f"{argument_clean_up_line}"
+                        )
+                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
                             0].var_type
                         if isinstance(produced, ElangClass):
                             assembly += (

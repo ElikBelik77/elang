@@ -5,12 +5,9 @@ class Foo {
     int a;
     Bar b;
     int[5] arr;
-    int Bar(Foo this) {
 
-    }
-
-    int constructor(Foo this) {
-
+    int constructor() {
+        this.b = new Bar();
     }
 }
 
