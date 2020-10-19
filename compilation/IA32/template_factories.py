@@ -1,8 +1,9 @@
-from typing import Dict
+from typing import Dict, Tuple
 from compilation.models.values import *
 from compilation.models.keywords import *
 from compilation.models.operators import *
-from compilation.IA32.utils import get_unique_id, produce_offset_table, produce_class_member_offset_table
+from compilation.IA32.utils import get_unique_id, produce_offset_table, produce_class_member_offset_table, \
+    unpack_dot_operator
 from compilation.models.arrays import ArrayInitializer
 from compilation.models.classes import ElangClass
 from queue import Queue
@@ -126,9 +127,11 @@ class FunctionCallTemplateFactory(TemplateFactory):
         assembly += ("{argument_preparation}"
                      "call {function_name}\n"
                      "{argument_clean_up_line}"
-                     "push eax\n").format(argument_preparation=argument_preparation,
-                                          function_name=function_call.name,
-                                          argument_clean_up_line=argument_clean_up_line)
+                     "push eax\n"
+                     ).format(argument_preparation=argument_preparation,
+                              function_name=function_call.name,
+                              argument_clean_up_line=argument_clean_up_line)
+
         return assembly
 
 
@@ -149,6 +152,7 @@ class ReturnTemplateFactory(TemplateFactory):
 
 class FunctionTemplateFactory(TemplateFactory):
     def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        bundle["scope"] = function.scope
         body_assembly = ""
         has_ret = False
         for expression in function.body:
@@ -292,6 +296,7 @@ class IfTemplateFactory(TemplateFactory):
     def produce(self, if_expression: If, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         skip_if_id = get_unique_id()
         body_assembly = ""
+        bundle["scope"] = if_expression.scope
         for expression in if_expression.body:
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
@@ -313,6 +318,7 @@ class WhileTemplateFactory(TemplateFactory):
         loop_start = get_unique_id()
         loop_end = get_unique_id()
         body_assembly = ""
+        bundle["scope"] = while_expression.scope
         for expression in while_expression.body:
             if not isinstance(expression, VariableDeclaration):
                 body_assembly += factories[type(expression)].produce(expression, factories, bundle)
@@ -395,7 +401,8 @@ class NewOperatorTemplateFactory(TemplateFactory):
         assembly = self.add_verbose(bundle)
 
         assert isinstance(new.obj, FunctionCall)
-        class_type = [elang_class for elang_class in bundle["classes"] if elang_class.name == new.obj.name][0]
+        class_type = [bundle["program"].classes[class_name] for class_name in bundle["program"].classes if
+                      class_name == new.obj.name][0]
         assert isinstance(class_type, ElangClass)
 
         assembly += (
@@ -433,109 +440,59 @@ class ElangClassTemplateFactory(TemplateFactory):
 
 
 class DotOperatorTemplateFactory(TemplateFactory):
+    def produce_first(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) \
+            -> Tuple[str, ElangClass]:
+        assembly = (
+            f"{factories[type(dot.left)].produce(dot.left, factories, bundle)}"
+        )
+        assert isinstance(dot.left, FunctionCall) or isinstance(dot.left, PointerVariable)
+        if isinstance(dot.left, FunctionCall):
+            return assembly, bundle["program"].functions[dot.left.name].return_type
+        if isinstance(dot.left, PointerVariable):
+            return assembly, bundle["program"].classes[bundle["scope"].search_variable(dot.left.name)["type"].name]
+
     def produce(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
-        q = []
-        current = dot
-        produced = None
-        first = True
-        while len(q) is not 0 or first:
-            if isinstance(current, DotOperator):
-                q.append((current.left, current))
-                current = current.left
-                first = False
-            else:
-                previous_left, previous = q.pop()
+        dot_dfs = [d for d in unpack_dot_operator(dot)]
+        init_assembly, current_type = self.produce_first(dot_dfs[0], factories, bundle)
+        assembly += init_assembly
+        for idx, current_dot in enumerate(dot_dfs):
+            assert isinstance(current_type, ElangClass)
+            if isinstance(current_dot.right, PointerVariable):
+                mv_offset = produce_class_member_offset_table(current_type, bundle["size_bundle"])
+                # TODO: move mv offset table somewhere else
+                assembly += (
+                    "mov eax, [eax]\n"
+                    f"add eax, {mv_offset[current_dot.right.name]}\n"
 
-                if produced is None:
-                    if isinstance(previous.right, PointerVariable) and isinstance(previous.left, PointerVariable):
-                        left_class = [elang_class for elang_class in bundle["classes"] if
-                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
-                                          "type"].name][0]
-                        produced = left_class
-                        assert isinstance(produced, ElangClass)
-                        offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
-                        assembly += (
-                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
-                            "pop eax\n"
-                            "mov eax, [eax]\n"
-                            f"add eax, {offset_table[previous.right.name]}\n"
-                        )
-
-                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
-                            0].var_type
-                        assembly += "push eax\n"
-                    elif isinstance(previous.right, FunctionCall) and isinstance(previous.left, PointerVariable):
-                        left_class = [elang_class for elang_class in bundle["classes"] if
-                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
-                                          "type"].name][0]
-                        produced = left_class
-                        assert isinstance(produced, ElangClass)
-                        argument_preparation = ""
-                        for arg in previous.right.arguments[1::][::-1]:
-                            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
-                            argument_preparation = (
-                                "{arg_assembly}"
-                            ).format(arg_assembly=arg_assembly)
-                        argument_clean_up_line = "add esp, {arguments_size}\n".format(
-                            arguments_size=len(previous.right.arguments) * 4) if len(
-                            previous.right.arguments) is not 0 else ""
-                        assembly = self.add_verbose(bundle)
-                        assembly += (
-                            f"{argument_preparation}"
-                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
-                            "pop eax\n"
-                            "mov eax, [eax]\n"
-                            "push eax\n"
-                            f"call vt_{previous.right.name}"
-                            f"{argument_clean_up_line}"
-                        )
-                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
-                            0].var_type
-
-                        assembly += "push eax\n"
+                )
+                if idx is not len(dot_dfs) - 1:
+                    current_type = bundle["program"].classes[
+                        current_type.scope.defined_variables[current_dot.right.name]["type"].name]
                 else:
-                    if isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable):
-                        offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
-                        assembly += (
-                            "pop eax\n"
-                            "mov eax, [eax]\n"
-                            f"add eax, {offset_table[previous.right.name]}\n"
-                        )
-                        produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][
-                            0].var_type
-                        if isinstance(produced, ElangClass):
-                            assembly += (
-                                "mov eax, [eax]\n"
-                            )
-                        assembly += "push eax\n"
-                    elif isinstance(previous.right, FunctionCall) and isinstance(previous.left, PointerVariable):
-                        left_class = [elang_class for elang_class in bundle["classes"] if
-                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
-                                          "type"].name][0]
-                        produced = left_class
-                        assert isinstance(produced, ElangClass)
-                        argument_preparation = ""
-                        for arg in previous.right.arguments[1::][::-1]:
-                            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
-                            argument_preparation = (
-                                "{arg_assembly}"
-                            ).format(arg_assembly=arg_assembly)
-                        argument_clean_up_line = "add esp, {arguments_size}\n".format(
-                            arguments_size=len(previous.right.arguments) * 4) if len(
-                            previous.right.arguments) is not 0 else ""
-                        assembly = self.add_verbose(bundle)
-                        assembly += (
-                            f"{argument_preparation}"
-                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
-                            "pop eax\n"
-                            "mov eax, [eax]\n"
-                            "push eax\n"
-                            f"call vt_{previous.right.name}"
-                            f"{argument_clean_up_line}"
-                        )
-                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
-                            0].var_type
-
-                        assembly += "push eax\n"
+                    current_type = bundle["program"].classes[current_type.name].scope.defined_variables[
+                        current_dot.right.name]
+            if isinstance(current_dot.right, FunctionCall):
+                call_assembly, current_type = self.produce_function_call(current_dot.left, factories, bundle)
+                assembly += call_assembly
         return assembly
+
+    def produce_function_call(self, function_call: FunctionCall, factories: Dict[type, "TemplateFactory"],
+                              bundle: Dict):
+        argument_preparation = ""
+        for arg in function_call.arguments[:-1:][::-1]:
+            arg_assembly = factories[type(arg)].produce(arg, factories, bundle)
+            argument_preparation = (
+                "{arg_assembly}"
+            ).format(arg_assembly=arg_assembly)
+        argument_clean_up_line = "add esp, {arguments_size}\n".format(
+            arguments_size=len(function_call.arguments) * 4) if len(
+            function_call.arguments) is not 0 else ""
+        assembly = self.add_verbose(bundle)
+        assembly += (
+            f"push eax\n"
+            f"{argument_preparation}"
+            f"call vt_{bundle['scope'].name}_{function_call.name}"
+            f"{argument_clean_up_line}"
+        )
+        return assembly, bundle["program"].functions[function_call.name].return_type

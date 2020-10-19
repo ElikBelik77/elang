@@ -13,9 +13,8 @@ class ReturnFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [Return(shunting_yard(match[1:]))]
 
-
-def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-    return [Return(None)], source_code[len(match.group(0)):].strip()
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        return [Return(None)], source_code[len(match.group(0)):].strip()
 
 
 class ElangClassDeclarationFactory(Factory):
@@ -33,6 +32,7 @@ class ElangClassDeclarationFactory(Factory):
                                  member_variables_initialization)
         parser.keywords.append(
             {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
+        parser.defined_types.append(elang_class)
         return [elang_class], source_code[source_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
@@ -129,7 +129,8 @@ class FunctionDeclarationFactory(Factory):
                               for
                               arg in match.group(4).split(',') if arg is not '']
         populate_scope(scope, function_body, match)
-        f = Function(scope, function_name, match.group(0).strip().replace('{', ''), match.group(1), function_body,
+        f = Function(scope, function_name, match.group(0).strip().replace('{', ''),
+                     parser.resolve_type(match.group(1).strip()), function_body,
                      function_arguments)
         return [f], source_code[scope_end + 1:]
 

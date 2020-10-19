@@ -41,8 +41,8 @@ class HasEntryPoint(GlobalChecker):
 
     def check(self, program: Program) -> None:
         has_entry = False
-        for function in program.functions:
-            if function.name == "main":
+        for f_name in program.functions:
+            if f_name == "main":
                 has_entry = True
         if not has_entry:
             raise Exception("No entry point for the program.")
@@ -122,8 +122,8 @@ class SemanticChecker:
         :return: None
         """
         for checker in self.function_checklist:
-            for function in program.functions:
-                checker.check(function)
+            for f_name in program.functions:
+                checker.check(program.functions[f_name])
         for checker in self.global_checklist:
             checker.check(program)
 

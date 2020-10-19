@@ -11,7 +11,13 @@ class Foo {
     }
 }
 
+Foo get_my_foo() {
+    Foo my_foo = new Foo();
+    return my_foo;
+}
+
 int main() {
-    Foo foo = new Foo();
+    Foo foo = get_my_foo();
     foo.b.my_bar = 5;
+    get_my_foo().b.my_bar = 5;
 }

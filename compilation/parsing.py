@@ -59,10 +59,12 @@ class Parser:
         self.keywords = keywords
         self.operators = operators
         self.valid_tokens = valid_tokens
+        self.defined_types = []
 
     def add_primitives(self, primitives_syntax: List[PrimitiveSyntax]):
         for syntax in primitives_syntax:
             self.keywords.append({"re": syntax.re, "factory": syntax.parsing_factory})
+            self.defined_types.append(syntax.primitive)
         return self
 
     def parse_file(self, file: str) -> Program:
@@ -136,6 +138,9 @@ class Parser:
                     maximal_match is None or len(maximal_match.group(0)) < len(match.group(0))):
                 maximal_match, token_entry = match, token
         return token_entry, maximal_match
+
+    def resolve_type(self, name):
+        return [vtype for vtype in self.defined_types if vtype.name == name][0]
 
     def classify_entities(self, tokens):
         globals, globals_initialization, functions, classes = [], [], [], []

@@ -6,7 +6,7 @@ from compilation.shunting_yard import shunting_yard
 
 class FunctionCallFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
-        return [match[0]]
+        return [shunting_yard(match)]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         start, end = find_closing_parenthesis(source_code)

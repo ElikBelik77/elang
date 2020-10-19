@@ -2,9 +2,10 @@ import uuid
 from typing import Tuple, Dict, List
 
 from compilation.headers import CompileAsPointer
-from compilation.models.base import Scopeable, Function
+from compilation.models.base import Scopeable, Function, BinaryOperator
 from compilation.models.classes import ElangClass
 from compilation.type_system.primitives import Primitive
+from compilation.models.operators import DotOperator
 
 
 def get_unique_id() -> str:
@@ -60,7 +61,6 @@ def produce_class_vtable(elang_class: ElangClass, size_bundle: Dict) -> Dict:
 
 
 def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict) -> Dict[str, int]:
-    table_size = size_bundle["int"] * (len(elang_class.member_variables) + len(elang_class.functions))
     vtable_current_size = 0
     vtable: Dict = {}
     for variable in elang_class.member_variables:
@@ -69,3 +69,18 @@ def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict
     for functions in elang_class.functions:
         pass
     return vtable
+
+
+def unpack_dot_operator(expression: BinaryOperator):
+    current = expression
+    produced = None
+    first = True
+    q = []
+    while len(q) is not 0 or first:
+        if isinstance(current, DotOperator):
+            q.append((current.left, current))
+            current = current.left
+            first = False
+        else:
+            previous_left, previous = q.pop()
+            yield previous

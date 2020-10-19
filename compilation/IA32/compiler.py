@@ -60,22 +60,22 @@ class ProgramCompiler:
                     "extern malloc\n"
                     "global main\n")
         vtables = {}
-        for elang_class in program.classes:
-            self.size_bundle[elang_class.name] = elang_class.get_size(self.size_bundle)
-            vtables[elang_class] = produce_class_vtable(elang_class, self.size_bundle)
-        for elang_class in program.classes:
-            assembly += self.factories[ElangClass].produce(elang_class, self.factories,
+        for elang_class in program.classes.keys():
+            self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
+            vtables[elang_class] = produce_class_vtable(program.classes[elang_class], self.size_bundle)
+        for elang_class in program.classes.keys():
+            assembly += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
                                                            {"parent": 'global', "size_bundle": self.size_bundle,
-                                                            "classes": program.classes,
+                                                            "program": program,
                                                             "vtables": vtables,
                                                             "verbose": self.verbose})
 
-        for function in program.functions:
-            assembly += self.compile_function(program.classes, function) + "\n"
+        for f_name in program.functions:
+            assembly += self.compile_function(program, program.functions[f_name]) + "\n"
         with open(destination_file, "w") as out:
             out.write(assembly)
 
-    def compile_function(self, classes, function) -> str:
+    def compile_function(self, program, function) -> str:
         """
         This function compiles a single function.
         :param function: the function to compile.
@@ -86,5 +86,5 @@ class ProgramCompiler:
         return self.factories[Function].produce(function, self.factories,
                                                 {"stack_size": stack_size, "offset_table": offset_table,
                                                  "scope": function.scope, "size_bundle": self.size_bundle,
-                                                 "classes": classes,
+                                                 "program": program,
                                                  "verbose": self.verbose})

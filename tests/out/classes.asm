@@ -18,10 +18,8 @@ push eax
 ;PointerVariableTemplateFactory
 lea edi, [ebp + 12]
 push edi
-pop eax
 mov eax, [eax]
 add eax, 4
-push eax
 pop edi
 pop eax
 mov [edi], eax
@@ -30,7 +28,7 @@ ret
 vt_Foo_constructor:
 jmp Foo_constructor
 ;FunctionTemplateFactory
-main:
+get_my_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
@@ -50,6 +48,30 @@ push edi
 pop edi
 pop eax
 mov [edi], eax
+;ReturnTemplateFactory
+;VariableTemplateFactory
+lea edi, [ebp - 0]
+mov edi, [edi]
+push edi
+pop eax
+leave
+ret
+
+;FunctionTemplateFactory
+main:
+push ebp
+mov ebp, esp
+sub esp, 4
+;AssignmentTemplateFactory
+;FunctionCallTemplateFactory
+call get_my_foo
+push eax
+;PointerVariableTemplateFactory
+lea edi, [ebp - 0]
+push edi
+pop edi
+pop eax
+mov [edi], eax
 ;AssignmentTemplateFactory
 ;DecimalConstantTemplateFactory
 push 5
@@ -57,14 +79,24 @@ push 5
 ;PointerVariableTemplateFactory
 lea edi, [ebp - 0]
 push edi
-pop eax
 mov eax, [eax]
 add eax, 4
-push eax
-pop eax
 mov eax, [eax]
 add eax, 0
+pop edi
+pop eax
+mov [edi], eax
+;AssignmentTemplateFactory
+;DecimalConstantTemplateFactory
+push 5
+;DotOperatorTemplateFactory
+;FunctionCallTemplateFactory
+call get_my_foo
 push eax
+mov eax, [eax]
+add eax, 4
+mov eax, [eax]
+add eax, 0
 pop edi
 pop eax
 mov [edi], eax

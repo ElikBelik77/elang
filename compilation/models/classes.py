@@ -5,7 +5,7 @@ from compilation.type_system.base import Type
 from compilation.headers import CompileAsPointer
 
 
-class ElangClass(Scopeable, CompileAsPointer):
+class ElangClass(Scopeable, CompileAsPointer, Type):
     def __init__(self, name: str, scope: Scope, functions: List[Function], member_variables: List[VariableDeclaration],
                  member_variable_initialization: List[Compilable]):
         super(ElangClass, self).__init__(scope, functions + member_variables)
@@ -17,7 +17,7 @@ class ElangClass(Scopeable, CompileAsPointer):
         for function in self.functions:
             if function.name == "constructor":
                 self.constructor = function
-            function.arguments.insert(0, VariableDeclaration("this", self))
+            function.arguments.append(VariableDeclaration("this", self))
         scope.defined_variables["this"] = {"type": self}
         for mv in member_variables:
             scope.defined_variables[mv.name] = {"type": mv.var_type}

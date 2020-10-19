@@ -218,7 +218,12 @@ class Program(Compilable):
 
     def __init__(self, globals: List[Variable], globals_init: List[Compilable], functions: List[Function],
                  classes: List["ElangClass"]):
-        self.classes = classes
+        self.classes = {}
+        self.globas = {}
+        self.functions = {}
+        for eclass in classes:
+            self.classes[eclass.name] = eclass
+        for function in functions:
+            self.functions[function.name] = function
         self.globals = globals
         self.globals_init = globals_init
-        self.functions = functions
