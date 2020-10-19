@@ -40,8 +40,8 @@ def produce_offset_table(scopeable: Scopeable, size_bundle: Dict) -> Tuple[Dict[
     while len(scopes) is not 0:
         current_scope = scopes.pop()
         for idx, key in enumerate(current_scope.scope.defined_variables):
-            scope_table[key] = stack_size
-            stack_size = scope_table[key] - current_scope.scope.defined_variables[key]["type"].get_size(size_bundle)
+            scope_table[key] = stack_size - current_scope.scope.defined_variables[key]["type"].get_size(size_bundle)
+            stack_size = scope_table[key]
         for compilable in current_scope.body:
             if issubclass(type(compilable), Scopeable):
                 scopes.append(compilable)

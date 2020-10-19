@@ -347,8 +347,8 @@ class ArrayInitializeTemplateFactory(TemplateFactory):
         for metadata in arrays_metadata:
             for offset in metadata["offsets"]:
                 assembly += (
-                    f"mov [edi - {offset}], dword {metadata['array_size']}\n"
-                    f"mov [edi - {offset + bundle['size_bundle']['int']}], dword {metadata['cell_size']}\n"
+                    f"mov [edi + {offset}], dword {metadata['array_size']}\n"
+                    f"mov [edi + {offset + bundle['size_bundle']['int']}], dword {metadata['cell_size']}\n"
                 )
         return assembly
 
@@ -369,11 +369,11 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "mov ebx, 0\n"
             "int 0x80\n"
             f"loc_{passed_boundary_check}:\n"
-            "mov ecx, [edi - 4]\n"
+            "mov ecx, [edi + 4]\n"
             "xor edx, edx\n"
             "mul ecx\n"
-            "sub edi, 8\n"
-            "sub edi, eax\n"
+            "add edi, 8\n"
+            "add edi, eax\n"
             "push edi\n"
 
         )
@@ -442,9 +442,18 @@ class ElangClassTemplateFactory(TemplateFactory):
 class DotOperatorTemplateFactory(TemplateFactory):
     def produce_first(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) \
             -> Tuple[str, ElangClass]:
-        assembly = (
-            f"{factories[type(dot.left)].produce(dot.left, factories, bundle)}"
-        )
+        assembly = ""
+        if isinstance(dot.left, FunctionCall):
+            assembly = (
+                f"{factories[type(dot.left)].produce(dot.left, factories, bundle)}"
+            )
+        elif isinstance(dot.left, PointerVariable):
+            assembly = (
+                f"{factories[type(dot.left)].produce(dot.left, factories, bundle)}"
+                "pop eax\n"
+                "mov eax, [eax]\n"
+                "push eax\n"
+            )
         assert isinstance(dot.left, FunctionCall) or isinstance(dot.left, PointerVariable)
         if isinstance(dot.left, FunctionCall):
             return assembly, bundle["program"].functions[dot.left.name].return_type
@@ -462,16 +471,20 @@ class DotOperatorTemplateFactory(TemplateFactory):
                 mv_offset = produce_class_member_offset_table(current_type, bundle["size_bundle"])
                 # TODO: move mv offset table somewhere else
                 assembly += (
-                    "mov eax, [eax]\n"
+                    "pop eax\n"
                     f"add eax, {mv_offset[current_dot.right.name]}\n"
 
                 )
                 if idx is not len(dot_dfs) - 1:
                     current_type = bundle["program"].classes[
                         current_type.scope.defined_variables[current_dot.right.name]["type"].name]
+                    assembly += (
+                        "mov eax, [eax]\n"
+                    )
                 else:
                     current_type = bundle["program"].classes[current_type.name].scope.defined_variables[
                         current_dot.right.name]
+                assembly += 'push eax\n'
             if isinstance(current_dot.right, FunctionCall):
                 call_assembly, current_type = self.produce_function_call(current_dot.left, factories, bundle)
                 assembly += call_assembly
@@ -494,5 +507,6 @@ class DotOperatorTemplateFactory(TemplateFactory):
             f"{argument_preparation}"
             f"call vt_{bundle['scope'].name}_{function_call.name}"
             f"{argument_clean_up_line}"
+            f"push eax\n"
         )
         return assembly, bundle["program"].functions[function_call.name].return_type
