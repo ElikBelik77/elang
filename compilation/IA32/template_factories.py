@@ -417,6 +417,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
 class ElangClassTemplateFactory(TemplateFactory):
     def produce(self, elang_class: ElangClass, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
+        bundle["scope"] = elang_class.scope
         plt_section = ""
         for function in elang_class.functions:
             function.name = f"{elang_class.name}_{function.name}"

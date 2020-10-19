@@ -18,6 +18,9 @@ class ElangClass(Scopeable, CompileAsPointer):
             if function.name == "constructor":
                 self.constructor = function
             function.arguments.insert(0, VariableDeclaration("this", self))
+        scope.defined_variables["this"] = {"type": self}
+        for mv in member_variables:
+            scope.defined_variables[mv.name] = {"type": mv.var_type}
 
     def get_size(self, size_bundle):
         return size_bundle["int"]
