@@ -61,8 +61,8 @@ def produce_class_vtable(elang_class: ElangClass, size_bundle: Dict) -> Dict:
 
 def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict) -> Dict[str, int]:
     table_size = size_bundle["int"] * (len(elang_class.member_variables) + len(elang_class.functions))
-    vtable = {"table_size": table_size}
-    vtable_current_size = size_bundle["int"]
+    vtable_current_size = 0
+    vtable: Dict = {}
     for variable in elang_class.member_variables:
         vtable[variable.name] = vtable_current_size
         vtable_current_size += variable.var_type.get_size(size_bundle)

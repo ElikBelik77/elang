@@ -461,12 +461,9 @@ class DotOperatorTemplateFactory(TemplateFactory):
                             "mov eax, [eax]\n"
                             f"add eax, {offset_table[previous.right.name]}\n"
                         )
+
                         produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
                             0].var_type
-                        if isinstance(produced, ElangClass):
-                            assembly += (
-                                "mov eax, [eax]\n"
-                            )
                         assembly += "push eax\n"
                     elif isinstance(previous.right, FunctionCall) and isinstance(previous.left, PointerVariable):
                         left_class = [elang_class for elang_class in bundle["classes"] if
@@ -495,16 +492,14 @@ class DotOperatorTemplateFactory(TemplateFactory):
                         )
                         produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
                             0].var_type
-                        if isinstance(produced, ElangClass):
-                            assembly += (
-                                "mov eax, [eax]\n"
-                            )
+
                         assembly += "push eax\n"
                 else:
                     if isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable):
                         offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
                         assembly += (
                             "pop eax\n"
+                            "mov eax, [eax]\n"
                             f"add eax, {offset_table[previous.right.name]}\n"
                         )
                         produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][
@@ -541,9 +536,6 @@ class DotOperatorTemplateFactory(TemplateFactory):
                         )
                         produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
                             0].var_type
-                        if isinstance(produced, ElangClass):
-                            assembly += (
-                                "mov eax, [eax]\n"
-                            )
+
                         assembly += "push eax\n"
         return assembly
