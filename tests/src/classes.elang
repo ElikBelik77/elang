@@ -1,5 +1,5 @@
 class Bar {
-    int b;
+    int my_bar;
 }
 class Foo {
     int a;
@@ -13,5 +13,5 @@ class Foo {
 
 int main() {
     Foo foo = new Foo();
-    foo.b.b = 5;
+    foo.b.my_bar = 5;
 }

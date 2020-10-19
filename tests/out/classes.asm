@@ -20,8 +20,7 @@ lea edi, [ebp + 12]
 push edi
 pop eax
 mov eax, [eax]
-add eax, 8
-mov eax, [eax]
+add eax, 4
 push eax
 pop edi
 pop eax
@@ -60,11 +59,11 @@ lea edi, [ebp - 0]
 push edi
 pop eax
 mov eax, [eax]
-add eax, 8
-mov eax, [eax]
+add eax, 4
 push eax
 pop eax
-add eax, 4
+mov eax, [eax]
+add eax, 0
 push eax
 pop edi
 pop eax
