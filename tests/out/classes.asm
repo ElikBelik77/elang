@@ -1,4 +1,5 @@
 SECTION .text
+extern malloc
 global main
 ;ElangClassTemplateFactory
 ;ElangClassTemplateFactory
@@ -14,10 +15,10 @@ push ebp
 mov ebp, esp
 leave
 ret
-vt_Foo_Foo_Bar:
-jmp Foo_Foo_Bar
-vt_Foo_Foo_constructor:
-jmp Foo_Foo_constructor
+vt_Foo_Bar:
+jmp Foo_Bar
+vt_Foo_constructor:
+jmp Foo_constructor
 ;FunctionTemplateFactory
 main:
 push ebp
@@ -25,12 +26,12 @@ mov ebp, esp
 sub esp, 4
 ;AssignmentTemplateFactory
 ;NewOperatorTemplateFactory
-push 8
+push 36
 call malloc
 add esp, 4
 push eax
 push eax
-call Foo_Foo_constructor
+call vt_Foo_Foo_constructor
 add esp, 4
 
 ;PointerVariableTemplateFactory
