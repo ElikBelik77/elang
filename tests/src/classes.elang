@@ -4,6 +4,7 @@ class Bar {
 class Foo {
     int a;
     Bar b;
+    int[5] arr;
     int Bar(Foo this) {
 
     }
