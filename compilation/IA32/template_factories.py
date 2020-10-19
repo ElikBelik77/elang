@@ -395,7 +395,6 @@ class NewOperatorTemplateFactory(TemplateFactory):
         assembly = self.add_verbose(bundle)
 
         assert isinstance(new.obj, FunctionCall)
-        class_size = bundle["size_bundle"][new.obj.name]
         class_type = [elang_class for elang_class in bundle["classes"] if elang_class.name == new.obj.name][0]
         assert isinstance(class_type, ElangClass)
 
@@ -408,7 +407,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
         if class_type.constructor is not None:
             assembly += (
                 "push eax\n"
-                f"call {class_type.name}_{class_type.constructor.name}\n"
+                f"call vt_{class_type.name}_{class_type.constructor.name}\n"
                 "add esp, 4\n"
             )
         assembly += "\n"
@@ -425,8 +424,8 @@ class ElangClassTemplateFactory(TemplateFactory):
             bundle["offset_table"], bundle["stack_size"] = offset_table, stack_size
             assembly += factories[Function].produce(function, factories, bundle)
             plt_section += (
-                f"vt_{elang_class.name}_{function.name}:\n"  # properly set up vtable
-                f"jmp {elang_class.name}_{function.name}\n"
+                f"vt_{function.name}:\n"  # properly set up vtable
+                f"jmp {function.name}\n"
             )
         assembly += plt_section
         return assembly
@@ -448,36 +447,38 @@ class DotOperatorTemplateFactory(TemplateFactory):
                 previous_left, previous = q.pop()
 
                 if produced is None:
-                    assert isinstance(previous.right, PointerVariable) and isinstance(previous.left, PointerVariable)
-                    left_class = [elang_class for elang_class in bundle["classes"] if
-                                  elang_class.name == bundle["scope"].defined_variables[previous.left.name][
-                                      "type"].name][0]
-                    produced = left_class
-                    assert isinstance(produced, ElangClass)
-                    offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
-                    assembly += (
-                        f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
-                        "pop eax\n"
-                        "mov eax, [eax]\n"
-                        f"add eax, {offset_table[previous.right.name]}\n"
-                    )
-                    produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][0].var_type
-                    if isinstance(produced, ElangClass):
+                    if isinstance(previous.right, PointerVariable) and isinstance(previous.left, PointerVariable):
+                        left_class = [elang_class for elang_class in bundle["classes"] if
+                                      elang_class.name == bundle["scope"].defined_variables[previous.left.name][
+                                          "type"].name][0]
+                        produced = left_class
+                        assert isinstance(produced, ElangClass)
+                        offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
                         assembly += (
+                            f"{factories[PointerVariable].produce(previous.left, factories, bundle)}"
+                            "pop eax\n"
                             "mov eax, [eax]\n"
+                            f"add eax, {offset_table[previous.right.name]}\n"
                         )
-                    assembly += "push eax\n"
+                        produced = [mv for mv in left_class.member_variables if mv.name == previous.right.name][
+                            0].var_type
+                        if isinstance(produced, ElangClass):
+                            assembly += (
+                                "mov eax, [eax]\n"
+                            )
+                        assembly += "push eax\n"
                 else:
-                    assert isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable)
-                    offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
-                    assembly += (
-                        "pop eax\n"
-                        f"add eax, {offset_table[previous.right.name]}\n"
-                    )
-                    produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][0].var_type
-                    if isinstance(produced, ElangClass):
+                    if isinstance(produced, ElangClass) and isinstance(previous.right, PointerVariable):
+                        offset_table = produce_class_member_offset_table(produced, bundle["size_bundle"])
                         assembly += (
-                            "mov eax, [eax]\n"
+                            "pop eax\n"
+                            f"add eax, {offset_table[previous.right.name]}\n"
                         )
-                    assembly += "push eax\n"
+                        produced = [mv for mv in produced.member_variables if mv.name == previous.right.name][
+                            0].var_type
+                        if isinstance(produced, ElangClass):
+                            assembly += (
+                                "mov eax, [eax]\n"
+                            )
+                        assembly += "push eax\n"
         return assembly
