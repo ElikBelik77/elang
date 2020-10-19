@@ -83,9 +83,15 @@ class Foo {
     }
 }
 
+Foo get_a_foo() {
+    Foo my_foo = new Foo();
+    return my_foo;
+}
+
 int main() {
-    Foo foo = new Foo();
+    Foo foo = get_my_foo();
     foo.b.my_bar = 5;
+    get_a_foo().b.my_bar = 5;
 }
 ```
 Will compile to
@@ -93,6 +99,7 @@ Will compile to
 SECTION .text
 extern malloc
 global main
+
 Foo_constructor:
 push ebp
 mov ebp, esp
@@ -100,11 +107,12 @@ push 4
 call malloc
 add esp, 4
 push eax
-
 lea edi, [ebp + 12]
 push edi
 pop eax
 mov eax, [eax]
+push eax
+pop eax
 add eax, 4
 push eax
 pop edi
@@ -112,9 +120,11 @@ pop eax
 mov [edi], eax
 leave
 ret
+
 vt_Foo_constructor:
 jmp Foo_constructor
-main:
+
+get_a_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
@@ -125,21 +135,53 @@ push eax
 push eax
 call vt_Foo_constructor
 add esp, 4
+lea edi, [ebp - 4]
+push edi
+pop edi
+pop eax
+mov [edi], eax
+lea edi, [ebp - 4]
+mov edi, [edi]
+push edi
+pop eax
+leave
+ret
 
-lea edi, [ebp - 0]
+main:
+push ebp
+mov ebp, esp
+sub esp, 4
+call get_my_foo
+push eax
+lea edi, [ebp - 4]
 push edi
 pop edi
 pop eax
 mov [edi], eax
 push 5
-lea edi, [ebp - 0]
+lea edi, [ebp - 4]
 push edi
 pop eax
 mov eax, [eax]
-add eax, 4
 push eax
 pop eax
+add eax, 4
 mov eax, [eax]
+push eax
+pop eax
+add eax, 0
+push eax
+pop edi
+pop eax
+mov [edi], eax
+push 5
+call get_a_foo
+push eax
+pop eax
+add eax, 4
+mov eax, [eax]
+push eax
+pop eax
 add eax, 0
 push eax
 pop edi
