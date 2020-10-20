@@ -412,10 +412,20 @@ class NewOperatorTemplateFactory(TemplateFactory):
                       class_name == new.obj.name][0]
         assert isinstance(class_type, ElangClass)
 
+        # assembly += (
+        #     f"push {class_type.get_malloc_size(bundle['size_bundle'])}\n"
+        #     "call malloc\n"
+        #     "add esp, 4\n"
+        #     "push eax\n"
+        # )
         assembly += (
-            f"push {class_type.get_malloc_size(bundle['size_bundle'])}\n"
-            "call malloc\n"
-            "add esp, 4\n"
+            "mov eax, 9\n" #sys_mmap
+            "mov ebx, 0\n"
+            f"mov ecx, {class_type.get_malloc_size(bundle['size_bundle'])}\n"
+            "mov edx, 3\n" #read write, not execute
+            "mov esi, 32\n" # map anonymously
+            "mov edi, 0\n"
+            "syscall\n"
             "push eax\n"
         )
         assembly += f"push eax\ncall init_{class_type.name}\n" if len(class_type.member_variable_initialization) is not 0 else ''
