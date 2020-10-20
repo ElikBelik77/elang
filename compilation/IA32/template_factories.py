@@ -241,7 +241,6 @@ class AssignmentTemplateFactory(TemplateFactory):
     def produce(self, assigment_expression: Assignment, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
         assembly += factories[type(assigment_expression.right)].produce(assigment_expression.right, factories, bundle)
-        # TODO: check if left produces a POINTER TYPE, instead of array indexer for the future
         if assigment_expression.left.has_ptr_type():
             assembly += (
                 f"{factories[type(assigment_expression.left)].produce(assigment_expression.left, factories, bundle)}"
@@ -337,13 +336,21 @@ class WhileTemplateFactory(TemplateFactory):
 
 
 class ArrayInitializeTemplateFactory(TemplateFactory):
-    def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
-        array_start_offset = bundle["offset_table"][array.variable_name]
+    def produce(self, array: ArrayInitializer, factories: Dict[type, TemplateFactory], bundle: Dict,
+                heap_table: Dict = None) -> str:
+
         arrays_metadata = array.array.get_metadata(bundle["size_bundle"])
         assembly = self.add_verbose(bundle)
-        assembly += (
-            f"lea edi, [ebp - {-array_start_offset}]\n"
-        )
+        if not heap_table:
+            array_start_offset = bundle["offset_table"][array.variable_name]
+            assembly += (
+                f"lea edi, [ebp - {-array_start_offset}]\n"
+            )
+        else:
+            assembly += (
+                "pop eax\n"
+                f"lea edi, [eax + {heap_table[array.variable_name]}]\n"
+            )
         for metadata in arrays_metadata:
             for offset in metadata["offsets"]:
                 assembly += (
@@ -411,6 +418,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
             "add esp, 4\n"
             "push eax\n"
         )
+        assembly += f"push eax\ncall init_{class_type.name}\n" if len(class_type.member_variable_initialization) is not 0 else ''
         if class_type.constructor is not None:
             assembly += (
                 "push eax\n"
@@ -422,7 +430,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
 
 
 class ElangClassTemplateFactory(TemplateFactory):
-    def produce(self, elang_class: ElangClass, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
+    def produce(self, elang_class: ElangClass, factories, bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
         bundle["scope"] = elang_class.scope
         plt_section = ""
@@ -435,6 +443,24 @@ class ElangClassTemplateFactory(TemplateFactory):
                 f"vt_{function.name}:\n"  # properly set up vtable
                 f"jmp {function.name}\n"
             )
+        if len(elang_class.member_variable_initialization) is not 0:
+            assembly += (
+                f"init_{elang_class.name}:\n"
+                "push ebp\n"
+                "mov ebp, esp\n"
+            )
+            for init_statement in elang_class.member_variable_initialization:
+                assert isinstance(init_statement, ArrayInitializer)
+                array_init = ArrayInitializeTemplateFactory().produce(init_statement, factories, bundle,
+                                                                      heap_table=produce_class_member_offset_table(
+                                                                          elang_class, bundle['size_bundle']))
+                assembly += (
+                    f"lea edi, [ebp + 12]\n"
+                    "push edi\n"
+                    f"{array_init}"
+                    "leave\n"
+                    "ret\n"
+                )
         assembly += plt_section
         return assembly
 

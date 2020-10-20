@@ -87,7 +87,8 @@ def find_bracket_pairs(text: str) -> List[Tuple[int, int]]:
 
 def populate_scope(scope, body, match):
     """
-    This function populates a scopes body with variable declarations#TODO: move over into scopeable class function
+    This function populates a scopes body with variable declarations
+    TODO: move over into scopeable class function
     :param scope: the scope.
     :param body: the body of the scope
     :param match: the match that contains the scope
