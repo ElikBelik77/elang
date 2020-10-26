@@ -94,6 +94,9 @@ class Array(Type, CompileAsPointer):
 
 
 class ArrayInitializer(Compilable):
+    """
+    Class for describing an array initialization statement.
+    """
     def __init__(self, array: Array, variable_name):
         self.array = array
         self.variable_name = variable_name

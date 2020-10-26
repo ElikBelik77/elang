@@ -22,7 +22,11 @@ class If(Scopeable):
         super(If, self).__init__(scope, body)
         self.condition = condition
 
+
 class While(Scopeable):
+    """
+    Model for while statements
+    """
     def __init__(self, scope: Scope, body: List[Compilable], condition: Compilable):
         super(While, self).__init__(scope, body)
         self.condition = condition

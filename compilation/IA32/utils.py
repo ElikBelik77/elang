@@ -49,6 +49,12 @@ def produce_offset_table(scopeable: Scopeable, size_bundle: Dict) -> Tuple[Dict[
 
 
 def produce_class_vtable(elang_class: ElangClass, size_bundle: Dict) -> Dict:
+    """
+    This function produces a vtable for a class.
+    :param elang_class: the class.
+    :param size_bundle: the size bundle of the compiler.
+    :return: a vtable for the class.
+    """
     table_size = size_bundle["int"] * (len(elang_class.member_variables) + len(elang_class.functions))
     vtable = {"table_size": table_size}
     vtable_current_size = size_bundle["int"]
@@ -61,6 +67,12 @@ def produce_class_vtable(elang_class: ElangClass, size_bundle: Dict) -> Dict:
 
 
 def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict) -> Dict[str, int]:
+    """
+    This function produces a member variable offset table for a given elang class.
+    :param elang_class: the elang class.
+    :param size_bundle: the size bundle of the compiler.
+    :return: a member variable offset table.
+    """
     vtable_current_size = 0
     vtable: Dict = {}
     for variable in elang_class.member_variables:
@@ -72,6 +84,11 @@ def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict
 
 
 def unpack_dot_operator(expression: BinaryOperator):
+    """
+    This function unpacks a dot ('.') operator. the innermost (rightest) dot is returned first, the last (leftmost) dot is returned first
+    :param expression: the dot expression to unpack.
+    :return: yields the dot operators by the order described above.
+    """
     current = expression
     produced = None
     first = True
