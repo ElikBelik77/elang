@@ -9,6 +9,17 @@ from compilation.models.classes import ElangClass
 from typing import Match, Tuple
 
 
+class ExportFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        source_code = source_code[len(match.group(0).strip()):].strip()
+        source_end = find_scope_end(source_code)
+        tokens = [token.strip() for token in source_code[:source_end].split(',')]
+        return [Export(token) for token in tokens], source_code[source_end + 1:]
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid export statement.")
+
+
 class ReturnFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         return [Return(shunting_yard(match[1:]))]

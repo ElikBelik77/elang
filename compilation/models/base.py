@@ -211,13 +211,24 @@ class Function(Scopeable):
         self.arguments = arguments
 
 
+class Export:
+    def __init__(self, name):
+        self.name = name
+
+    def resolve(self, program) -> Compilable:
+        for obj in program.functions + program.classes + program.globals:
+            if obj.name == self.name:
+                return obj
+            pass
+
+
 class Program(Compilable):
     """
     Model for the entire program
     """
 
     def __init__(self, globals: List[Variable], globals_init: List[Compilable], functions: List[Function],
-                 classes: List["ElangClass"]):
+                 classes: List["ElangClass"], exports: List[Export]):
         self.classes = {}
         self.globas = {}
         self.functions = {}
@@ -227,3 +238,7 @@ class Program(Compilable):
             self.functions[function.name] = function
         self.globals = globals
         self.globals_init = globals_init
+        self.exports = exports
+
+    def resolve_exports(self) -> List[Compilable]:
+        return [export.resolve(self) for export in self.exports]

@@ -25,6 +25,7 @@ class Parser:
                     {"re": re.compile(r"\s*class\s*(\w[\w]*)\s*{\s*"), "factory": ElangClassDeclarationFactory(),
                      "scopeable": True},
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
+                    {"re": re.compile(r"\s*export\s*\s*{\s*"), "factory": ExportFactory(), "scopeable": True},
                     {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": AdditionFactory()},
                      {"re": re.compile(r"\s*-\s*"), "factory": SubtractionFactory()},
@@ -143,7 +144,7 @@ class Parser:
         return [vtype for vtype in self.defined_types if vtype.name == name][0]
 
     def classify_entities(self, tokens):
-        globals, globals_initialization, functions, classes = [], [], [], []
+        globals, globals_initialization, functions, classes, exports = [], [], [], [], []
         for token in tokens:
             if isinstance(token, Function):
                 functions.append(token)
@@ -151,6 +152,8 @@ class Parser:
                 classes.append(token)
             if isinstance(token, VariableDeclaration):
                 globals.append(token)
+            if isinstance(token, Export):
+                exports.append(token)
             else:
                 globals_initialization.append(token)
-        return globals, globals_initialization, functions, classes
+        return globals, globals_initialization, functions, classes, exports
