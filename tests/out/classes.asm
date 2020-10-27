@@ -9,13 +9,9 @@ push ebp
 mov ebp, esp
 ;AssignmentTemplateFactory
 ;NewOperatorTemplateFactory
-mov eax, 9
-mov ebx, 0
-mov ecx, 4
-mov edx, 3
-mov esi, 32
-mov edi, 0
-syscall
+push 4
+call malloc
+add esp, 4
 push eax
 
 ;DotOperatorTemplateFactory
@@ -54,13 +50,9 @@ mov ebp, esp
 sub esp, 4
 ;AssignmentTemplateFactory
 ;NewOperatorTemplateFactory
-mov eax, 9
-mov ebx, 0
-mov ecx, 36
-mov edx, 3
-mov esi, 32
-mov edi, 0
-syscall
+push 36
+call malloc
+add esp, 4
 push eax
 push eax
 call init_Foo

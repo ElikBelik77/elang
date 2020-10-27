@@ -122,6 +122,18 @@ mov [edi], eax
 leave
 ret
 
+init_Foo:
+push ebp
+mov ebp, esp
+lea edi, [ebp + 12]
+push edi
+pop eax
+lea edi, [eax + 8]
+mov [edi + 0], dword 5
+mov [edi + 4], dword 4
+leave
+ret
+
 vt_Foo_constructor:
 jmp Foo_constructor
 
@@ -133,6 +145,8 @@ push 36
 call malloc
 add esp, 4
 push eax
+push eax
+call init_Foo
 push eax
 call vt_Foo_constructor
 add esp, 4
