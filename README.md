@@ -9,9 +9,10 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Basic semantic checks
 - [x] Arithmetic operators (*still no support for 64 bit multiplication on IA32)
 - [x] Logical operators
-- [ ] if/else
+- [x] if/else (only 'if' statements for the time being.)
 - [x] While loops
 - [x] Arrays (and multi-dimensional arrays!)
+- [ ] Include/Export
 - [ ] Strings
 - [ ] Global variables
 - [x] Assembling with NASM
