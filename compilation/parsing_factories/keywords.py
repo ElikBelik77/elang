@@ -5,7 +5,6 @@ from compilation.parsing_factories.utils import *
 from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
 from compilation.models.arrays import ArrayInitializer, Array, HeapLayer, StackLayer
-from compilation.models.classes import ElangClass
 from typing import Match, Tuple
 
 
@@ -29,20 +28,40 @@ class ReturnFactory(Factory):
 
 
 class ElangClassDeclarationFactory(Factory):
+    def __init__(self):
+        self.subclass_depth = 0
+
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
         source_end = find_scope_end(source_code)
         scope = Scope(match.group(1), parent_scope)
+        body, member_variables, member_variables_initialization, functions, sub_classes = [], [], [], [], []
+        self.subclass_depth += 1
+        for token in parser.parse_source_code(source_code[0:source_end], scope):
+            if isinstance(token, ElangClass):
+                token.name = f"{match.group(1).strip()}.{token.name}"
+                parser.keywords.append(
+                    {"re": re.compile(rf"\s*{token.name.strip()}(\s+|\[)"),
+                     "factory": TypeFactory(token)})
+                sub_classes.append(token)
         body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
-        member_variables = [token for token in body if isinstance(token, VariableDeclaration)]
-        member_variables_initialization = [token for token in body if
-                                           not isinstance(token, VariableDeclaration) and not isinstance(token,
-                                                                                                         Function)]
-        functions = [token for token in body if isinstance(token, Function)]
+        member_variables = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
+                            isinstance(token, VariableDeclaration)]
+
+        member_variables_initialization = [token for token in parser.parse_source_code(source_code[0:source_end], scope)
+                                           if not isinstance(token, VariableDeclaration)
+                                           and not isinstance(token,Function) and not isinstance(token, ElangClass)]
+
+        functions = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
+                     isinstance(token, Function)]
         elang_class = ElangClass(match.group(1), scope, functions, member_variables,
-                                 member_variables_initialization)
-        parser.keywords.append(
-            {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
+                                 member_variables_initialization, sub_classes)
+        if self.subclass_depth == 1:
+            parser.keywords.append(
+                {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
+
+        self.subclass_depth -= 1
+
         parser.defined_types.append(elang_class)
         return [elang_class], source_code[source_end + 1:]
 

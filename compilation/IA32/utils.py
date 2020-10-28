@@ -2,8 +2,7 @@ import uuid
 from typing import Tuple, Dict, List
 
 from compilation.headers import CompileAsPointer
-from compilation.models.base import Scopeable, Function, BinaryOperator
-from compilation.models.classes import ElangClass
+from compilation.models.base import Scopeable, Function, BinaryOperator, ElangClass
 from compilation.type_system.primitives import Primitive
 from compilation.models.operators import DotOperator
 

@@ -2,6 +2,7 @@ from typing import List
 
 from compilation.type_system.base import Type
 from compilation.headers import CompileAsPointer
+from compilation.models.modules import Export, Include
 
 
 class Compilable:
@@ -211,34 +212,67 @@ class Function(Scopeable):
         self.arguments = arguments
 
 
-class Export:
-    def __init__(self, name):
+class ElangClass(Scopeable, CompileAsPointer, Type):
+    """
+    Class model for classes that are defined in a source code.
+    """
+
+    def __init__(self, name: str, scope: Scope, functions: List[Function], member_variables: List[VariableDeclaration],
+                 member_variable_initialization: List[Compilable], sub_classes: List["ElangClass"]):
+        super(ElangClass, self).__init__(scope, functions + member_variables)
         self.name = name
+        self.functions = functions
+        self.constructor = None
+        self.member_variables = member_variables
+        self.member_variable_initialization = member_variable_initialization
+        self.sub_classes = sub_classes
+        for function in self.functions:
+            if function.name == "constructor":
+                self.constructor = function
+            function.arguments.append(VariableDeclaration("this", self))
+        scope.defined_variables["this"] = {"type": self}
+        for mv in member_variables:
+            scope.defined_variables[mv.name] = {"type": mv.var_type}
 
-    def resolve(self, program) -> Compilable:
-        for obj in program.functions + program.classes + program.globals:
-            if obj.name == self.name:
-                return obj
-            pass
+    def get_size(self, size_bundle):
+        return size_bundle["int"]
+
+    def get_malloc_size(self, size_bundle):
+        """
+        This function returns the size of this class on the heap.
+        :param size_bundle: the size bundle of the compiler.
+        :return: the size of this class on heap allocation.
+        """
+        size = 0
+        for member_variable in self.member_variables:
+            size += member_variable.var_type.get_size(size_bundle)
+        return size
 
 
-class Program(Compilable):
+class Program:
     """
     Model for the entire program
     """
 
     def __init__(self, globals: List[Variable], globals_init: List[Compilable], functions: List[Function],
-                 classes: List["ElangClass"], exports: List[Export]):
+                 classes: List[ElangClass], exports: List[Export], includes: List[Include], name):
         self.classes = {}
         self.globas = {}
         self.functions = {}
         for eclass in classes:
-            self.classes[eclass.name] = eclass
+            self._add_class(eclass)
         for function in functions:
             self.functions[function.name] = function
         self.globals = globals
         self.globals_init = globals_init
         self.exports = exports
+        self.name = name
+        self.includes = includes
+
+    def _add_class(self, eclass: ElangClass):
+        self.classes[eclass.name] = eclass
+        for sub_class in eclass.sub_classes:
+            self._add_class(sub_class)
 
     def resolve_exports(self) -> List[Compilable]:
         return [export.resolve(self) for export in self.exports]

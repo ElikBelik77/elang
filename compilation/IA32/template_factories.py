@@ -5,8 +5,6 @@ from compilation.models.operators import *
 from compilation.IA32.utils import get_unique_id, produce_offset_table, produce_class_member_offset_table, \
     unpack_dot_operator
 from compilation.models.arrays import ArrayInitializer
-from compilation.models.classes import ElangClass
-from queue import Queue
 
 
 class TemplateFactory:

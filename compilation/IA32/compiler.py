@@ -2,8 +2,8 @@ from typing import Tuple
 
 from compilation.IA32.utils import produce_offset_table, produce_class_vtable
 from compilation.IA32.template_factories import *
-from compilation.models.classes import ElangClass
 from compilation.type_system.primitives import Primitive
+from parsing import Parser
 
 
 class ProgramCompiler:
@@ -49,16 +49,19 @@ class ProgramCompiler:
         }
         self.verbose = True
 
-    def compile(self, program: Program, destination_file: str) -> None:
+    def compile_dependency(self, dependency):
+        parser = Parser.create_default()
+        dp_program = parser.parse_file(dependency)
+
+    def _compile_to_str(self, program: Program) -> str:
         """
         This function compiles a program.
         :param program: the program to compile.
-        :param destination_file: the destination path to write the output to.
         :return: None.
-        """
-        assembly = ("SECTION .text\n"
-                    "extern malloc\n"
-                    "global main\n")
+        `"""
+        assembly = ""
+        for dp in program.includes:
+            assembly += self.compile_dependency(dp)
         vtables = {}
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
@@ -72,6 +75,19 @@ class ProgramCompiler:
 
         for f_name in program.functions:
             assembly += self.compile_function(program, program.functions[f_name]) + "\n"
+        return assembly
+
+    def compile(self, program: Program, destination_file: str) -> None:
+        """
+        This function compiles a program.
+        :param program: the program to compile.
+        :param destination_file: the destination path to write the output to.
+        :return: None.
+        """
+        assembly = ("SECTION .text\n"
+                    "extern malloc\n"
+                    "global main\n")
+        assembly += self._compile_to_str(program)
         with open(destination_file, "w") as out:
             out.write(assembly)
 

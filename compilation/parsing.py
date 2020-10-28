@@ -77,9 +77,12 @@ class Parser:
         global_scope = Scope('global', None)
         with open(file, "r") as f:
             source_code = f.read().strip()
-        return self.parse_source_code(source_code, parent_scope=global_scope, top_level=True)
+        program = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True,
+                                         prog_name=file.split('/')[-1].split('.')[0])
 
-    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False):
+        return program
+
+    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name=''):
         """
         This function parses a source code into tokens.
         :param source_code: the source code to parse.
@@ -113,7 +116,7 @@ class Parser:
                                           parent_scope=parent_scope,
                                           match=match_models)
         if top_level:
-            return Program(*self.classify_entities(parsed))
+            return Program(*self.classify_entities(parsed), prog_name)
         return parsed
 
     def get_maximal_match(self, text: str) -> Tuple[Dict, Match]:
@@ -156,4 +159,4 @@ class Parser:
                 exports.append(token)
             else:
                 globals_initialization.append(token)
-        return globals, globals_initialization, functions, classes, exports
+        return globals, globals_initialization, functions, classes, exports, []

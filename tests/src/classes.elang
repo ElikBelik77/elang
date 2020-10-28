@@ -2,13 +2,18 @@ class Bar {
     int my_bar;
 }
 class Foo {
+
+    class SubFoo {
+
+    }
     int a;
     Bar b;
     int[5] arr;
-
+    Foo.SubFoo sub_foo;
     int constructor() {
         this.b = new Bar();
     }
+
 }
 
 Foo get_a_foo() {

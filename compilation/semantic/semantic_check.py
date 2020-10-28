@@ -136,5 +136,5 @@ class SemanticChecker:
         return SemanticChecker([VariableDeclarationCheck(), RepeatingArgumentDeclaration(),
                                 RepeatingVariableDeclaration(),
                                 FunctionArgumentShadowing()],
-                               [HasEntryPoint()]
+                               []
                                )

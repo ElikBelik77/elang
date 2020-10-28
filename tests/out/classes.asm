@@ -43,6 +43,7 @@ leave
 ret
 vt_Foo_constructor:
 jmp Foo_constructor
+;ElangClassTemplateFactory
 ;FunctionTemplateFactory
 get_a_foo:
 push ebp
@@ -50,7 +51,7 @@ mov ebp, esp
 sub esp, 4
 ;AssignmentTemplateFactory
 ;NewOperatorTemplateFactory
-push 36
+push 40
 call malloc
 add esp, 4
 push eax
