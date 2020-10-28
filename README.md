@@ -17,6 +17,7 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [ ] Global variables
 - [x] Assembling with NASM
 - [x] Classes
+- [x] Sub classes
 - [ ] Support for IA64
 - [ ] Interaction with the file system
 ## Prerequisites & Usage
