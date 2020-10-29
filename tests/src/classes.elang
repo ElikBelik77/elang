@@ -7,7 +7,9 @@ class Bar {
 class Foo {
 
     class SubFoo {
-
+        Bar get_sub_foo_bar() {
+            return new Bar();
+        }
     }
     int a;
     Bar b;
@@ -29,7 +31,7 @@ Foo get_a_foo() {
 
 int main() {
     Foo foo = get_a_foo();
-    foo.b.my_bar = 5;
-    get_a_foo().b.my_bar = 5;
-    get_a_foo().get_a_bar().Hi();
+
+    foo.sub_foo = new Foo.SubFoo();
+    foo.sub_foo.get_sub_foo_bar().Hi();
 }

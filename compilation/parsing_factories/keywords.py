@@ -7,6 +7,8 @@ from compilation.shunting_yard import shunting_yard
 from compilation.models.arrays import ArrayInitializer, Array, HeapLayer, StackLayer
 from typing import Match, Tuple
 
+from compilation.models.values import FunctionCall
+
 
 class ExportFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
@@ -17,6 +19,20 @@ class ExportFactory(Factory):
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid export statement.")
+
+
+class ConstructorFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid position for the constructor function")
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        start, end = find_closing_parenthesis(source_code)
+        arguments_list = source_code[start + 1:end - 1].split(',')
+        arguments = []
+        for arg in arguments_list:
+            if len(arg) is not 0:
+                arguments += parser.parse_source_code(arg, parent_scope)
+        return [FunctionCall(match.group(1), arguments)], source_code[end:]
 
 
 class ReturnFactory(Factory):
@@ -30,6 +46,7 @@ class ReturnFactory(Factory):
 class ElangClassDeclarationFactory(Factory):
     def __init__(self):
         self.subclass_depth = 0
+        self.subclass_prefix = []
 
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()
@@ -37,12 +54,16 @@ class ElangClassDeclarationFactory(Factory):
         scope = Scope(match.group(1), parent_scope)
         body, member_variables, member_variables_initialization, functions, sub_classes = [], [], [], [], []
         self.subclass_depth += 1
+        self.subclass_prefix.append(match.group(1).strip())
         for token in parser.parse_source_code(source_code[0:source_end], scope):
             if isinstance(token, ElangClass):
-                token.name = f"{match.group(1).strip()}.{token.name}"
+                token.name = f"{'.'.join(self.subclass_prefix)}.{token.name}"
                 parser.keywords.append(
                     {"re": re.compile(rf"\s*{token.name.strip()}(\s+|\[)"),
                      "factory": TypeFactory(token)})
+                parser.keywords.append(
+                    {"re": re.compile(rf"\s*({token.name.strip()})\s*\((.*)\)\s*"),
+                     "factory": ConstructorFactory()})
                 sub_classes.append(token)
         body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
         member_variables = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
@@ -50,7 +71,7 @@ class ElangClassDeclarationFactory(Factory):
 
         member_variables_initialization = [token for token in parser.parse_source_code(source_code[0:source_end], scope)
                                            if not isinstance(token, VariableDeclaration)
-                                           and not isinstance(token,Function) and not isinstance(token, ElangClass)]
+                                           and not isinstance(token, Function) and not isinstance(token, ElangClass)]
 
         functions = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
                      isinstance(token, Function)]
@@ -59,8 +80,11 @@ class ElangClassDeclarationFactory(Factory):
         if self.subclass_depth == 1:
             parser.keywords.append(
                 {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
-
+            parser.keywords.append(
+                {"re": re.compile(rf"\s*(9{match.group(1).strip()})\s*\((.*)\)\s*"),
+                 "factory": ConstructorFactory()})
         self.subclass_depth -= 1
+        self.subclass_prefix = self.subclass_prefix[:-1]
 
         parser.defined_types.append(elang_class)
         return [elang_class], source_code[source_end + 1:]

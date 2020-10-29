@@ -73,6 +73,22 @@ vt_Foo_get_a_bar:
 jmp Foo_get_a_bar
 ;ElangClassTemplateFactory
 ;FunctionTemplateFactory
+Foo.SubFoo_get_sub_foo_bar:
+push ebp
+mov ebp, esp
+;ReturnTemplateFactory
+;NewOperatorTemplateFactory
+push 4
+call malloc
+add esp, 4
+push eax
+
+pop eax
+leave
+ret
+vt_Foo.SubFoo_get_sub_foo_bar:
+jmp Foo.SubFoo_get_sub_foo_bar
+;FunctionTemplateFactory
 get_a_foo:
 push ebp
 mov ebp, esp
@@ -120,8 +136,12 @@ pop edi
 pop eax
 mov [edi], eax
 ;AssignmentTemplateFactory
-;DecimalConstantTemplateFactory
-push 5
+;NewOperatorTemplateFactory
+push 0
+call malloc
+add esp, 4
+push eax
+
 ;DotOperatorTemplateFactory
 ;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
@@ -130,38 +150,24 @@ pop eax
 mov eax, [eax]
 push eax
 pop eax
-add eax, 4
-mov eax, [eax]
-push eax
-pop eax
-add eax, 0
-push eax
-pop edi
-pop eax
-mov [edi], eax
-;AssignmentTemplateFactory
-;DecimalConstantTemplateFactory
-push 5
-;DotOperatorTemplateFactory
-;FunctionCallTemplateFactory
-call get_a_foo
-push eax
-pop eax
-add eax, 4
-mov eax, [eax]
-push eax
-pop eax
-add eax, 0
+add eax, 36
 push eax
 pop edi
 pop eax
 mov [edi], eax
 ;DotOperatorTemplateFactory
-;FunctionCallTemplateFactory
-call get_a_foo
+;PointerVariableTemplateFactory
+lea edi, [ebp - 4]
+push edi
+pop eax
+mov eax, [eax]
+push eax
+pop eax
+add eax, 36
+mov eax, [eax]
 push eax
 ;DotOperatorTemplateFactory
-call vt_Foo_get_a_bar
+call vt_Foo.SubFoo_get_sub_foo_bar
 push eax
 ;DotOperatorTemplateFactory
 call vt_Bar_Hi
