@@ -1,5 +1,8 @@
 class Bar {
     int my_bar;
+    int Hi() {
+        return 5;
+    }
 }
 class Foo {
 
@@ -13,6 +16,9 @@ class Foo {
     int constructor() {
         this.b = new Bar();
     }
+    Bar get_a_bar() {
+        return new Bar();
+    }
 
 }
 
@@ -22,7 +28,8 @@ Foo get_a_foo() {
 }
 
 int main() {
-    Foo foo = get_my_foo();
+    Foo foo = get_a_foo();
     foo.b.my_bar = 5;
     get_a_foo().b.my_bar = 5;
+    get_a_foo().get_a_bar().Hi();
 }

@@ -416,7 +416,8 @@ class NewOperatorTemplateFactory(TemplateFactory):
             "add esp, 4\n"
             "push eax\n"
         )
-        assembly += f"push eax\ncall init_{class_type.name}\n" if len(class_type.member_variable_initialization) is not 0 else ''
+        assembly += f"push eax\ncall init_{class_type.name}\n" if len(
+            class_type.member_variable_initialization) is not 0 else ''
         if class_type.constructor is not None:
             assembly += (
                 "push eax\n"
@@ -510,11 +511,13 @@ class DotOperatorTemplateFactory(TemplateFactory):
                         current_dot.right.name]
                 assembly += 'push eax\n'
             if isinstance(current_dot.right, FunctionCall):
-                call_assembly, current_type = self.produce_function_call(current_dot.left, factories, bundle)
+                call_assembly, current_type = self.produce_function_call(current_type, current_dot.right, factories,
+                                                                         bundle)
                 assembly += call_assembly
         return assembly
 
-    def produce_function_call(self, function_call: FunctionCall, factories: Dict[type, "TemplateFactory"],
+    def produce_function_call(self, current_type: ElangClass, function_call: FunctionCall,
+                              factories: Dict[type, "TemplateFactory"],
                               bundle: Dict):
         argument_preparation = ""
         for arg in function_call.arguments[:-1:][::-1]:
@@ -527,10 +530,10 @@ class DotOperatorTemplateFactory(TemplateFactory):
             function_call.arguments) is not 0 else ""
         assembly = self.add_verbose(bundle)
         assembly += (
-            f"push eax\n"
             f"{argument_preparation}"
-            f"call vt_{bundle['scope'].name}_{function_call.name}"
+            f"call vt_{current_type.name}_{function_call.name}\n"
             f"{argument_clean_up_line}"
             f"push eax\n"
         )
-        return assembly, bundle["program"].functions[function_call.name].return_type
+        return assembly, [function.return_type for function in current_type.functions if
+                          function.name == f"{current_type.name}_{function_call.name}"][0]

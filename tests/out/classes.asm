@@ -2,6 +2,18 @@ SECTION .text
 extern malloc
 global main
 ;ElangClassTemplateFactory
+;FunctionTemplateFactory
+Bar_Hi:
+push ebp
+mov ebp, esp
+;ReturnTemplateFactory
+;DecimalConstantTemplateFactory
+push 5
+pop eax
+leave
+ret
+vt_Bar_Hi:
+jmp Bar_Hi
 ;ElangClassTemplateFactory
 ;FunctionTemplateFactory
 Foo_constructor:
@@ -29,6 +41,20 @@ pop eax
 mov [edi], eax
 leave
 ret
+;FunctionTemplateFactory
+Foo_get_a_bar:
+push ebp
+mov ebp, esp
+;ReturnTemplateFactory
+;NewOperatorTemplateFactory
+push 4
+call malloc
+add esp, 4
+push eax
+
+pop eax
+leave
+ret
 init_Foo:
 push ebp
 mov ebp, esp
@@ -43,6 +69,8 @@ leave
 ret
 vt_Foo_constructor:
 jmp Foo_constructor
+vt_Foo_get_a_bar:
+jmp Foo_get_a_bar
 ;ElangClassTemplateFactory
 ;FunctionTemplateFactory
 get_a_foo:
@@ -83,7 +111,7 @@ mov ebp, esp
 sub esp, 4
 ;AssignmentTemplateFactory
 ;FunctionCallTemplateFactory
-call get_my_foo
+call get_a_foo
 push eax
 ;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
@@ -128,6 +156,16 @@ push eax
 pop edi
 pop eax
 mov [edi], eax
+;DotOperatorTemplateFactory
+;FunctionCallTemplateFactory
+call get_a_foo
+push eax
+;DotOperatorTemplateFactory
+call vt_Foo_get_a_bar
+push eax
+;DotOperatorTemplateFactory
+call vt_Bar_Hi
+push eax
 leave
 ret
 
