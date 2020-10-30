@@ -70,19 +70,33 @@ loc_A13E29:
 leave
 ret
 ```
-#### Classes example
+#### A more complex code snippet
 ```
 class Bar {
     int my_bar;
+    int Bar_Func() {
+        return 5;
+    }
 }
 class Foo {
+
+    class SubFoo {
+        Bar get_bar() {
+            return new Bar();
+        }
+    }
     int a;
     Bar b;
     int[5] arr;
-
+    Foo.SubFoo sub_foo;
     int constructor() {
         this.b = new Bar();
     }
+
+    Bar get_bar() {
+        return new Bar();
+    }
+
 }
 
 Foo get_a_foo() {
@@ -91,9 +105,9 @@ Foo get_a_foo() {
 }
 
 int main() {
-    Foo foo = get_my_foo();
-    foo.b.my_bar = 5;
-    get_a_foo().b.my_bar = 5;
+    Foo foo = get_a_foo();
+    foo.sub_foo = new Foo.SubFoo();
+    foo.sub_foo.get_bar().Bar_Func();
 }
 ```
 Will compile to
@@ -101,6 +115,18 @@ Will compile to
 SECTION .text
 extern malloc
 global main
+
+Bar_Bar_Func:
+push ebp
+mov ebp, esp
+push 5
+pop eax
+leave
+ret
+
+vt_Bar_Bar_Func:
+jmp Bar_Bar_Func
+
 
 Foo_constructor:
 push ebp
@@ -123,6 +149,18 @@ mov [edi], eax
 leave
 ret
 
+Foo_get_bar:
+push ebp
+mov ebp, esp
+push 4
+call malloc
+add esp, 4
+push eax
+pop eax
+leave
+ret
+
+
 init_Foo:
 push ebp
 mov ebp, esp
@@ -138,11 +176,30 @@ ret
 vt_Foo_constructor:
 jmp Foo_constructor
 
+vt_Foo_get_bar:
+jmp Foo_get_bar
+
+
+Foo.SubFoo_get_bar:
+push ebp
+mov ebp, esp
+push 4
+call malloc
+add esp, 4
+push eax
+pop eax
+leave
+ret
+
+vt_Foo.SubFoo_get_bar:
+jmp Foo.SubFoo_get_bar
+
+
 get_a_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
-push 36
+push 40
 call malloc
 add esp, 4
 push eax
@@ -167,42 +224,41 @@ main:
 push ebp
 mov ebp, esp
 sub esp, 4
-call get_my_foo
-push eax
-lea edi, [ebp - 4]
-push edi
-pop edi
-pop eax
-mov [edi], eax
-push 5
-lea edi, [ebp - 4]
-push edi
-pop eax
-mov eax, [eax]
-push eax
-pop eax
-add eax, 4
-mov eax, [eax]
-push eax
-pop eax
-add eax, 0
-push eax
-pop edi
-pop eax
-mov [edi], eax
-push 5
 call get_a_foo
 push eax
+lea edi, [ebp - 4]
+push edi
+pop edi
 pop eax
-add eax, 4
+mov [edi], eax
+push 0
+call malloc
+add esp, 4
+push eax
+lea edi, [ebp - 4]
+push edi
+pop eax
 mov eax, [eax]
 push eax
 pop eax
-add eax, 0
+add eax, 36
 push eax
 pop edi
 pop eax
 mov [edi], eax
+lea edi, [ebp - 4]
+push edi
+pop eax
+mov eax, [eax]
+push eax
+pop eax
+add eax, 36
+mov eax, [eax]
+push eax
+call vt_Foo.SubFoo_get_bar
+push eax
+call vt_Bar_Bar_Func
+push eax
 leave
 ret
 ```

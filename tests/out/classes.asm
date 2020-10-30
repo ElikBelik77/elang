@@ -1,33 +1,26 @@
 SECTION .text
 extern malloc
 global main
-;ElangClassTemplateFactory
-;FunctionTemplateFactory
-Bar_Hi:
+
+Bar_Bar_Func:
 push ebp
 mov ebp, esp
-;ReturnTemplateFactory
-;DecimalConstantTemplateFactory
 push 5
 pop eax
 leave
 ret
-vt_Bar_Hi:
-jmp Bar_Hi
-;ElangClassTemplateFactory
-;FunctionTemplateFactory
+
+vt_Bar_Bar_Func:
+jmp Bar_Bar_Func
+
+
 Foo_constructor:
 push ebp
 mov ebp, esp
-;AssignmentTemplateFactory
-;NewOperatorTemplateFactory
 push 4
 call malloc
 add esp, 4
 push eax
-
-;DotOperatorTemplateFactory
-;PointerVariableTemplateFactory
 lea edi, [ebp + 12]
 push edi
 pop eax
@@ -41,60 +34,57 @@ pop eax
 mov [edi], eax
 leave
 ret
-;FunctionTemplateFactory
-Foo_get_a_bar:
+
+Foo_get_bar:
 push ebp
 mov ebp, esp
-;ReturnTemplateFactory
-;NewOperatorTemplateFactory
 push 4
 call malloc
 add esp, 4
 push eax
-
 pop eax
 leave
 ret
+
+
 init_Foo:
 push ebp
 mov ebp, esp
 lea edi, [ebp + 12]
 push edi
-;ArrayInitializeTemplateFactory
 pop eax
 lea edi, [eax + 8]
 mov [edi + 0], dword 5
 mov [edi + 4], dword 4
 leave
 ret
+
 vt_Foo_constructor:
 jmp Foo_constructor
-vt_Foo_get_a_bar:
-jmp Foo_get_a_bar
-;ElangClassTemplateFactory
-;FunctionTemplateFactory
-Foo.SubFoo_get_sub_foo_bar:
+
+vt_Foo_get_bar:
+jmp Foo_get_bar
+
+
+Foo.SubFoo_get_bar:
 push ebp
 mov ebp, esp
-;ReturnTemplateFactory
-;NewOperatorTemplateFactory
 push 4
 call malloc
 add esp, 4
 push eax
-
 pop eax
 leave
 ret
-vt_Foo.SubFoo_get_sub_foo_bar:
-jmp Foo.SubFoo_get_sub_foo_bar
-;FunctionTemplateFactory
+
+vt_Foo.SubFoo_get_bar:
+jmp Foo.SubFoo_get_bar
+
+
 get_a_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
-;AssignmentTemplateFactory
-;NewOperatorTemplateFactory
 push 40
 call malloc
 add esp, 4
@@ -104,15 +94,11 @@ call init_Foo
 push eax
 call vt_Foo_constructor
 add esp, 4
-
-;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
 push edi
 pop edi
 pop eax
 mov [edi], eax
-;ReturnTemplateFactory
-;VariableTemplateFactory
 lea edi, [ebp - 4]
 mov edi, [edi]
 push edi
@@ -120,30 +106,21 @@ pop eax
 leave
 ret
 
-;FunctionTemplateFactory
 main:
 push ebp
 mov ebp, esp
 sub esp, 4
-;AssignmentTemplateFactory
-;FunctionCallTemplateFactory
 call get_a_foo
 push eax
-;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
 push edi
 pop edi
 pop eax
 mov [edi], eax
-;AssignmentTemplateFactory
-;NewOperatorTemplateFactory
 push 0
 call malloc
 add esp, 4
 push eax
-
-;DotOperatorTemplateFactory
-;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
 push edi
 pop eax
@@ -155,8 +132,6 @@ push eax
 pop edi
 pop eax
 mov [edi], eax
-;DotOperatorTemplateFactory
-;PointerVariableTemplateFactory
 lea edi, [ebp - 4]
 push edi
 pop eax
@@ -166,11 +141,9 @@ pop eax
 add eax, 36
 mov eax, [eax]
 push eax
-;DotOperatorTemplateFactory
-call vt_Foo.SubFoo_get_sub_foo_bar
+call vt_Foo.SubFoo_get_bar
 push eax
-;DotOperatorTemplateFactory
-call vt_Bar_Hi
+call vt_Bar_Bar_Func
 push eax
 leave
 ret

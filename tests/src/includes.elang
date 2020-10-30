@@ -1,0 +1,8 @@
+include {
+    exports.elang
+}
+class includes {
+    int main() {
+        int i = exports.check();
+    }
+}

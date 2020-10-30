@@ -1,13 +1,13 @@
 class Bar {
     int my_bar;
-    int Hi() {
+    int Bar_Func() {
         return 5;
     }
 }
 class Foo {
 
     class SubFoo {
-        Bar get_sub_foo_bar() {
+        Bar get_bar() {
             return new Bar();
         }
     }
@@ -18,7 +18,8 @@ class Foo {
     int constructor() {
         this.b = new Bar();
     }
-    Bar get_a_bar() {
+
+    Bar get_bar() {
         return new Bar();
     }
 
@@ -31,7 +32,6 @@ Foo get_a_foo() {
 
 int main() {
     Foo foo = get_a_foo();
-
     foo.sub_foo = new Foo.SubFoo();
-    foo.sub_foo.get_sub_foo_bar().Hi();
+    foo.sub_foo.get_bar().Bar_Func();
 }
