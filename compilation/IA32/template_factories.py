@@ -301,8 +301,8 @@ class VariableTemplateFactory(TemplateFactory):
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
             )
-        elif variable_expression.name in bundle["program"].global_vars:
-            var_type = bundle["program"].global_scope.defined_variables[variable_expression.name]["type"]
+        elif variable_expression.name in bundle["program"].variables:
+            var_type = bundle["program"].scope.defined_variables[variable_expression.name]["type"]
             assembly += (
                 f"mov edi, {get_memory_access_prefix(var_type, bundle['size_bundle'])} [{variable_expression.name}]\n"
                 "push edi\n"
