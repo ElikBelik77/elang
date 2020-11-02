@@ -1,5 +1,5 @@
 section .data
-db 4 dup ?
+global_var: db 4 dup ?
 section .text
 extern malloc
 global main
@@ -18,18 +18,18 @@ pop ebx
 pop eax
 xor ecx, ecx
 cmp eax, ebx
-jbe loc_6132D6
+jbe loc_836B48
 mov ecx, 1
-loc_6132D6:
+loc_836B48:
 push ecx
 pop eax
 test eax, eax
-jz loc_47D88A
+jz loc_C0937E
 push 5
 lea edi, [ebp - 4]
 pop eax
 mov [edi], eax
-loc_47D88A:
+loc_C0937E:
 leave
 ret
 

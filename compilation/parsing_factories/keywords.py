@@ -10,6 +10,17 @@ from typing import Match, Tuple
 from compilation.models.values import FunctionCall
 
 
+class IncludeFactory(Factory):
+    def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        source_code = source_code[len(match.group(0).strip()):].strip()
+        source_end = find_scope_end(source_code)
+        tokens = [token.strip() for token in source_code[:source_end].split(',')]
+        return [Include(token) for token in tokens], source_code[source_end + 1:]
+
+    def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
+        raise Exception("Invalid include statement.")
+
+
 class ExportFactory(Factory):
     def produce(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         source_code = source_code[len(match.group(0).strip()):].strip()

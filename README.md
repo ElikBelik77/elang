@@ -41,7 +41,7 @@ int run() {
 Compiling to IA32 using stack based approach will yield:
 ```
 section .data
-db 4 dup ?
+global_var: db 4 dup ?
 section .text
 extern malloc
 global main
@@ -130,7 +130,7 @@ Foo a_global_foo = new Foo();
 Will compile to
 ```
 section .data
-db 4 dup ?
+a_global_foo: db 4 dup ?
 section .text
 extern malloc
 global main

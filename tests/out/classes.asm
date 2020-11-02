@@ -1,5 +1,5 @@
 section .data
-db 4 dup ?
+a_global_foo: db 4 dup ?
 section .text
 extern malloc
 global main

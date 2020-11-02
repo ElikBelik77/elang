@@ -77,7 +77,7 @@ class ProgramCompiler:
         for f_name in program.functions:
             text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
         for var in program.global_vars.keys():
-            data_segment += f"db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
+            data_segment += f"{var}: db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
         init_global_variables = ""
         for init_statement in program.globals_init:
             init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,

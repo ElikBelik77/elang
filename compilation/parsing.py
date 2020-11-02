@@ -25,8 +25,9 @@ class Parser:
                     {"re": re.compile(r"\s*class\s*(\w[\w]*)\s*{\s*"), "factory": ElangClassDeclarationFactory(),
                      "scopeable": True},
                     {"re": re.compile(r"\s*if\s*\((.*)\)\s*{\s*"), "factory": IfFactory(), "scopeable": True},
-                    {"re": re.compile(r"\s*export\s*\s*{\s*"), "factory": ExportFactory(), "scopeable": True},
-                    {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True}]
+                    {"re": re.compile(r"\s*export\s*{\s*"), "factory": ExportFactory(), "scopeable": True},
+                    {"re": re.compile(r"\s*while\s*\((.*)\)\s*{\s*"), "factory": WhileFactory(), "scopeable": True},
+                    {"re": re.compile(r"\s*include\s*{\s*"), "factory": IncludeFactory(), "scopeable": True}]
         operators = [{"re": re.compile(r"\s*\+\s*"), "factory": AdditionFactory()},
                      {"re": re.compile(r"\s*-\s*"), "factory": SubtractionFactory()},
                      {"re": re.compile(r"\s*\*\s*"), "factory": MultiplicationFactory()},
