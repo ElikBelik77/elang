@@ -488,6 +488,7 @@ class ElangClassTemplateFactory(TemplateFactory):
                                                                           elang_class, bundle['size_bundle']))
                 assembly += (
                     f"lea edi, [ebp + 12]\n"
+                    "mov edi, [edi]\n"
                     "push edi\n"
                     f"{array_init}"
                     "leave\n"

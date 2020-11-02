@@ -3,6 +3,9 @@ class Bar {
     int Bar_Func() {
         return 5;
     }
+    int constructor() {
+        this.my_bar = 6;
+    }
 }
 
 class Foo {
@@ -18,7 +21,7 @@ class Foo {
     Foo.SubFoo sub_foo;
     int constructor() {
         this.b = new Bar();
-        get_a_foo();
+        this.sub_foo = new Foo.SubFoo();
     }
 
     Bar get_bar() {
@@ -34,10 +37,6 @@ Foo get_a_foo() {
 
 int main() {
     Foo foo = get_a_foo();
-    foo.sub_foo = new Foo.SubFoo();
-    foo.sub_foo.get_bar().Bar_Func();
-    a_global_foo = new Foo();
-    a_global_foo.get_bar();
 }
 
 Foo a_global_foo;

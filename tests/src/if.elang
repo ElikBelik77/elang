@@ -1,5 +1,5 @@
 int global_var;
-int run() {
+int main() {
     int i = 0;
     global_var = 5;
     if (6 > global_var) {
