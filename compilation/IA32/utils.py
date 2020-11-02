@@ -2,9 +2,21 @@ import uuid
 from typing import Tuple, Dict, List
 
 from compilation.headers import CompileAsPointer
-from compilation.models.base import Scopeable, Function, BinaryOperator, ElangClass
+from compilation.models.base import Scopeable, Function, BinaryOperator, ElangClass, VariableDeclaration
 from compilation.type_system.primitives import Primitive
-from compilation.models.operators import DotOperator
+from compilation.models.operators import DotOperator, Type
+
+
+def get_memory_access_prefix(var: Type, size_bundle: Dict):
+    size = var.get_size(size_bundle)
+    if size == 1:
+        return "BYTE PTR"
+    if size == 2:
+        return "WORD PTR"
+    if size == 4:
+        return "DWORD PTR"
+    if size == 8:
+        return "QWORD PTR"
 
 
 def get_unique_id() -> str:

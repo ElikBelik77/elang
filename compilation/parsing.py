@@ -79,7 +79,8 @@ class Parser:
             source_code = f.read().strip()
         program = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True,
                                          prog_name=file.split('/')[-1].split('.')[0])
-
+        program.global_scope = global_scope
+        program.populate_global_scope()
         return program
 
     def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name=''):
@@ -151,11 +152,11 @@ class Parser:
         for token in tokens:
             if isinstance(token, Function):
                 functions.append(token)
-            if isinstance(token, ElangClass):
+            elif isinstance(token, ElangClass):
                 classes.append(token)
-            if isinstance(token, VariableDeclaration):
+            elif isinstance(token, VariableDeclaration):
                 globals.append(token)
-            if isinstance(token, Export):
+            elif isinstance(token, Export):
                 exports.append(token)
             else:
                 globals_initialization.append(token)

@@ -3,7 +3,7 @@ from compilation.models.values import *
 from compilation.models.keywords import *
 from compilation.models.operators import *
 from compilation.IA32.utils import get_unique_id, produce_offset_table, produce_class_member_offset_table, \
-    unpack_dot_operator
+    unpack_dot_operator, get_memory_access_prefix
 from compilation.models.arrays import ArrayInitializer
 
 
@@ -246,7 +246,14 @@ class AssignmentTemplateFactory(TemplateFactory):
                 "pop eax\n"
                 "mov [edi], eax\n"
             )
-        elif bundle["offset_table"][assigment_expression.left.name] > 0:
+        elif assigment_expression.left.name in bundle["program"].global_vars.keys():
+            assembly += (
+                f"mov edi, {assigment_expression.left.name}\n"
+                "pop eax\n"
+                f"mov {get_memory_access_prefix(bundle['program'].global_vars[assigment_expression.left.name], bundle['size_bundle'])} [edi], eax\n"
+            )
+        elif assigment_expression.left.name in bundle["offset_table"] \
+                and bundle["offset_table"][assigment_expression.left.name] > 0:
             assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
                 "pop eax\n"
@@ -274,17 +281,24 @@ class DecimalConstantTemplateFactory(TemplateFactory):
 class VariableTemplateFactory(TemplateFactory):
     def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
-        if bundle["offset_table"][variable_expression.name] > 0:
+
+        if variable_expression.name in bundle["offset_table"] and bundle["offset_table"][variable_expression.name] > 0:
             assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
             )
-        else:
+        elif variable_expression.name in bundle["offset_table"] and bundle["offset_table"][
+            variable_expression.name] <= 0:
             assembly += (
                 "lea edi, [ebp - {var_offset}]\n"
                 "mov edi, [edi]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
+            )
+        elif variable_expression.name in bundle["program"].global_vars:
+            var_type = bundle["program"].global_scope.defined_variables[variable_expression.name]["type"]
+            assembly += (
+                f"mov edi, {get_memory_access_prefix(var_type, bundle['size_bundle'])} [{variable_expression.name}]\n"
             )
         return assembly
 
@@ -368,7 +382,7 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
             "pop edi\n"
             "pop eax\n"
             "mov ebx, [edi]\n"
-            "cmp eax, ebx\n"  # Check if index is of bounds
+            "cmp eax, ebx\n"  # Check if index is off bounds
             f"jb loc_{passed_boundary_check}\n"
             "mov eax, 0\n"
             "mov ebx, 0\n"
@@ -433,14 +447,14 @@ class ElangClassTemplateFactory(TemplateFactory):
         assembly = self.add_verbose(bundle)
         bundle["scope"] = elang_class.scope
         plt_section = ""
-        for function in elang_class.functions:
-            function.name = f"{elang_class.name}_{function.name}"
-            offset_table, stack_size = produce_offset_table(function, bundle["size_bundle"])
+        for f_name in elang_class.functions:
+            elang_class.functions[f_name].name = f"{elang_class.name}_{f_name}"
+            offset_table, stack_size = produce_offset_table(elang_class.functions[f_name], bundle["size_bundle"])
             bundle["offset_table"], bundle["stack_size"] = offset_table, stack_size
-            assembly += factories[Function].produce(function, factories, bundle)
+            assembly += factories[Function].produce(elang_class.functions[f_name], factories, bundle)
             plt_section += (
-                f"vt_{function.name}:\n"  # properly set up vtable
-                f"jmp {function.name}\n"
+                f"vt_{f_name}:\n"  # properly set up vtable
+                f"jmp {f_name}\n"
             )
         if len(elang_class.member_variable_initialization) is not 0:
             assembly += (
@@ -535,5 +549,5 @@ class DotOperatorTemplateFactory(TemplateFactory):
             f"{argument_clean_up_line}"
             f"push eax\n"
         )
-        return assembly, [function.return_type for function in current_type.functions if
-                          function.name == f"{current_type.name}_{function_call.name}"][0]
+        return assembly, [current_type.functions[function].return_type for function in current_type.functions if
+                          current_type.functions[function].name == f"{current_type.name}_{function_call.name}"][0]

@@ -165,6 +165,11 @@ class Scope:
             children += child.get_children()
         return children + self.children
 
+    def get_global(self):
+        if self.parent_scope is None:
+            return self
+        return self.parent_scope.get_global()
+
     def is_child_of(self, parent):
         """
         This function checks if this scope is a descendant of another scope.
@@ -221,15 +226,20 @@ class ElangClass(Scopeable, CompileAsPointer, Type):
                  member_variable_initialization: List[Compilable], sub_classes: List["ElangClass"]):
         super(ElangClass, self).__init__(scope, functions + member_variables)
         self.name = name
-        self.functions = functions
+        self.functions = {}
+        for function in functions:
+            self.functions[function.name] = function
+
         self.constructor = None
         self.member_variables = member_variables
         self.member_variable_initialization = member_variable_initialization
-        self.sub_classes = sub_classes
-        for function in self.functions:
-            if function.name == "constructor":
-                self.constructor = function
-            function.arguments.append(VariableDeclaration("this", self))
+        self.sub_classes = {}
+        for sub_class in sub_classes:
+            self.sub_classes[sub_class.name] = sub_class
+        for f_name in self.functions:
+            if f_name == "constructor":
+                self.constructor = self.functions[f_name]
+            self.functions[f_name].arguments.append(VariableDeclaration("this", self))
         scope.defined_variables["this"] = {"type": self}
         for mv in member_variables:
             scope.defined_variables[mv.name] = {"type": mv.var_type}
@@ -254,16 +264,19 @@ class Program:
     Model for the entire program
     """
 
-    def __init__(self, globals: List[Variable], globals_init: List[Compilable], functions: List[Function],
-                 classes: List[ElangClass], exports: List[Export], includes: List[Include], name):
+    def __init__(self, global_vars: List[VariableDeclaration], globals_init: List[Compilable],
+                 functions: List[Function], classes: List[ElangClass],
+                 exports: List[Export], includes: List[Include], name):
         self.classes = {}
-        self.globas = {}
         self.functions = {}
+        self.global_scope = None
         for eclass in classes:
             self._add_class(eclass)
         for function in functions:
             self.functions[function.name] = function
-        self.globals = globals
+        self.global_vars = {}
+        for global_var in global_vars:
+            self.global_vars[global_var.name] = global_var.var_type
         self.globals_init = globals_init
         self.exports = exports
         self.name = name
@@ -272,7 +285,14 @@ class Program:
     def _add_class(self, eclass: ElangClass):
         self.classes[eclass.name] = eclass
         for sub_class in eclass.sub_classes:
-            self._add_class(sub_class)
+            self._add_class(eclass.sub_classes[sub_class])
 
     def resolve_exports(self) -> List[Compilable]:
         return [export.resolve(self) for export in self.exports]
+
+    def populate_global_scope(self):
+        for global_var in self.global_vars:
+            if global_var not in self.global_scope.defined_variables:
+                self.global_scope.defined_variables[global_var] = {"type": self.global_vars[global_var]}
+            else:
+                raise Exception(f"Global variable {global_var} is defined twice")

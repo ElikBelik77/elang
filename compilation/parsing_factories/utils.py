@@ -85,7 +85,7 @@ def find_bracket_pairs(text: str) -> List[Tuple[int, int]]:
         idx += 1
 
 
-def populate_scope(scope, body, match):
+def populate_scope(scope, body):
     """
     This function populates a scopes body with variable declarations
     TODO: move over into scopeable class function
@@ -100,4 +100,4 @@ def populate_scope(scope, body, match):
                                                        "scope": scope}
         elif isinstance(statement, VariableDeclaration):
             raise Exception(
-                "Variable {0} is declared more than once in scope {1}".format(statement.name, match.group(0)))
+                "Variable {0} is declared more than once in scope {1}".format(statement.name, scope.name))

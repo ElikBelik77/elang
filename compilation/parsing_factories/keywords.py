@@ -65,7 +65,6 @@ class ElangClassDeclarationFactory(Factory):
                     {"re": re.compile(rf"\s*({token.name.strip()})\s*\((.*)\)\s*"),
                      "factory": ConstructorFactory()})
                 sub_classes.append(token)
-        body = [token for token in parser.parse_source_code(source_code[0:source_end], scope)]
         member_variables = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
                             isinstance(token, VariableDeclaration)]
 
@@ -149,7 +148,7 @@ class WhileFactory(Factory):
         condition = [token for token in parser.parse_source_code(match.group(1), parent_scope)][0]
         if len(condition) > 1:
             raise Exception("Too many expression in an 'while' condition")
-        populate_scope(scope, body, match)
+        populate_scope(scope, body)
         return [While(scope, body, condition)], source_code[source_end + 1:]
 
 
@@ -163,7 +162,7 @@ class IfFactory(Factory):
         if len(condition) > 1:
             raise Exception("Too many expressions in an 'if' condition")
         condition = condition[0]
-        populate_scope(scope, body, match)
+        populate_scope(scope, body)
 
         return [If(scope, body, condition)], source_code[source_end + 1:]
 
@@ -182,7 +181,7 @@ class FunctionDeclarationFactory(Factory):
         function_arguments = [VariableDeclaration(name=arg.strip().split(' ')[1], var_type=arg.strip().split(' ')[0])
                               for
                               arg in match.group(4).split(',') if arg is not '']
-        populate_scope(scope, function_body, match)
+        populate_scope(scope, function_body)
         f = Function(scope, function_name, match.group(0).strip().replace('{', ''),
                      parser.resolve_type(match.group(1).strip()), function_body,
                      function_arguments)

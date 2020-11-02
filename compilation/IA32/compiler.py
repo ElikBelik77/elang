@@ -53,29 +53,39 @@ class ProgramCompiler:
         parser = Parser.create_default()
         dp_program = parser.parse_file(dependency)
 
-    def _compile_to_str(self, program: Program) -> str:
+    def compile_program(self, program: Program) -> Tuple[str, str]:
         """
         This function compiles a program.
         :param program: the program to compile.
         :return: None.
         `"""
-        assembly = ""
+        text_segment, data_segment = "", ""
         for dp in program.includes:
-            assembly += self.compile_dependency(dp)
+            text_segment += self.compile_dependency(dp)
         vtables = {}
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
             vtables[elang_class] = produce_class_vtable(program.classes[elang_class], self.size_bundle)
+        compilation_bundle = {"parent": 'global', "size_bundle": self.size_bundle,
+                              "program": program,
+                              "vtables": vtables,
+                              "verbose": self.verbose}
         for elang_class in program.classes.keys():
-            assembly += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
-                                                           {"parent": 'global', "size_bundle": self.size_bundle,
-                                                            "program": program,
-                                                            "vtables": vtables,
-                                                            "verbose": self.verbose})
+            text_segment += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
+                                                               compilation_bundle)
 
         for f_name in program.functions:
-            assembly += self.compile_function(program, program.functions[f_name]) + "\n"
-        return assembly
+            text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
+        for var in program.global_vars.keys():
+            data_segment += f"db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
+        init_global_variables = ""
+        for init_statement in program.globals_init:
+            init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
+                                                                                  compilation_bundle)
+        text_segment += ("start:\n"
+                         f"{init_global_variables}"
+                         "call main")
+        return text_segment, data_segment
 
     def compile(self, program: Program, destination_file: str) -> None:
         """
@@ -84,10 +94,16 @@ class ProgramCompiler:
         :param destination_file: the destination path to write the output to.
         :return: None.
         """
-        assembly = ("SECTION .text\n"
-                    "extern malloc\n"
-                    "global main\n")
-        assembly += self._compile_to_str(program)
+        text_segment, data_segment = self.compile_program(program)
+        assembly = ""
+        if len(data_segment) is not 0:
+            assembly += ("SECTION .data\n"
+                         f"{data_segment}")
+        assembly += ("SECTION .text\n"
+                     "extern malloc\n"
+                     "global start\n"
+                     f"{text_segment}")
+
         with open(destination_file, "w") as out:
             out.write(assembly)
 
