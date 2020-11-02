@@ -72,7 +72,7 @@ leave
 ret
 vt_get_bar:
 jmp get_bar
-get_a_foo:
+classes_get_a_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
@@ -97,8 +97,7 @@ push edi
 pop eax
 leave
 ret
-
-run:
+classes_main:
 push ebp
 mov ebp, esp
 sub esp, 4
@@ -138,17 +137,6 @@ call vt_Foo.SubFoo_get_bar
 push eax
 call vt_Bar_Bar_Func
 push eax
-mov edi, a_global_foo
-push edi
-pop eax
-mov eax, [eax]
-push eax
-call vt_Foo_get_bar
-push eax
-leave
-ret
-
-main:
 push 40
 call malloc
 add esp, 4
@@ -162,4 +150,18 @@ add esp, 4
 mov edi, a_global_foo
 pop eax
 mov DWORD [edi], eax
+mov edi, a_global_foo
+push edi
+pop eax
+mov eax, [eax]
+push eax
+call vt_Foo_get_bar
+push eax
+leave
+ret
+vt_get_a_foo:
+jmp get_a_foo
+vt_main:
+jmp main
+main:
 call run

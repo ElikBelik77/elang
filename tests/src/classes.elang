@@ -31,12 +31,13 @@ Foo get_a_foo() {
     return my_foo;
 }
 
-int run() {
+int main() {
     Foo foo = get_a_foo();
     foo.sub_foo = new Foo.SubFoo();
     foo.sub_foo.get_bar().Bar_Func();
+    a_global_foo = new Foo();
     a_global_foo.get_bar();
 }
 
 
-Foo a_global_foo = new Foo();
+Foo a_global_foo;

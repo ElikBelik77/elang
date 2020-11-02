@@ -74,12 +74,13 @@ class ProgramCompiler:
             text_segment += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
                                                                compilation_bundle)
 
-        for f_name in program.functions:
-            text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
-        for var in program.global_vars.keys():
-            data_segment += f"{var}: db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
+        # for f_name in program.functions:
+        #     text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
+        text_segment += self.factories[ElangClass].produce(program, self.factories, compilation_bundle)
+        for var in program.variables.keys():
+            data_segment += f"{var}: db {program.variables[var].get_size(self.size_bundle)} dup ?\n"
         init_global_variables = ""
-        for init_statement in program.globals_init:
+        for init_statement in program.variables_init:
             init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
                                                                                   compilation_bundle)
         text_segment += ("main:\n"

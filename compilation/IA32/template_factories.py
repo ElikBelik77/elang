@@ -246,11 +246,11 @@ class AssignmentTemplateFactory(TemplateFactory):
                 "pop eax\n"
                 "mov [edi], eax\n"
             )
-        elif assigment_expression.left.name in bundle["program"].global_vars.keys():
+        elif assigment_expression.left.name in bundle["program"].variables.keys():
             assembly += (
                 f"mov edi, {assigment_expression.left.name}\n"
                 "pop eax\n"
-                f"mov {get_memory_access_prefix(bundle['program'].global_vars[assigment_expression.left.name], bundle['size_bundle'])} [edi], eax\n"
+                f"mov {get_memory_access_prefix(bundle['program'].variables[assigment_expression.left.name], bundle['size_bundle'])} [edi], eax\n"
             )
         elif assigment_expression.left.name in bundle["offset_table"] \
                 and bundle["offset_table"][assigment_expression.left.name] > 0:
@@ -414,7 +414,7 @@ class PointerVariableTemplateFactory(TemplateFactory):
                 "lea edi, [ebp - {var_offset}]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
             )
-        elif variable_expression.name in bundle["program"].global_vars:
+        elif variable_expression.name in bundle["program"].variables:
             assembly += (
                 f"mov edi, {variable_expression.name}\n"
                 "push edi\n"
@@ -438,7 +438,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
             "push eax\n"
         )
         assembly += f"push eax\ncall init_{class_type.name}\n" if len(
-            class_type.member_variable_initialization) is not 0 else ''
+            class_type.variables_init) is not 0 else ''
         if class_type.constructor is not None:
             assembly += (
                 "push eax\n"
@@ -463,14 +463,16 @@ class ElangClassTemplateFactory(TemplateFactory):
                 f"vt_{f_name}:\n"  # properly set up vtable
                 f"jmp {f_name}\n"
             )
-        if len(elang_class.member_variable_initialization) is not 0:
+        if len(elang_class.variables_init) is not 0:
             assembly += (
                 f"init_{elang_class.name}:\n"
                 "push ebp\n"
                 "mov ebp, esp\n"
             )
-            for init_statement in elang_class.member_variable_initialization:
+            for init_statement in elang_class.variables_init:
                 assert isinstance(init_statement, ArrayInitializer)
+                # TODO: If I ever want to enable default values for globals that are not arrays, I need to pass
+                # heap_table to the assignment operator, variable and pointer variable.
                 array_init = ArrayInitializeTemplateFactory().produce(init_statement, factories, bundle,
                                                                       heap_table=produce_class_member_offset_table(
                                                                           elang_class, bundle['size_bundle']))

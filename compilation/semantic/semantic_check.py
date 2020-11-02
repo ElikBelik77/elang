@@ -99,7 +99,7 @@ class VariableDeclarationCheck(FunctionChecker):
             for variable_mention in statement.get_mentions():
                 if variable_mention in [v.name for v in function.arguments]:
                     continue
-                if variable_mention in program.global_vars:
+                if variable_mention in program.variables:
                     continue
                 var_entry = function.scope.search_variable(variable_mention)
                 if var_entry is None or (var_entry["scope"] == function.scope and var_entry["define_line"] > idx) or (

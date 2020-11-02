@@ -222,27 +222,34 @@ class ElangClass(Scopeable, CompileAsPointer, Type):
     Class model for classes that are defined in a source code.
     """
 
-    def __init__(self, name: str, scope: Scope, functions: List[Function], member_variables: List[VariableDeclaration],
-                 member_variable_initialization: List[Compilable], sub_classes: List["ElangClass"]):
-        super(ElangClass, self).__init__(scope, functions + member_variables)
+    def __init__(self, name: str, scope: Scope, functions: List[Function], variables: List[VariableDeclaration],
+                 variables_init: List[Compilable], sub_classes: List["ElangClass"]):
+        super(ElangClass, self).__init__(scope, functions + variables)
         self.name = name
         self.functions = {}
         for function in functions:
             self.functions[function.name] = function
 
         self.constructor = None
-        self.member_variables = member_variables
-        self.member_variable_initialization = member_variable_initialization
-        self.sub_classes = {}
+        self.variables = {}
+        for mv in variables:
+            self.variables[mv.name] = mv.var_type
+        self.variables_init = variables_init
+        self.classes = {}
         for sub_class in sub_classes:
-            self.sub_classes[sub_class.name] = sub_class
+            self._add_class(sub_class)
         for f_name in self.functions:
             if f_name == "constructor":
                 self.constructor = self.functions[f_name]
             self.functions[f_name].arguments.append(VariableDeclaration("this", self))
         scope.defined_variables["this"] = {"type": self}
-        for mv in member_variables:
+        for mv in variables:
             scope.defined_variables[mv.name] = {"type": mv.var_type}
+
+    def _add_class(self, eclass: "ElangClass"):
+        self.classes[eclass.name] = eclass
+        for sub_class in eclass.classes:
+            self._add_class(eclass.classes[sub_class])
 
     def get_size(self, size_bundle):
         return size_bundle["int"]
@@ -254,45 +261,33 @@ class ElangClass(Scopeable, CompileAsPointer, Type):
         :return: the size of this class on heap allocation.
         """
         size = 0
-        for member_variable in self.member_variables:
-            size += member_variable.var_type.get_size(size_bundle)
+        for mv in self.variables:
+            size += self.variables[mv].get_size(size_bundle)
         return size
 
+    def append_name(self, name):
+        self.name = name + '.' + self.name
 
-class Program:
+
+class Program(ElangClass):
     """
     Model for the entire program
     """
 
     def __init__(self, global_vars: List[VariableDeclaration], globals_init: List[Compilable],
                  functions: List[Function], classes: List[ElangClass],
-                 exports: List[Export], includes: List[Include], name):
-        self.classes = {}
-        self.functions = {}
-        self.global_scope = None
-        for eclass in classes:
-            self._add_class(eclass)
-        for function in functions:
-            self.functions[function.name] = function
-        self.global_vars = {}
-        for global_var in global_vars:
-            self.global_vars[global_var.name] = global_var.var_type
-        self.globals_init = globals_init
+                 exports: List[Export], includes: List[Include], name, global_scope):
+        super(Program, self).__init__(name, global_scope, functions, global_vars, globals_init, classes)
         self.exports = exports
-        self.name = name
         self.includes = includes
-
-    def _add_class(self, eclass: ElangClass):
-        self.classes[eclass.name] = eclass
-        for sub_class in eclass.sub_classes:
-            self._add_class(eclass.sub_classes[sub_class])
+        self.entry_point = [function for function in functions if function.name == "main"][0]
 
     def resolve_exports(self) -> List[Compilable]:
         return [export.resolve(self) for export in self.exports]
 
     def populate_global_scope(self):
-        for global_var in self.global_vars:
-            if global_var not in self.global_scope.defined_variables:
-                self.global_scope.defined_variables[global_var] = {"type": self.global_vars[global_var]}
+        for global_var in self.variables:
+            if global_var not in self.scope.defined_variables:
+                self.scope.defined_variables[global_var] = {"type": self.variables[global_var]}
             else:
                 raise Exception(f"Global variable {global_var} is defined twice")

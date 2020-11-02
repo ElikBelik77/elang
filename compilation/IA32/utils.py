@@ -66,12 +66,12 @@ def produce_class_vtable(elang_class: ElangClass, size_bundle: Dict) -> Dict:
     :param size_bundle: the size bundle of the compiler.
     :return: a vtable for the class.
     """
-    table_size = size_bundle["int"] * (len(elang_class.member_variables) + len(elang_class.functions))
+    table_size = size_bundle["int"] * (len(elang_class.variables) + len(elang_class.functions))
     vtable = {"table_size": table_size}
     vtable_current_size = size_bundle["int"]
-    for variable in elang_class.member_variables:
-        vtable[variable.name] = vtable_current_size
-        vtable_current_size += variable.var_type.get_size(size_bundle)
+    for v_name in elang_class.variables:
+        vtable[v_name] = vtable_current_size
+        vtable_current_size += elang_class.variables[v_name].get_size(size_bundle)
     for functions in elang_class.functions:
         pass
     return vtable
@@ -86,9 +86,9 @@ def produce_class_member_offset_table(elang_class: ElangClass, size_bundle: Dict
     """
     vtable_current_size = 0
     vtable: Dict = {}
-    for variable in elang_class.member_variables:
-        vtable[variable.name] = vtable_current_size
-        vtable_current_size += variable.var_type.get_size(size_bundle)
+    for v_name in elang_class.variables:
+        vtable[v_name] = vtable_current_size
+        vtable_current_size += elang_class.variables[v_name].get_size(size_bundle)
     for functions in elang_class.functions:
         pass
     return vtable
