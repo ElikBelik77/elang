@@ -77,7 +77,7 @@ class ProgramCompiler:
         for f_name in program.functions:
             text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
         for var in program.global_vars.keys():
-            data_segment += f"db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
+            data_segment += f"db {program.global_vars[var].get_size(self.size_bundle)} dup (?)\n"
         init_global_variables = ""
         for init_statement in program.globals_init:
             init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
@@ -97,11 +97,11 @@ class ProgramCompiler:
         text_segment, data_segment = self.compile_program(program)
         assembly = ""
         if len(data_segment) is not 0:
-            assembly += ("SECTION .data\n"
+            assembly += ("section .data\n"
                          f"{data_segment}")
-        assembly += ("SECTION .text\n"
+        assembly += ("section .text\n"
                      "extern malloc\n"
-                     "global start\n"
+                     "global main\n"
                      f"{text_segment}")
 
         with open(destination_file, "w") as out:

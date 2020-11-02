@@ -58,4 +58,4 @@ class FunctionCall(Compilable):
         return 3
 
     def has_ptr_type(self):
-        False  # TODO: take into account return type of function to determine ptr
+        return False  # TODO: take into account return type of function to determine ptr

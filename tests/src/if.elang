@@ -1,7 +1,7 @@
 int global = 5;
 int main() {
     int i = 0;
-    if (6 > 5) {
+    if (6 > global) {
         i = 5;
     }
 }
