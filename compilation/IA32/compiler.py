@@ -47,7 +47,7 @@ class ProgramCompiler:
         self.size_bundle = {
             "int": 4
         }
-        self.verbose = True
+        self.verbose = False
 
     def compile_dependency(self, dependency):
         parser = Parser.create_default()
@@ -82,9 +82,9 @@ class ProgramCompiler:
         for init_statement in program.globals_init:
             init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
                                                                                   compilation_bundle)
-        text_segment += ("start:\n"
+        text_segment += ("main:\n"
                          f"{init_global_variables}"
-                         "call main")
+                         "call run")
         return text_segment, data_segment
 
     def compile(self, program: Program, destination_file: str) -> None:

@@ -9,7 +9,7 @@ class FunctionChecker:
     Interface defining methods of a semantic function checker.
     """
 
-    def check(self, function: Function):
+    def check(self, function: Function, program: Program):
         """
         This function checks a parsed function for a certain semantic criteria.
         Throws exception if the function doesn't pass the check.
@@ -42,7 +42,7 @@ class HasEntryPoint(GlobalChecker):
     def check(self, program: Program) -> None:
         has_entry = False
         for f_name in program.functions:
-            if f_name == "main":
+            if f_name == "run":
                 has_entry = True
         if not has_entry:
             raise Exception("No entry point for the program.")
@@ -53,7 +53,7 @@ class FunctionArgumentShadowing(FunctionChecker):
     This semantic check ensures that function arguments are not being shadowed by local defined variables.
     """
 
-    def check(self, function: Function) -> None:
+    def check(self, function: Function, program: Program) -> None:
         for variable in function.get_mentions():
             if variable in [v.name for v in function.arguments]:
                 raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
@@ -64,7 +64,7 @@ class RepeatingArgumentDeclaration(FunctionChecker):
     This semantic check ensures that a function argument is not appearing twice.
     """
 
-    def check(self, function: Function) -> None:
+    def check(self, function: Function, program: Program) -> None:
         counter = Counter([argument.name for argument in function.arguments])
         if len(function.arguments) is not 0 and counter.most_common(1)[0][1] > 1:
             raise Exception("Function argument is declared twice")
@@ -75,7 +75,7 @@ class RepeatingVariableDeclaration(FunctionChecker):
     This semantic check ensures that there are no variables that are declared twice.
     """
 
-    def check(self, function: Function) -> None:
+    def check(self, function: Function, program: Program) -> None:
         all_scopes = [function.scope] + function.scope.get_children()
         vars_declared = []
         for scope in all_scopes:
@@ -92,12 +92,14 @@ class VariableDeclarationCheck(FunctionChecker):
     This semantic check ensures that variables are declared before they are used.
     """
 
-    def check(self, function: Function) -> None:
+    def check(self, function: Function, program: Program) -> None:
         for idx, statement in enumerate(function.body):
             if isinstance(statement, VariableDeclaration):
                 continue
             for variable_mention in statement.get_mentions():
                 if variable_mention in [v.name for v in function.arguments]:
+                    continue
+                if variable_mention in program.global_vars:
                     continue
                 var_entry = function.scope.search_variable(variable_mention)
                 if var_entry is None or (var_entry["scope"] == function.scope and var_entry["define_line"] > idx) or (
@@ -123,7 +125,7 @@ class SemanticChecker:
         """
         for checker in self.function_checklist:
             for f_name in program.functions:
-                checker.check(program.functions[f_name])
+                checker.check(program.functions[f_name], program)
         for checker in self.global_checklist:
             checker.check(program)
 

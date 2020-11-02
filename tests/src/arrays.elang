@@ -1,4 +1,4 @@
-int main() {
+int run() {
     int[5] a;
     a[1] = 5;
     int[4][3] b;

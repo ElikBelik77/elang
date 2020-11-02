@@ -13,7 +13,7 @@ int this_function_calls_i_plus_j() {
     return return_i_plus_j();
 }
 
-int main() {
+int run() {
     int a = logical_operators();
     int b = return_i_plus_j();
     int c = this_function_calls_i_plus_j();

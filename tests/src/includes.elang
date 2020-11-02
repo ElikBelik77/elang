@@ -2,7 +2,7 @@ include {
     exports.elang
 }
 class includes {
-    int main() {
+    int run() {
         int i = exports.check();
     }
 }

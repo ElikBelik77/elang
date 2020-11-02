@@ -403,15 +403,21 @@ class ArrayIndexerTemplateFactory(TemplateFactory):
 class PointerVariableTemplateFactory(TemplateFactory):
     def produce(self, variable_expression: Variable, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
-        if bundle["offset_table"][variable_expression.name] > 0:
+        if variable_expression.name in bundle["offset_table"] and bundle["offset_table"][variable_expression.name] > 0:
             assembly += (
                 "lea edi, [ebp + {var_offset}]\n"
                 "push edi\n".format(var_offset=bundle["offset_table"][variable_expression.name])
             )
-        else:
+        elif variable_expression.name in bundle["offset_table"] and \
+                bundle["offset_table"][variable_expression.name] <= 0:
             assembly += (
                 "lea edi, [ebp - {var_offset}]\n"
                 "push edi\n".format(var_offset=-bundle["offset_table"][variable_expression.name])
+            )
+        elif variable_expression.name in bundle["program"].global_vars:
+            assembly += (
+                f"mov edi, {variable_expression.name}\n"
+                "push edi\n"
             )
         return assembly
 

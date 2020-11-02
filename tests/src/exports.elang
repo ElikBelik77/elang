@@ -1,12 +1,12 @@
 class Foo {
 
 }
-int main() {
+int run() {
 
 }
 
 
 export {
-    main,
+    run,
     Foo
 }

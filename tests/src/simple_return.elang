@@ -3,6 +3,6 @@ int func(int a, int b) {
     return (5+i)*8+func(5,5);
 }
 
-int main() {
+int run() {
     return i;
 }
