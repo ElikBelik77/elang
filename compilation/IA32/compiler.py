@@ -53,7 +53,7 @@ class ProgramCompiler:
         parser = Parser.create_default()
         dp_program = parser.parse_file(dependency)
 
-    def compile_program(self, program: Program) -> Tuple[str, str]:
+    def compile_program(self, program: Program, compilation_bundle) -> Tuple[str, str]:
         """
         This function compiles a program.
         :param program: the program to compile.
@@ -66,10 +66,7 @@ class ProgramCompiler:
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
             vtables[elang_class] = produce_class_vtable(program.classes[elang_class], self.size_bundle)
-        compilation_bundle = {"parent": 'global', "size_bundle": self.size_bundle,
-                              "program": program,
-                              "vtables": vtables,
-                              "verbose": self.verbose}
+        compilation_bundle["vtables"] = vtables
         for elang_class in program.classes.keys():
             text_segment += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
                                                                compilation_bundle)
@@ -79,13 +76,7 @@ class ProgramCompiler:
         text_segment += self.factories[ElangClass].produce(program, self.factories, compilation_bundle)
         for var in program.variables.keys():
             data_segment += f"{var}: db {program.variables[var].get_size(self.size_bundle)} dup ?\n"
-        init_global_variables = ""
-        for init_statement in program.variables_init:
-            init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
-                                                                                  compilation_bundle)
-        text_segment += ("main:\n"
-                         f"{init_global_variables}"
-                         "call run")
+
         return text_segment, data_segment
 
     def compile(self, program: Program, destination_file: str) -> None:
@@ -95,7 +86,10 @@ class ProgramCompiler:
         :param destination_file: the destination path to write the output to.
         :return: None.
         """
-        text_segment, data_segment = self.compile_program(program)
+        compilation_bundle = {"scope": program.scope, "size_bundle": self.size_bundle,
+                              "program": program,
+                              "verbose": self.verbose}
+        text_segment, data_segment = self.compile_program(program, compilation_bundle)
         assembly = ""
         if len(data_segment) is not 0:
             assembly += ("section .data\n"
@@ -104,7 +98,13 @@ class ProgramCompiler:
                      "extern malloc\n"
                      "global main\n"
                      f"{text_segment}")
-
+        init_global_variables = ""
+        for init_statement in program.variables_init:
+            init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
+                                                                                  compilation_bundle)
+        text_segment += ("main:\n"
+                         f"{init_global_variables}"
+                         f"call {program.name}_main")
         with open(destination_file, "w") as out:
             out.write(assembly)
 

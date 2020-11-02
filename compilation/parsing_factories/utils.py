@@ -1,6 +1,6 @@
 from typing import Tuple, List
 
-from compilation.models.keywords import VariableDeclaration
+from compilation.models.keywords import VariableDeclaration, Function
 
 
 def find_scope_end(source_code: str) -> int:
@@ -88,7 +88,6 @@ def find_bracket_pairs(text: str) -> List[Tuple[int, int]]:
 def populate_scope(scope, body):
     """
     This function populates a scopes body with variable declarations
-    TODO: move over into scopeable class function
     :param scope: the scope.
     :param body: the body of the scope
     :param match: the match that contains the scope
@@ -101,3 +100,5 @@ def populate_scope(scope, body):
         elif isinstance(statement, VariableDeclaration):
             raise Exception(
                 "Variable {0} is declared more than once in scope {1}".format(statement.name, scope.name))
+        if isinstance(statement, Function):
+            scope.defined_functions[statement.name] = statement

@@ -18,6 +18,7 @@ class Foo {
     Foo.SubFoo sub_foo;
     int constructor() {
         this.b = new Bar();
+        get_a_foo();
     }
 
     Bar get_bar() {
@@ -38,6 +39,5 @@ int main() {
     a_global_foo = new Foo();
     a_global_foo.get_bar();
 }
-
 
 Foo a_global_foo;

@@ -62,6 +62,7 @@ class Parser:
         self.operators = operators
         self.valid_tokens = valid_tokens
         self.defined_types = []
+        self.parsed_classes = {}
 
     def add_primitives(self, primitives_syntax: List[PrimitiveSyntax]):
         for syntax in primitives_syntax:
@@ -75,12 +76,12 @@ class Parser:
         :param file: the path to the file to parse.
         :return: list of functions that have been parsed.
         """
-        global_scope = Scope('global', None)
+        prog_name =file.split('/')[-1].split('.')[0]
+        global_scope = Scope(prog_name, None)
         with open(file, "r") as f:
             source_code = f.read().strip()
-        tokens, name = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True,
-                                         prog_name=file.split('/')[-1].split('.')[0])
-        program = Program(*tokens, name, global_scope)
+        tokens = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True)
+        program = Program(*tokens, prog_name, global_scope)
         return program
 
     def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name=''):
@@ -117,7 +118,7 @@ class Parser:
                                           parent_scope=parent_scope,
                                           match=match_models)
         if top_level:
-            return self.classify_entities(parsed), prog_name
+            return self.classify_entities(parsed)
         return parsed
 
     def get_maximal_match(self, text: str) -> Tuple[Dict, Match]:

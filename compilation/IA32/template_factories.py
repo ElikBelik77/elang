@@ -122,12 +122,16 @@ class FunctionCallTemplateFactory(TemplateFactory):
         argument_clean_up_line = "add esp, {arguments_size}\n".format(
             arguments_size=len(function_call.arguments) * 4) if len(function_call.arguments) is not 0 else ""
         assembly = self.add_verbose(bundle)
+        f_name = function_call.name
+        if bundle["scope"].search_function_scope(f_name).name == bundle["program"].name:
+            f_name = bundle["program"].name + "_" + f_name
+
         assembly += ("{argument_preparation}"
                      "call {function_name}\n"
                      "{argument_clean_up_line}"
                      "push eax\n"
                      ).format(argument_preparation=argument_preparation,
-                              function_name=function_call.name,
+                              function_name=f_name,
                               argument_clean_up_line=argument_clean_up_line)
 
         return assembly
@@ -150,6 +154,7 @@ class ReturnTemplateFactory(TemplateFactory):
 
 class FunctionTemplateFactory(TemplateFactory):
     def produce(self, function: Function, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
+        prev_scope = bundle["scope"]
         bundle["scope"] = function.scope
         body_assembly = ""
         has_ret = False
@@ -173,6 +178,7 @@ class FunctionTemplateFactory(TemplateFactory):
                 "leave\n"
                 "ret\n"
             )
+        bundle["scope"] = prev_scope
         return function_assembly
 
 
@@ -308,6 +314,7 @@ class IfTemplateFactory(TemplateFactory):
     def produce(self, if_expression: If, factories: Dict[type, TemplateFactory], bundle: Dict) -> str:
         skip_if_id = get_unique_id()
         body_assembly = ""
+        prev_scope = bundle["scope"]
         bundle["scope"] = if_expression.scope
         for expression in if_expression.body:
             if not isinstance(expression, VariableDeclaration):
@@ -321,6 +328,7 @@ class IfTemplateFactory(TemplateFactory):
             f"{body_assembly}"
             f"loc_{skip_if_id}:\n"
         )
+        bundle["scope"] = prev_scope
         return assembly
 
 
@@ -330,6 +338,7 @@ class WhileTemplateFactory(TemplateFactory):
         loop_start = get_unique_id()
         loop_end = get_unique_id()
         body_assembly = ""
+        prev_scope = bundle["scope"]
         bundle["scope"] = while_expression.scope
         for expression in while_expression.body:
             if not isinstance(expression, VariableDeclaration):
@@ -345,6 +354,7 @@ class WhileTemplateFactory(TemplateFactory):
             f"jmp loc_{loop_start}\n"
             f"loc_{loop_end}:\n"
         )
+        bundle["scope"] = prev_scope
         return assembly
 
 
@@ -427,8 +437,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
         assembly = self.add_verbose(bundle)
 
         assert isinstance(new.obj, FunctionCall)
-        class_type = [bundle["program"].classes[class_name] for class_name in bundle["program"].classes if
-                      class_name == new.obj.name][0]
+        class_type = new.obj.constructor_call
         assert isinstance(class_type, ElangClass)
 
         assembly += (
@@ -452,6 +461,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
 class ElangClassTemplateFactory(TemplateFactory):
     def produce(self, elang_class: ElangClass, factories, bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)
+        prev_scope = bundle["scope"]
         bundle["scope"] = elang_class.scope
         plt_section = ""
         for f_name in elang_class.functions:
@@ -460,8 +470,8 @@ class ElangClassTemplateFactory(TemplateFactory):
             bundle["offset_table"], bundle["stack_size"] = offset_table, stack_size
             assembly += factories[Function].produce(elang_class.functions[f_name], factories, bundle)
             plt_section += (
-                f"vt_{f_name}:\n"  # properly set up vtable
-                f"jmp {f_name}\n"
+                f"vt_{elang_class.name}_{f_name}:\n"  # properly set up vtable
+                f"jmp {elang_class.name}_{f_name}\n"
             )
         if len(elang_class.variables_init) is not 0:
             assembly += (
@@ -484,6 +494,7 @@ class ElangClassTemplateFactory(TemplateFactory):
                     "ret\n"
                 )
         assembly += plt_section
+        bundle["scope"] = prev_scope
         return assembly
 
 

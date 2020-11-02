@@ -15,7 +15,10 @@ class FunctionCallFactory(Factory):
         for arg in arguments_list:
             if len(arg) is not 0:
                 arguments += parser.parse_source_code(arg, parent_scope)
-        return [FunctionCall(match.group(2), arguments)], source_code[end:]
+        constructor_of = None
+        if match.group(2).strip() in parser.parsed_classes:
+            constructor_of = parser.parsed_classes[match.group(2).strip()]
+        return [FunctionCall(match.group(2).strip(), arguments, constructor_of=constructor_of)], source_code[end:]
 
 
 class DecimalConstantFactory(Factory):

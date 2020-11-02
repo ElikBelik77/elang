@@ -153,6 +153,7 @@ class Scope:
         if parent_scope is not None:
             self.parent_scope.children.append(self)
         self.defined_variables = {}
+        self.defined_functions = {}
         self.name = name
 
     def get_children(self):
@@ -188,6 +189,13 @@ class Scope:
         if self.parent_scope is None:
             return None
         return self.parent_scope.search_variable(name)
+
+    def search_function_scope(self, name: str):
+        if name in self.defined_functions:
+            return self
+        if self.parent_scope is None:
+            return None
+        return self.parent_scope.search_function_scope(name)
 
 
 class VariableDeclaration(Compilable):
@@ -245,6 +253,8 @@ class ElangClass(Scopeable, CompileAsPointer, Type):
         scope.defined_variables["this"] = {"type": self}
         for mv in variables:
             scope.defined_variables[mv.name] = {"type": mv.var_type}
+        for func in functions:
+            scope.defined_functions[func.name] = func
 
     def _add_class(self, eclass: "ElangClass"):
         self.classes[eclass.name] = eclass
@@ -267,6 +277,17 @@ class ElangClass(Scopeable, CompileAsPointer, Type):
 
     def append_name(self, name):
         self.name = name + '.' + self.name
+        for subclass in self.classes:
+            self.classes[subclass].append_name(name)
+
+    def update_names_for_prefix(self, prefix):
+        self.name = prefix + '.' + self.name
+        temp_classes = self.classes.copy()
+        for sub_class in self.classes:
+            self.classes[sub_class].update_names_for_prefix(prefix)
+        self.classes = {}
+        for t in temp_classes:
+            self.classes[temp_classes[t].name] = temp_classes[t]
 
 
 class Program(ElangClass):
@@ -278,16 +299,13 @@ class Program(ElangClass):
                  functions: List[Function], classes: List[ElangClass],
                  exports: List[Export], includes: List[Include], name, global_scope):
         super(Program, self).__init__(name, global_scope, functions, global_vars, globals_init, classes)
+        for eclass in classes:
+            eclass.update_names_for_prefix(self.name)
+        self.classes = {}
+        for sub_class in classes:
+            self._add_class(sub_class)
         self.exports = exports
         self.includes = includes
-        self.entry_point = [function for function in functions if function.name == "main"][0]
 
     def resolve_exports(self) -> List[Compilable]:
         return [export.resolve(self) for export in self.exports]
-
-    def populate_global_scope(self):
-        for global_var in self.variables:
-            if global_var not in self.scope.defined_variables:
-                self.scope.defined_variables[global_var] = {"type": self.variables[global_var]}
-            else:
-                raise Exception(f"Global variable {global_var} is defined twice")

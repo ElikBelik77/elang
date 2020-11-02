@@ -43,9 +43,10 @@ class FunctionCall(Compilable):
     Model for function calls
     """
 
-    def __init__(self, name: str, arguments: []):
+    def __init__(self, name: str, arguments: [], constructor_of: "ElangClass"):
         self.arguments = arguments
         self.name = name
+        self.constructor_call = constructor_of
 
     def get_mentions(self) -> List[str]:
         mentions = []

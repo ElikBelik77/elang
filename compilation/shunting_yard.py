@@ -32,7 +32,7 @@ def shunting_yard(expressions: [Compilable]) -> Compilable:
         if isinstance(current, DecimalConstantValue) or isinstance(current, Variable):
             output_queue.put(current)
         elif isinstance(current, FunctionCall):
-            operator_stack.append(FunctionCall(current.name, current.arguments))
+            operator_stack.append(FunctionCall(current.name, current.arguments, current.constructor_call))
         elif issubclass(type(current), BinaryOperator) or issubclass(type(current), UnaryOperator):
             while ((len(operator_stack) is not 0) and (
                     operator_stack[-1].get_precedence() >= current.get_precedence()) and (

@@ -43,7 +43,10 @@ class ConstructorFactory(Factory):
         for arg in arguments_list:
             if len(arg) is not 0:
                 arguments += parser.parse_source_code(arg, parent_scope)
-        return [FunctionCall(match.group(1), arguments)], source_code[end:]
+        constructor_of = None
+        if match.group(1).strip() in parser.parsed_classes:
+            constructor_of = parser.parsed_classes[match.group(1).strip()]
+        return [FunctionCall(match.group(1), arguments, constructor_of=constructor_of)], source_code[end:]
 
 
 class ReturnFactory(Factory):
@@ -76,6 +79,7 @@ class ElangClassDeclarationFactory(Factory):
                     {"re": re.compile(rf"\s*({token.name.strip()})\s*\((.*)\)\s*"),
                      "factory": ConstructorFactory()})
                 sub_classes.append(token)
+                parser.parsed_classes[token.name] = token
         member_variables = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
                             isinstance(token, VariableDeclaration)]
 
@@ -93,6 +97,7 @@ class ElangClassDeclarationFactory(Factory):
             parser.keywords.append(
                 {"re": re.compile(rf"\s*(9{match.group(1).strip()})\s*\((.*)\)\s*"),
                  "factory": ConstructorFactory()})
+            parser.parsed_classes[elang_class.name] = elang_class
         self.subclass_depth -= 1
         self.subclass_prefix = self.subclass_prefix[:-1]
 
