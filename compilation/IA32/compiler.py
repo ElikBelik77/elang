@@ -3,7 +3,7 @@ from typing import Tuple
 from compilation.IA32.utils import produce_offset_table, produce_class_vtable
 from compilation.IA32.template_factories import *
 from compilation.type_system.primitives import Primitive
-from parsing import Parser
+from compilation.parsing import Parser
 
 
 class ProgramCompiler:
@@ -66,7 +66,7 @@ class ProgramCompiler:
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
             vtables[elang_class] = produce_class_vtable(program.classes[elang_class], self.size_bundle)
-        compilation_bundle = {"parent": 'global', "size_bundle": self.size_bundle,
+        compilation_bundle = {"parent": program.global_scope, "size_bundle": self.size_bundle,
                               "program": program,
                               "vtables": vtables,
                               "verbose": self.verbose}
@@ -77,14 +77,14 @@ class ProgramCompiler:
         for f_name in program.functions:
             text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
         for var in program.global_vars.keys():
-            data_segment += f"db {program.global_vars[var].get_size(self.size_bundle)} dup ?\n"
+            data_segment += f"{var}: times {program.global_vars[var].get_size(self.size_bundle)} db 0\n"
         init_global_variables = ""
         for init_statement in program.globals_init:
             init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
                                                                                   compilation_bundle)
-        text_segment += ("start:\n"
+        text_segment += ("main:\n"
                          f"{init_global_variables}"
-                         "call main")
+                         "call run")
         return text_segment, data_segment
 
     def compile(self, program: Program, destination_file: str) -> None:
@@ -97,11 +97,11 @@ class ProgramCompiler:
         text_segment, data_segment = self.compile_program(program)
         assembly = ""
         if len(data_segment) is not 0:
-            assembly += ("SECTION .data\n"
+            assembly += ("section .data\n"
                          f"{data_segment}")
-        assembly += ("SECTION .text\n"
+        assembly += ("section .text\n"
                      "extern malloc\n"
-                     "global start\n"
+                     "global main\n"
                      f"{text_segment}")
 
         with open(destination_file, "w") as out:

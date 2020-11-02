@@ -1,4 +1,6 @@
-from compilation.models.base import *
+from typing import List
+
+from compilation.models.base import Compilable
 
 
 class StringConstantValue:
@@ -58,4 +60,4 @@ class FunctionCall(Compilable):
         return 3
 
     def has_ptr_type(self):
-        False  # TODO: take into account return type of function to determine ptr
+        return False  # TODO: take into account return type of function to determine ptr

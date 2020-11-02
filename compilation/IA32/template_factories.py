@@ -299,6 +299,7 @@ class VariableTemplateFactory(TemplateFactory):
             var_type = bundle["program"].global_scope.defined_variables[variable_expression.name]["type"]
             assembly += (
                 f"mov edi, {get_memory_access_prefix(var_type, bundle['size_bundle'])} [{variable_expression.name}]\n"
+                "push edi\n"
             )
         return assembly
 

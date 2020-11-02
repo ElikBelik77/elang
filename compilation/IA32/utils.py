@@ -10,13 +10,13 @@ from compilation.models.operators import DotOperator, Type
 def get_memory_access_prefix(var: Type, size_bundle: Dict):
     size = var.get_size(size_bundle)
     if size == 1:
-        return "BYTE PTR"
+        return "BYTE"
     if size == 2:
-        return "WORD PTR"
+        return "WORD"
     if size == 4:
-        return "DWORD PTR"
+        return "DWORD"
     if size == 8:
-        return "QWORD PTR"
+        return "QWORD"
 
 
 def get_unique_id() -> str:
