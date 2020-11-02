@@ -14,7 +14,7 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] Arrays (and multi-dimensional arrays!)
 - [ ] Include/Export
 - [ ] Strings
-- [ ] Global variables
+- [x] Global variables
 - [x] Assembling with NASM
 - [x] Classes
 - [x] Sub classes
