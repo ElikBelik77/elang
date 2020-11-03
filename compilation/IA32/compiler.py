@@ -66,6 +66,7 @@ class ProgramCompiler:
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
             vtables[elang_class] = produce_class_vtable(program.classes[elang_class], self.size_bundle)
+        vtables[program] = produce_class_vtable(program, self.size_bundle)
         compilation_bundle["vtables"] = vtables
         for elang_class in program.classes.keys():
             text_segment += self.factories[ElangClass].produce(program.classes[elang_class], self.factories,
@@ -97,7 +98,10 @@ class ProgramCompiler:
                                                                                   compilation_bundle)
         text_segment += ("main:\n"
                          f"{init_global_variables}"
-                         f"call {program.name}_main")
+                         f"mov edi, {program.name}\n"
+                         f"{self.factories[NewOperator].produce(NewOperator(FunctionCall(program.name, [], program)), self.factories, compilation_bundle)}"
+                         f"call {program.name}_main\n")
+        data_segment += f"{program.name}: times 4 db 0\n"
         assembly = ""
         if len(data_segment) is not 0:
             assembly += ("section .data\n"

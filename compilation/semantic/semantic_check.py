@@ -55,7 +55,7 @@ class FunctionArgumentShadowing(FunctionChecker):
 
     def check(self, function: Function, program: Program) -> None:
         for variable in function.get_mentions():
-            if variable in [v.name for v in function.arguments]:
+            if variable in [v.name for v in function.arguments] and variable != "this":
                 raise Exception("Function argument {0} is being shadowed by a variable".format(variable))
 
 

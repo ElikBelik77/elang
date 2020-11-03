@@ -304,6 +304,7 @@ class Program(ElangClass):
         self.classes = {}
         for sub_class in classes:
             self._add_class(sub_class)
+        self.classes[self.name] = self
         self.exports = exports
         self.includes = includes
         self.convert_ptr_types()

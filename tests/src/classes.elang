@@ -37,6 +37,7 @@ Foo get_a_foo() {
 
 int main() {
     Foo foo = get_a_foo();
+    this.a_global_foo = new Foo();
 }
 
 Foo a_global_foo;
