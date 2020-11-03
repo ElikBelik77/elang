@@ -28,61 +28,8 @@ python3 elang.py <source_file.elang> <destination_file>
 ```
 
 ## Examples of syntax and it's assembly compiled version
-#### Simple main program
-```
-int global_var = 5;
-int run() {
-    int i = 0;
-    if (6 > global_var) {
-        i = 5;
-    }
-}
-```
-Compiling to IA32 using stack based approach will yield:
-```
-section .data
-global_var: db 4 dup ?
-section .text
-extern malloc
-global main
-run:
-push ebp
-mov ebp, esp
-sub esp, 4
-push 0
-lea edi, [ebp - 4]
-pop eax
-mov [edi], eax
-push 6
-mov edi, DWORD [global_var]
-push edi
-pop ebx
-pop eax
-xor ecx, ecx
-cmp eax, ebx
-jbe loc_6132D6
-mov ecx, 1
-loc_6132D6:
-push ecx
-pop eax
-test eax, eax
-jz loc_47D88A
-push 5
-lea edi, [ebp - 4]
-pop eax
-mov [edi], eax
-loc_47D88A:
-leave
-ret
-
-main:
-push 5
-mov edi, global_var
-pop eax
-mov DWORD [edi], eax
-call run
-```
-#### A more complex code snippet
+#### Compiling ```Classes.elang```
+A simple example that shows most of the features the language has to offer.
 ```
 class Bar {
     int my_bar;
@@ -117,41 +64,39 @@ Foo get_a_foo() {
     return my_foo;
 }
 
-int run() {
-    Foo foo = get_a_foo();
-    foo.sub_foo = new Foo.SubFoo();
-    foo.sub_foo.get_bar().Bar_Func();
-    a_global_foo.get_bar();
+int main() {
+    this.a_global_foo = get_a_foo();
 }
 
-
-Foo a_global_foo = new Foo();
+Foo a_global_foo;
 ```
-Will compile to
+Compiling to IA32 using stack based approach will yield:
 ```
 section .data
-a_global_foo: db 4 dup ?
+a_global_foo: times 4 db 0
+classes: times 4 db 0
 section .text
 extern malloc
 global main
-Bar_Bar_Func:
+classes.Bar_Bar_Func:
 push ebp
 mov ebp, esp
 push 5
 pop eax
 leave
 ret
-vt_Bar_Func:
-jmp Bar_Func
-Foo_constructor:
+
+vt_classes.Bar_Bar_Func:
+jmp classes.Bar_Bar_Func
+
+classes.Foo_constructor:
 push ebp
 mov ebp, esp
 push 4
 call malloc
 add esp, 4
 push eax
-
-lea edi, [ebp + 12]
+lea edi, [ebp + 8]
 push edi
 pop eax
 mov eax, [eax]
@@ -164,21 +109,23 @@ pop eax
 mov [edi], eax
 leave
 ret
-Foo_get_bar:
+
+classes.Foo_get_bar:
 push ebp
 mov ebp, esp
 push 4
 call malloc
 add esp, 4
 push eax
-
 pop eax
 leave
 ret
-init_Foo:
+
+init_classes.Foo:
 push ebp
 mov ebp, esp
-lea edi, [ebp + 12]
+lea edi, [ebp + 8]
+mov edi, [edi]
 push edi
 pop eax
 lea edi, [eax + 8]
@@ -186,24 +133,28 @@ mov [edi + 0], dword 5
 mov [edi + 4], dword 4
 leave
 ret
-vt_constructor:
-jmp constructor
-vt_get_bar:
-jmp get_bar
-Foo.SubFoo_get_bar:
+
+vt_classes.Foo_constructor:
+jmp classes.Foo_constructor
+
+vt_classes.Foo_get_bar:
+jmp classes.Foo_get_bar
+
+classes.Foo.SubFoo_get_bar:
 push ebp
 mov ebp, esp
 push 4
 call malloc
 add esp, 4
 push eax
-
 pop eax
 leave
 ret
-vt_get_bar:
-jmp get_bar
-get_a_foo:
+
+vt_classes.Foo.SubFoo_get_bar:
+jmp classes.Foo.SubFoo_get_bar
+
+classes_get_a_foo:
 push ebp
 mov ebp, esp
 sub esp, 4
@@ -212,11 +163,10 @@ call malloc
 add esp, 4
 push eax
 push eax
-call init_Foo
+call init_classes.Foo
 push eax
-call vt_Foo_constructor
+call vt_classes.Foo_constructor
 add esp, 4
-
 lea edi, [ebp - 4]
 push edi
 pop edi
@@ -229,69 +179,35 @@ pop eax
 leave
 ret
 
-run:
+classes_main:
 push ebp
 mov ebp, esp
-sub esp, 4
-call get_a_foo
+call classes_get_a_foo
 push eax
-lea edi, [ebp - 4]
-push edi
-pop edi
-pop eax
-mov [edi], eax
-push 0
-call malloc
-add esp, 4
-push eax
-
-lea edi, [ebp - 4]
+lea edi, [ebp + 8]
 push edi
 pop eax
 mov eax, [eax]
 push eax
 pop eax
-add eax, 36
+add eax, 0
 push eax
 pop edi
 pop eax
 mov [edi], eax
-lea edi, [ebp - 4]
-push edi
-pop eax
-mov eax, [eax]
-push eax
-pop eax
-add eax, 36
-mov eax, [eax]
-push eax
-call vt_Foo.SubFoo_get_bar
-push eax
-call vt_Bar_Bar_Func
-push eax
-mov edi, a_global_foo
-push edi
-pop eax
-mov eax, [eax]
-push eax
-call vt_Foo_get_bar
-push eax
 leave
 ret
 
+vt_classes_get_a_foo:
+jmp classes_get_a_foo
+vt_classes_main:
+jmp classes_main
 main:
-push 40
+mov edi, classes
+push 4
 call malloc
 add esp, 4
 push eax
-push eax
-call init_Foo
-push eax
-call vt_Foo_constructor
-add esp, 4
+call classes_main
 
-mov edi, a_global_foo
-pop eax
-mov DWORD [edi], eax
-call run
 ```

@@ -11,27 +11,8 @@ push 5
 pop eax
 leave
 ret
-classes.Bar_constructor:
-push ebp
-mov ebp, esp
-push 6
-lea edi, [ebp + 12]
-push edi
-pop eax
-mov eax, [eax]
-push eax
-pop eax
-add eax, 0
-push eax
-pop edi
-pop eax
-mov [edi], eax
-leave
-ret
 vt_classes.Bar_Bar_Func:
 jmp classes.Bar_Bar_Func
-vt_classes.Bar_constructor:
-jmp classes.Bar_constructor
 classes.Foo_constructor:
 push ebp
 mov ebp, esp
@@ -39,33 +20,14 @@ push 4
 call malloc
 add esp, 4
 push eax
-push eax
-call vt_classes.Bar_constructor
-add esp, 4
 
-lea edi, [ebp + 12]
+lea edi, [ebp + 8]
 push edi
 pop eax
 mov eax, [eax]
 push eax
 pop eax
 add eax, 4
-push eax
-pop edi
-pop eax
-mov [edi], eax
-push 0
-call malloc
-add esp, 4
-push eax
-
-lea edi, [ebp + 12]
-push edi
-pop eax
-mov eax, [eax]
-push eax
-pop eax
-add eax, 36
 push eax
 pop edi
 pop eax
@@ -79,9 +41,6 @@ push 4
 call malloc
 add esp, 4
 push eax
-push eax
-call vt_classes.Bar_constructor
-add esp, 4
 
 pop eax
 leave
@@ -89,7 +48,7 @@ ret
 init_classes.Foo:
 push ebp
 mov ebp, esp
-lea edi, [ebp + 12]
+lea edi, [ebp + 8]
 mov edi, [edi]
 push edi
 pop eax
@@ -109,9 +68,6 @@ push 4
 call malloc
 add esp, 4
 push eax
-push eax
-call vt_classes.Bar_constructor
-add esp, 4
 
 pop eax
 leave
@@ -146,88 +102,9 @@ ret
 classes_main:
 push ebp
 mov ebp, esp
-sub esp, 4
 call classes_get_a_foo
 push eax
-lea edi, [ebp - 4]
-push edi
-pop edi
-pop eax
-mov [edi], eax
-push 40
-call malloc
-add esp, 4
-push eax
-push eax
-call init_classes.Foo
-push eax
-call vt_classes.Foo_constructor
-add esp, 4
-
-lea edi, [ebp + 12]
-push edi
-pop eax
-mov eax, [eax]
-push eax
-pop eax
-add eax, 0
-push eax
-pop edi
-pop eax
-mov [edi], eax
-leave
-ret
-vt_classes_get_a_foo:
-jmp classes_get_a_foo
-vt_classes_main:
-jmp classes_main
-classes_get_a_foo:
-push ebp
-mov ebp, esp
-sub esp, 4
-push 40
-call malloc
-add esp, 4
-push eax
-push eax
-call init_classes.Foo
-push eax
-call vt_classes.Foo_constructor
-add esp, 4
-
-lea edi, [ebp - 4]
-push edi
-pop edi
-pop eax
-mov [edi], eax
-lea edi, [ebp - 4]
-mov edi, [edi]
-push edi
-pop eax
-leave
-ret
-classes_main:
-push ebp
-mov ebp, esp
-sub esp, 4
-call classes_get_a_foo
-push eax
-lea edi, [ebp - 4]
-push edi
-pop edi
-pop eax
-mov [edi], eax
-push 40
-call malloc
-add esp, 4
-push eax
-push eax
-call init_classes.Foo
-push eax
-call vt_classes.Foo_constructor
-add esp, 4
-
-lea edi, [ebp + 12]
+lea edi, [ebp + 8]
 push edi
 pop eax
 mov eax, [eax]
