@@ -36,7 +36,7 @@ def produce_offset_table(scopeable: Scopeable, size_bundle: Dict) -> Tuple[Dict[
     """
     scope_table: Dict[str, int] = {}
 
-    arguments_size = 12
+    arguments_size = 8
     if isinstance(scopeable, Function):
         for idx, arg in enumerate(scopeable.arguments):
             if issubclass(type(arg.var_type), CompileAsPointer):

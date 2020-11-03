@@ -74,7 +74,6 @@ class ProgramCompiler:
 
         # for f_name in program.functions:
         #     text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
-        text_segment += self.factories[ElangClass].produce(program, self.factories, compilation_bundle)
         for var in program.variables.keys():
             data_segment += f"{var}: times {program.variables[var].get_size(self.size_bundle)} db 0\n"
 

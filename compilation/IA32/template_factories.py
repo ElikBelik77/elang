@@ -487,7 +487,7 @@ class ElangClassTemplateFactory(TemplateFactory):
                                                                       heap_table=produce_class_member_offset_table(
                                                                           elang_class, bundle['size_bundle']))
                 assembly += (
-                    f"lea edi, [ebp + 12]\n"
+                    f"lea edi, [ebp + 8]\n"
                     "mov edi, [edi]\n"
                     "push edi\n"
                     f"{array_init}"
