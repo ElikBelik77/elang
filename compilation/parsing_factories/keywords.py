@@ -79,15 +79,22 @@ class ElangClassDeclarationFactory(Factory):
         self.subclass_prefix.append(match.group(1).strip())
         for token in parser.parse_source_code(source_code[0:source_end], scope):
             if isinstance(token, ElangClass):
-                token.name = f"{'.'.join(self.subclass_prefix)}.{token.name}"
+                token.name = ".".join(self.subclass_prefix) + f"{token.name}"
                 parser.keywords.append(
                     {"re": re.compile(rf"\s*{token.name.strip()}(\s+|\[)"),
                      "factory": TypeFactory(token)})
                 parser.keywords.append(
                     {"re": re.compile(rf"\s*({token.name.strip()})\s*\((.*)\)\s*"),
                      "factory": ConstructorFactory()})
+                parser.keywords.append(
+                    {"re": re.compile(rf"\s*{parser.prog_name}.{token.name.strip()}(\s+|\[)"),
+                     "factory": TypeFactory(token)})
+                parser.keywords.append(
+                    {"re": re.compile(rf"\s*({parser.prog_name}.{token.name.strip()})\s*\((.*)\)\s*"),
+                     "factory": ConstructorFactory()})
                 sub_classes.append(token)
                 parser.parsed_classes[token.name] = token
+                parser.parsed_classes[parser.prog_name + '.' + token.name] = token
         member_variables = [token for token in parser.parse_source_code(source_code[0:source_end], scope) if
                             isinstance(token, VariableDeclaration)]
 
@@ -103,9 +110,16 @@ class ElangClassDeclarationFactory(Factory):
             parser.keywords.append(
                 {"re": re.compile(rf"\s*{match.group(1).strip()}(\s+|\[)"), "factory": TypeFactory(elang_class)})
             parser.keywords.append(
-                {"re": re.compile(rf"\s*(9{match.group(1).strip()})\s*\((.*)\)\s*"),
+                {"re": re.compile(rf"\s*({match.group(1).strip()})\s*\((.*)\)\s*"),
+                 "factory": ConstructorFactory()})
+            parser.keywords.append(
+                {"re": re.compile(rf"\s*{parser.prog_name}.{match.group(1).strip()}(\s+|\[)"),
+                 "factory": TypeFactory(elang_class)})
+            parser.keywords.append(
+                {"re": re.compile(rf"\s*({parser.prog_name}.{match.group(1).strip()})\s*\((.*)\)\s*"),
                  "factory": ConstructorFactory()})
             parser.parsed_classes[elang_class.name] = elang_class
+            parser.parsed_classes[parser.prog_name + '.' + elang_class.name] = elang_class
         self.subclass_depth -= 1
         self.subclass_prefix = self.subclass_prefix[:-1]
 

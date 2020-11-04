@@ -438,7 +438,7 @@ class NewOperatorTemplateFactory(TemplateFactory):
 
         assert isinstance(new.obj, FunctionCall)
         class_type = new.obj.constructor_call
-        assert isinstance(class_type, ElangClass)
+        assert issubclass(type(class_type), ElangClass)
 
         assembly += (
             f"push {class_type.get_malloc_size(bundle['size_bundle'])}\n"
@@ -520,7 +520,7 @@ class DotOperatorTemplateFactory(TemplateFactory):
         if isinstance(dot.left, PointerVariable):
             if dot.left.name in bundle["program"].includes:
                 return assembly, bundle["program"].includes[dot.left.name].program
-            return assembly, bundle["program"].classes[bundle["scope"].search_variable(dot.left.name)["type"].name]
+            return assembly, bundle["scope"].search_variable(dot.left.name)["type"]
 
     def produce(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
         assembly = self.add_verbose(bundle)

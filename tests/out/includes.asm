@@ -4,6 +4,15 @@ includes: times 4 db 0
 section .text
 extern malloc
 global main
+exports.Foo_check:
+push ebp
+mov ebp, esp
+push 5
+pop eax
+leave
+ret
+vt_exports.Foo_check:
+jmp exports.Foo_check
 exports_check:
 push ebp
 mov ebp, esp
@@ -14,7 +23,7 @@ jmp exports_check
 includes_main:
 push ebp
 mov ebp, esp
-sub esp, 4
+sub esp, 8
 mov edi, exports
 push edi
 pop eax
@@ -25,6 +34,23 @@ push eax
 lea edi, [ebp - 4]
 pop eax
 mov [edi], eax
+push 0
+call malloc
+add esp, 4
+push eax
+
+lea edi, [ebp - 8]
+push edi
+pop edi
+pop eax
+mov [edi], eax
+lea edi, [ebp - 8]
+push edi
+pop eax
+mov eax, [eax]
+push eax
+call vt_exports.Foo_check
+push eax
 leave
 ret
 vt_includes_main:

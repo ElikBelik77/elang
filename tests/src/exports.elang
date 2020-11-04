@@ -1,5 +1,7 @@
 class Foo {
-
+    int check() {
+        return 5;
+    }
 }
 
 int check() {
@@ -8,6 +10,6 @@ int check() {
 
 
 export {
-    run,
+    check,
     Foo
 }

@@ -65,6 +65,7 @@ class Parser:
         self.parsed_classes = {}
         self.produced = {}
         self.path = ''
+        self.prog_name = ''
 
     def add_primitives(self, primitives_syntax: List[PrimitiveSyntax]):
         for syntax in primitives_syntax:
@@ -78,15 +79,15 @@ class Parser:
         :param file: the path to the file to parse.
         :return: list of functions that have been parsed.
         """
-        path = self.path
+        path, name = self.path, self.prog_name
         prog_name = file.split('/')[-1].split('.')[0]
-        self.path = file
+        self.prog_name, self.path = prog_name, file
         global_scope = Scope(prog_name, None)
         with open(file, "r") as f:
             source_code = f.read().strip()
         program = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True,
                                          prog_name=prog_name, path=file)
-        self.path = path
+        self.path, self.prog_name = path, name
         return program
 
     def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name='', path=''):
@@ -169,6 +170,7 @@ class Parser:
             else:
                 globals_initialization.append(token)
         return globals, globals_initialization, functions, classes, exports, includes
+
     def get_type(self, name):
         for type in self.defined_types:
             if type.name == name:
