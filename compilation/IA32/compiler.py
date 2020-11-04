@@ -53,15 +53,28 @@ class ProgramCompiler:
         parser = Parser.create_default()
         dp_program = parser.parse_file(dependency)
 
-    def compile_program(self, program: Program, compilation_bundle) -> Tuple[str, str]:
+    def compile_program(self, program: Program, compilation_bundle) -> Tuple[str, str, str]:
         """
         This function compiles a program.
         :param program: the program to compile.
         :return: None.
-        `"""
-        text_segment, data_segment = "", ""
-        for dp in program.includes:
-            text_segment += self.compile_dependency(dp)
+        """
+        text_segment, data_segment, init_segment = "", "", ""
+        for init_statement in program.variables_init:
+            init_segment += self.factories[type(init_statement)].produce(init_statement, self.factories,
+                                                                         compilation_bundle)
+        init_segment += (f"mov edi, {program.name}\n"
+                         f"{self.factories[NewOperator].produce(NewOperator(FunctionCall(program.name, [], program)), self.factories, compilation_bundle)}"
+                         "pop eax\n"
+                         "mov [edi], eax\n"
+                         )
+        for dependency in program.includes:
+            compilation_bundle["program"] = program.includes[dependency].program
+            dp_text, dp_data, dp_init = self.compile_program(program.includes[dependency].program, compilation_bundle)
+            text_segment += dp_text
+            data_segment += dp_data
+            init_segment += dp_init
+        compilation_bundle["program"] = program
         vtables = {}
         for elang_class in program.classes.keys():
             self.size_bundle[elang_class] = program.classes[elang_class].get_size(self.size_bundle)
@@ -75,9 +88,11 @@ class ProgramCompiler:
         # for f_name in program.functions:
         #     text_segment += self.compile_function(program, program.functions[f_name]) + "\n"
         for var in program.variables.keys():
-            data_segment += f"{var}: times {program.variables[var].get_size(self.size_bundle)} db 0\n"
-
-        return text_segment, data_segment
+            if var not in program.includes:
+                data_segment += f"{var}: times {program.variables[var].get_size(self.size_bundle)} db 0\n"
+        for include in program.includes:
+            data_segment += f"{include}: times {self.size_bundle['int']} db 0\n"
+        return text_segment, data_segment, init_segment
 
     def compile(self, program: Program, destination_file: str) -> None:
         """
@@ -89,16 +104,9 @@ class ProgramCompiler:
         compilation_bundle = {"scope": program.scope, "size_bundle": self.size_bundle,
                               "program": program,
                               "verbose": self.verbose}
-        text_segment, data_segment = self.compile_program(program, compilation_bundle)
-
-        init_global_variables = ""
-        for init_statement in program.variables_init:
-            init_global_variables += self.factories[type(init_statement)].produce(init_statement, self.factories,
-                                                                                  compilation_bundle)
+        text_segment, data_segment, init_statements = self.compile_program(program, compilation_bundle)
         text_segment += ("main:\n"
-                         f"{init_global_variables}"
-                         f"mov edi, {program.name}\n"
-                         f"{self.factories[NewOperator].produce(NewOperator(FunctionCall(program.name, [], program)), self.factories, compilation_bundle)}"
+                         f"{init_statements}"
                          f"call {program.name}_main\n")
         data_segment += f"{program.name}: times 4 db 0\n"
         assembly = ""

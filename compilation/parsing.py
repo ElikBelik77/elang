@@ -1,6 +1,6 @@
 import re
 from typing import *
-
+import os
 from compilation.parsing_factories.keywords import *
 from compilation.parsing_factories.operators import *
 from compilation.parsing_factories.valid_tokens import *
@@ -63,6 +63,8 @@ class Parser:
         self.valid_tokens = valid_tokens
         self.defined_types = []
         self.parsed_classes = {}
+        self.produced = {}
+        self.path = ''
 
     def add_primitives(self, primitives_syntax: List[PrimitiveSyntax]):
         for syntax in primitives_syntax:
@@ -70,21 +72,24 @@ class Parser:
             self.defined_types.append(syntax.primitive)
         return self
 
-    def parse_file(self, file: str) -> Program:
+    def parse_file(self, file: str) -> [Program]:
         """
         This function parses a file.
         :param file: the path to the file to parse.
         :return: list of functions that have been parsed.
         """
-        prog_name =file.split('/')[-1].split('.')[0]
+        path = self.path
+        prog_name = file.split('/')[-1].split('.')[0]
+        self.path = file
         global_scope = Scope(prog_name, None)
         with open(file, "r") as f:
             source_code = f.read().strip()
-        tokens = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True)
-        program = Program(*tokens, prog_name, global_scope)
+        program = self.parse_source_code(source_code, parent_scope=global_scope, top_level=True,
+                                         prog_name=prog_name, path=file)
+        self.path = path
         return program
 
-    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name=''):
+    def parse_source_code(self, source_code: str, parent_scope: Scope, top_level=False, prog_name='', path=''):
         """
         This function parses a source code into tokens.
         :param source_code: the source code to parse.
@@ -118,7 +123,7 @@ class Parser:
                                           parent_scope=parent_scope,
                                           match=match_models)
         if top_level:
-            return self.classify_entities(parsed)
+            return Program(*self.classify_entities(parsed), prog_name, parent_scope)
         return parsed
 
     def get_maximal_match(self, text: str) -> Tuple[Dict, Match]:
@@ -149,7 +154,7 @@ class Parser:
         return [vtype for vtype in self.defined_types if vtype.name == name][0]
 
     def classify_entities(self, tokens):
-        globals, globals_initialization, functions, classes, exports = [], [], [], [], []
+        globals, globals_initialization, functions, classes, exports, includes = [], [], [], [], [], []
         for token in tokens:
             if isinstance(token, Function):
                 functions.append(token)
@@ -159,6 +164,12 @@ class Parser:
                 globals.append(token)
             elif isinstance(token, Export):
                 exports.append(token)
+            elif isinstance(token, Include):
+                includes.append(token)
             else:
                 globals_initialization.append(token)
-        return globals, globals_initialization, functions, classes, exports, []
+        return globals, globals_initialization, functions, classes, exports, includes
+    def get_type(self, name):
+        for type in self.defined_types:
+            if type.name == name:
+                return type

@@ -518,6 +518,8 @@ class DotOperatorTemplateFactory(TemplateFactory):
         if isinstance(dot.left, FunctionCall):
             return assembly, bundle["program"].functions[dot.left.name].return_type
         if isinstance(dot.left, PointerVariable):
+            if dot.left.name in bundle["program"].includes:
+                return assembly, bundle["program"].includes[dot.left.name].program
             return assembly, bundle["program"].classes[bundle["scope"].search_variable(dot.left.name)["type"].name]
 
     def produce(self, dot: DotOperator, factories: Dict[type, "TemplateFactory"], bundle: Dict) -> str:
@@ -526,7 +528,7 @@ class DotOperatorTemplateFactory(TemplateFactory):
         init_assembly, current_type = self.produce_first(dot_dfs[0], factories, bundle)
         assembly += init_assembly
         for idx, current_dot in enumerate(dot_dfs):
-            assert isinstance(current_type, ElangClass)
+            assert issubclass(type(current_type), ElangClass)
             if isinstance(current_dot.right, PointerVariable):
                 mv_offset = produce_class_member_offset_table(current_type, bundle["size_bundle"])
                 # TODO: move mv offset table somewhere else

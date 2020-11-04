@@ -1,7 +1,8 @@
 class Foo {
 
 }
-int run() {
+
+int check() {
 
 }
 

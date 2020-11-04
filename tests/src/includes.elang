@@ -1,8 +1,6 @@
 include {
-    exports.elang
+    ./exports.elang
 }
-class includes {
-    int run() {
-        int i = exports.check();
-    }
+int main() {
+    int i = exports.check();
 }

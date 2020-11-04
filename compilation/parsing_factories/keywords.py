@@ -6,7 +6,7 @@ from compilation.models.keywords import *
 from compilation.shunting_yard import shunting_yard
 from compilation.models.arrays import ArrayInitializer, Array, HeapLayer, StackLayer
 from typing import Match, Tuple
-
+import os
 from compilation.models.values import FunctionCall
 
 
@@ -15,7 +15,15 @@ class IncludeFactory(Factory):
         source_code = source_code[len(match.group(0).strip()):].strip()
         source_end = find_scope_end(source_code)
         tokens = [token.strip() for token in source_code[:source_end].split(',')]
-        return [Include(token) for token in tokens], source_code[source_end + 1:]
+        includes = [Include(token) for token in tokens]
+        var_declarations = []
+        for include in includes:
+            dirname = os.path.dirname(parser.path)
+            filename = os.path.join(dirname, include.file_name)
+            include.program = parser.parse_file(filename)
+            # TODO: change primitive constructor to reference to parser type
+            var_declarations.append(VariableDeclaration(include.module_name, include.program))
+        return includes + var_declarations, source_code[source_end + 1:]
 
     def produce_shallow(self, parser: "Parser", source_code: str, parent_scope: Scope, match: [Match]):
         raise Exception("Invalid include statement.")

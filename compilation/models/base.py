@@ -306,7 +306,9 @@ class Program(ElangClass):
             self._add_class(sub_class)
         self.classes[self.name] = self
         self.exports = exports
-        self.includes = includes
+        self.includes = {}
+        for include in includes:
+            self.includes[include.module_name] = include
         self.convert_ptr_types()
 
     def resolve_exports(self) -> List[Compilable]:
