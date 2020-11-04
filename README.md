@@ -12,7 +12,7 @@ Currently, I only implemented IA32 instruction set, the compiler uses a naive st
 - [x] if/else (only 'if' statements for the time being.)
 - [x] While loops
 - [x] Arrays (and multi-dimensional arrays!)
-- [ ] Include/Export
+- [x] Include/Export
 - [ ] Strings
 - [x] Global variables
 - [x] Assembling with NASM
