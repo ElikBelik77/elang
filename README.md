@@ -30,7 +30,7 @@ python3 elang.py <source_file.elang> <destination_file>
 ## Examples of syntax and it's assembly compiled version
 #### Compiling ```Classes.elang```
 A simple example that shows most of the features the language has to offer.
-```
+c```
 class Bar {
     int my_bar;
     int Bar_Func() {
@@ -71,7 +71,7 @@ int main() {
 Foo a_global_foo;
 ```
 Compiling to IA32 using stack based approach will yield:
-```
+assm```
 section .data
 a_global_foo: times 4 db 0
 classes: times 4 db 0
